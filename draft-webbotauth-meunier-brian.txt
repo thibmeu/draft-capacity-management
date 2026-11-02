@@ -2,34 +2,38 @@
 
 
 
-WG Working Group                                              Y. N. Here
-Internet-Draft                                    Your Organization Here
+Web Bot Auth                                                  T. Meunier
+Internet-Draft                                                Cloudflare
 Intended status: Informational                           2 November 2026
 Expires: 6 May 2027
 
 
-                           TODO - Your title
-                  draft-todo-yourname-protocol-latest
+                     Bot rate limit is all you need
+                 draft-webbotauth-meunier-brian-latest
 
 Abstract
 
-   TODO Abstract
+   This document describes a profile of [MOLE-ARCH] that allows for rate
+   limit of clients.  The goal is to allow clients to provide
+   information that sites can use to apply rate limit policies without
+   requiring a stable identifier.
 
 About This Document
 
    This note is to be removed before publishing as an RFC.
 
    The latest revision of this draft can be found at
-   https://example.com/LATEST.  Status information for this document may
-   be found at https://datatracker.ietf.org/doc/draft-todo-yourname-
-   protocol/.
+   https://thibmeu.github.io/draft-brian/draft-webbotauth-meunier-
+   brian.html.  Status information for this document may be found at
+   https://datatracker.ietf.org/doc/draft-webbotauth-meunier-brian/.
 
-   Discussion of this document takes place on the WG Working Group
-   mailing list (mailto:WG@example.com), which is archived at
-   https://example.com/WG.
+   Discussion of this document takes place on the Web Bot Auth Working
+   Group mailing list (mailto:web-bot-auth@ietf.org), which is archived
+   at https://mailarchive.ietf.org/arch/browse/web-bot-auth/.  Subscribe
+   at https://www.ietf.org/mailman/listinfo/web-bot-auth/.
 
    Source for this draft and an issue tracker can be found at
-   https://github.com/USER/REPO.
+   https://github.com/thibmeu/draft-brian.
 
 Status of This Memo
 
@@ -68,7 +72,9 @@ Table of Contents
    2.  Conventions and Definitions
    3.  Security Considerations
    4.  IANA Considerations
-   5.  Normative References
+   5.  References
+     5.1.  Normative References
+     5.2.  Informative References
    Acknowledgments
    Author's Address
 
@@ -92,7 +98,9 @@ Table of Contents
 
    This document has no IANA actions.
 
-5.  Normative References
+5.  References
+
+5.1.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -103,12 +111,35 @@ Table of Contents
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
 
+5.2.  Informative References
+
+   [MOLE-ARCH]
+              Schlesinger, S., Jackson, D., and T. Meunier, "Moderation
+              of unLinkable Endorsements (MoLE) Architecture", Work in
+              Progress, Internet-Draft, draft-jms-mole-architecture-00,
+              6 July 2026, <https://datatracker.ietf.org/doc/html/draft-
+              jms-mole-architecture-00>.
+
+   [WBA-ABA]  Meunier, T. and S. Major, "HTTP Message Signatures for
+              automated traffic", Work in Progress, Internet-Draft,
+              draft-ietf-webbotauth-httpsig-protocol-01, 29 October
+              2026, <https://datatracker.ietf.org/doc/html/draft-ietf-
+              webbotauth-httpsig-protocol-01>.
+
+   [WBA-HTTPSIG]
+              Rescorla, E. and R. Barnes, "Anonymous Bot Authentication:
+              Authorization and Rate Limiting for Web Agents", Work in
+              Progress, Internet-Draft, draft-rescorla-anonymous-
+              webbotauth-01, 19 July 2026,
+              <https://datatracker.ietf.org/doc/html/draft-rescorla-
+              anonymous-webbotauth-01>.
+
 Acknowledgments
 
    TODO acknowledge.
 
 Author's Address
 
-   Your Name Here
-   Your Organization Here
-   Email: your.email@example.com
+   Thibault Meunier
+   Cloudflare
+   Email: ot-ietf@thibault.uk
