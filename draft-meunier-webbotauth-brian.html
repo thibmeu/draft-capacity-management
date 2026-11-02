@@ -7,15 +7,18 @@
 <title>Bot rate limit is all you need</title>
 <meta content="Thibault Meunier" name="author">
 <meta content="
-       This document describes a profile of   that allows for rate limiting
-of clients. The goal is to allow clients to provide information that sites can
-use to apply rate-limit policies without requiring a stable identifier.
-Providers endorse their clients, while sites apply anonymous client limits.
-  can identify intermediaries for separate aggregate limits. 
+       Sites rate limit clients by address or by the intermediary they come through.
+Behind a shared intermediary, such as an AI agent platform, a VPN, or a network
+operator, every client then shares the same fate. This document describes the
+problem of limiting individual clients without requiring a stable identifier,
+and sketches a direction built on  : providers endorse their
+clients, and sites apply anonymous per-client limits.   can
+identify intermediaries for separate aggregate limits. It is a companion to
+ . 
     " name="description">
 <meta content="xml2rfc 3.34.1" name="generator">
 <meta content="anonymous rate limiting" name="keyword">
-<meta content="draft-webbotauth-meunier-brian-latest" name="ietf.draft">
+<meta content="draft-meunier-webbotauth-brian-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.34.1
     Python 3.14.8
@@ -31,7 +34,7 @@ Providers endorse their clients, while sites apply anonymous client limits.
     requests 2.33.1
     wcwidth 0.9.2
 -->
-<link href="draft-webbotauth-meunier-brian.xml" rel="alternate" type="application/rfc+xml">
+<link href="draft-meunier-webbotauth-brian.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
 <style type="text/css">@font-face {
   font-family: 'Lora';
@@ -1059,7 +1062,7 @@ svg {
 <dt class="label-workgroup">Workgroup:</dt>
 <dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
-<dd class="internet-draft">draft-webbotauth-meunier-brian-latest</dd>
+<dd class="internet-draft">draft-meunier-webbotauth-brian-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
 <time datetime="2026-11-02" class="published">2 November 2026</time>
@@ -1080,11 +1083,14 @@ svg {
 <h1 id="title">Bot rate limit is all you need</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This document describes a profile of <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span> that allows for rate limiting
-of clients. The goal is to allow clients to provide information that sites can
-use to apply rate-limit policies without requiring a stable identifier.
-Providers endorse their clients, while sites apply anonymous client limits.
-<span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> can identify intermediaries for separate aggregate limits.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">Sites rate limit clients by address or by the intermediary they come through.
+Behind a shared intermediary, such as an AI agent platform, a VPN, or a network
+operator, every client then shares the same fate. This document describes the
+problem of limiting individual clients without requiring a stable identifier,
+and sketches a direction built on <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>: providers endorse their
+clients, and sites apply anonymous per-client limits. <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> can
+identify intermediaries for separate aggregate limits. It is a companion to
+<span>[<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span>.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-about-this-document">
@@ -1092,8 +1098,8 @@ Providers endorse their clients, while sites apply anonymous client limits.
       </h2>
 <p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
 <p id="section-note.1-2">
-        The latest revision of this draft can be found at <span><a href="https://thibmeu.github.io/draft-brian/draft-webbotauth-meunier-brian.html">https://thibmeu.github.io/draft-brian/draft-webbotauth-meunier-brian.html</a></span>.
-        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-webbotauth-meunier-brian/">https://datatracker.ietf.org/doc/draft-webbotauth-meunier-brian/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+        The latest revision of this draft can be found at <span><a href="https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-brian.html">https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-brian.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-meunier-webbotauth-brian/">https://datatracker.ietf.org/doc/draft-meunier-webbotauth-brian/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
 <p id="section-note.1-3">Source for this draft and an issue tracker can be found at
         <span><a href="https://github.com/thibmeu/draft-brian">https://github.com/thibmeu/draft-brian</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
 </section>
@@ -1152,7 +1158,7 @@ Providers endorse their clients, while sites apply anonymous client limits.
                 <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-motivating-use-cases" class="internal xref">Motivating use cases</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
-                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-non-use-cases" class="internal xref">Non use cases</a></p>
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-related-work" class="internal xref">Related work</a></p>
 </li>
             </ul>
 </li>
@@ -1169,15 +1175,7 @@ Providers endorse their clients, while sites apply anonymous client limits.
             <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
-            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-references" class="internal xref">References</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
-                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
-                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
-</li>
-            </ul>
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
             <p id="section-toc.1-1.7.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
@@ -1243,28 +1241,28 @@ an address range or an entire ASN give these users a shared fate.<a href="#secti
           <li id="section-1.1-2.3">
             <p id="section-1.1-2.3.1">VPN providers and enterprise ZTNA gateways have a noisy neighbour problem.
 They may know their users, but should not have to expose them to each origin.
-Think of being able to trace requests from a CFO before earnings.<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
+An origin able to tell employees apart could single out an executive's
+activity for instance.<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-1.1-3">This draft presents an instantiation built on <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span> and how that
-composes with <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>. It shares the anonymous rate-limiting goal of
-<span>[<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span>. Clients should remain unlinkable through the protocol, even within
-the same rate-limit window. Cookies or TLS session tickets can still link
-requests independently of MOLE.<a href="#section-1.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="non-use-cases">
+<div id="related-work">
 <section id="section-1.2">
-        <h3 id="name-non-use-cases">
-<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-non-use-cases" class="section-name selfRef">Non use cases</a>
+        <h3 id="name-related-work">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-related-work" class="section-name selfRef">Related work</a>
         </h3>
-<p id="section-1.2-1">Poppy <span>[<a href="#POPPY" class="cite xref">POPPY</a>]</span> uses User IDs and sessions, including for anonymous browsing.
+<p id="section-1.2-1"><span>[<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span> shares the anonymous rate-limiting goal and the MOLE construction.
+This document is a companion to it. It focuses on providers that already have
+a relationship with their users, and on composing with an intermediary's
+<span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> identity.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<p id="section-1.2-2">Poppy <span>[<a href="#POPPY" class="cite xref">POPPY</a>]</span> uses User IDs and sessions, including for anonymous browsing.
 <span>[<a href="#AAP" class="cite xref">AAP</a>]</span> uses anonymous admission tokens and recommends a session afterwards,
 though it also allows a fresh token per request. Here, the aim is to maintain a
-client budget without linking its presentations.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
-<p id="section-1.2-2">MOLE will not solve every use case served by identifiers. Identity is still
-useful, and a story has to be found as to when it is required. Both MOLE and
-identity should be provided willingly by the client and by design.<a href="#section-1.2-2" class="pilcrow">¶</a></p>
+client budget without linking its presentations.<a href="#section-1.2-2" class="pilcrow">¶</a></p>
+<p id="section-1.2-3">MOLE will not solve every use case served by identifiers. Identity is still
+useful when an application needs it. Both MOLE and identity should be provided
+willingly by the client.<a href="#section-1.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1274,11 +1272,7 @@ identity should be provided willingly by the client and by design.<a href="#sect
       <h2 id="name-conventions-and-definitions">
 <a href="#section-2" class="section-number selfRef">2. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
       </h2>
-<p id="section-2-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
-"<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
-described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
-appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
-<p id="section-2-2">We use the vocabulary and terminology from <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>.<a href="#section-2-2" class="pilcrow">¶</a></p>
+<p id="section-2-1">We use the vocabulary and terminology from <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>.<a href="#section-2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="system">
@@ -1292,10 +1286,9 @@ A Client redeems its Endorsement for a Credential, then presents and updates
 that Credential as it makes requests. The origin can apply a client rate limit
 or spendable budget. Where an intermediary identifies its forwarded traffic
 with Web Bot Auth, the origin can also limit that traffic in aggregate.<a href="#section-3-1" class="pilcrow">¶</a></p>
-<p id="section-3-2">One requirement is an Endorsement that supports late binding, such as the
-Longfellow approach in <span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span>. The Client can request a Credential
-from an accepting Moderator without returning to the Anchor for each
-redemption.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-2">The two limits protect against different parties. The aggregate limit protects
+the origin from a dishonest provider, which controls how many Endorsements
+exist. The client limit gives fairness among an honest provider's users.<a href="#section-3-2" class="pilcrow">¶</a></p>
 <span id="name-client-traffic-proxied-thro"></span><div id="single-provider">
 <figure id="figure-1">
         <div id="section-3-3.1">
@@ -1438,10 +1431,20 @@ through Web Bot Auth or its egress address.<a href="#section-3-4" class="pilcrow
 <a href="#name-an-external-client-and-a-ho" class="selfRef">An external Client and a hosted Client reaching the same origin</a>
         </figcaption></figure>
 </div>
-<p id="section-3-6">[[ Editor's note: The issuance policy, budget updates, and late-binding details
-remain to be worked out. In particular, the same user could obtain Endorsements
-from two providers. We rely on their existing client relationships to make
-Endorsements scarce, but have not yet specified that assumption. ]]<a href="#section-3-6" class="pilcrow">¶</a></p>
+<p id="section-3-6">[[ Editor's note: Open points include:<a href="#section-3-6" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3-7.1">
+          <p id="section-3-7.1.1">Concurrent requests: one Credential cannot be used in parallel. One option is
+to issue several Credentials that split the budget.<a href="#section-3-7.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-7.2">
+          <p id="section-3-7.2.1">Tunnels such as VPNs cannot add a Web Bot Auth signature today.<a href="#section-3-7.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-7.3">
+          <p id="section-3-7.3.1">Scarcity: the same user could obtain Endorsements from two providers.
+]]<a href="#section-3-7.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
 </section>
 </div>
 <div id="security">
@@ -1460,101 +1463,77 @@ Endorsements scarce, but have not yet specified that assumption. ]]<a href="#sec
 <p id="section-5-1">This document has no IANA actions.<a href="#section-5-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="sec-combined-references">
-<section id="section-6">
-      <h2 id="name-references">
-<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-references" class="section-name selfRef">References</a>
-      </h2>
-<div id="sec-normative-references">
-<section id="section-6.1">
-        <h3 id="name-normative-references">
-<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
-        </h3>
-<dl class="references">
-<dt id="RFC2119">[RFC2119]</dt>
-        <dd>
-<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC8174">[RFC8174]</dt>
-      <dd>
-<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-</dl>
-</section>
-</div>
 <div id="sec-informative-references">
-<section id="section-6.2">
-        <h3 id="name-informative-references">
-<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
-        </h3>
+<section id="section-6">
+      <h2 id="name-informative-references">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+      </h2>
 <dl class="references">
 <dt id="AAP">[AAP]</dt>
-        <dd>
+      <dd>
 <span class="refTitle">"Agent Attestation Protocol"</span>, <span>n.d.</span>, <span>&lt;<a href="https://github.com/agentic-protocols/agentic-attestation-protocol/blob/1328a6bbfda24ea18bcd8996a5417a6702c8f274/draft-agent-attestation-protocol.md">https://github.com/agentic-protocols/agentic-attestation-protocol/blob/1328a6bbfda24ea18bcd8996a5417a6702c8f274/draft-agent-attestation-protocol.md</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="AAUTH">[AAUTH]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Hardt, D.</span>, <span class="refTitle">"AAuth Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-hardt-oauth-aauth-protocol-11</span>, <time datetime="2026-09-25" class="refDate">25 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-hardt-oauth-aauth-protocol-11">https://datatracker.ietf.org/doc/html/draft-hardt-oauth-aauth-protocol-11</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="CONNECT-IP">[CONNECT-IP]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Pauly, T., Ed.</span>, <span class="refAuthor">Schinazi, D.</span>, <span class="refAuthor">Chernyakhovsky, A.</span>, <span class="refAuthor">Kühlewind, M.</span>, and <span class="refAuthor">M. Westerlund</span>, <span class="refTitle">"Proxying IP in HTTP"</span>, <span class="seriesInfo">RFC 9484</span>, <span class="seriesInfo">DOI 10.17487/RFC9484</span>, <time datetime="2023-10" class="refDate">October 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9484">https://www.rfc-editor.org/rfc/rfc9484</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="CONNECT-UDP">[CONNECT-UDP]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Schinazi, D.</span>, <span class="refTitle">"Proxying UDP in HTTP"</span>, <span class="seriesInfo">RFC 9298</span>, <span class="seriesInfo">DOI 10.17487/RFC9298</span>, <time datetime="2022-08" class="refDate">August 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9298">https://www.rfc-editor.org/rfc/rfc9298</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="HTTP">[HTTP]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Fielding, R., Ed.</span>, <span class="refAuthor">Nottingham, M., Ed.</span>, and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"HTTP Semantics"</span>, <span class="seriesInfo">STD 97</span>, <span class="seriesInfo">RFC 9110</span>, <span class="seriesInfo">DOI 10.17487/RFC9110</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9110">https://www.rfc-editor.org/rfc/rfc9110</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="INTERNET-FOR-END-USER">[INTERNET-FOR-END-USER]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Nottingham, M.</span>, <span class="refTitle">"The Internet is for End Users"</span>, <span class="seriesInfo">RFC 8890</span>, <span class="seriesInfo">DOI 10.17487/RFC8890</span>, <time datetime="2020-08" class="refDate">August 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8890">https://www.rfc-editor.org/rfc/rfc8890</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="IPv6">[IPv6]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Deering, S.</span> and <span class="refAuthor">R. Hinden</span>, <span class="refTitle">"Internet Protocol, Version 6 (IPv6) Specification"</span>, <span class="seriesInfo">STD 86</span>, <span class="seriesInfo">RFC 8200</span>, <span class="seriesInfo">DOI 10.17487/RFC8200</span>, <time datetime="2017-07" class="refDate">July 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8200">https://www.rfc-editor.org/rfc/rfc8200</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="MOLE-ARCH">[MOLE-ARCH]</dt>
-        <dd>
-<span class="refAuthor">Schlesinger, S.</span>, <span class="refAuthor">Jackson, D.</span>, and <span class="refAuthor">T. Meunier</span>, <span class="refTitle">"Moderation of unLinkable Endorsements (MoLE) Architecture"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-jms-mole-architecture-00</span>, <time datetime="2026-07-06" class="refDate">6 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-jms-mole-architecture-00">https://datatracker.ietf.org/doc/html/draft-jms-mole-architecture-00</a>&gt;</span>. </dd>
+      <dd>
+<span class="refTitle">"*** BROKEN REFERENCE ***"</span>. </dd>
 <dd class="break"></dd>
 <dt id="MOLE-PROTOCOLS">[MOLE-PROTOCOLS]</dt>
-        <dd>
-<span class="refAuthor">Schlesinger, S.</span>, <span class="refAuthor">Jackson, D.</span>, and <span class="refAuthor">T. Meunier</span>, <span class="refTitle">"MoLE Protocols"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-jms-mole-protocols-00</span>, <time datetime="2026-07-06" class="refDate">6 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-jms-mole-protocols-00">https://datatracker.ietf.org/doc/html/draft-jms-mole-protocols-00</a>&gt;</span>. </dd>
+      <dd>
+<span class="refTitle">"*** BROKEN REFERENCE ***"</span>. </dd>
 <dd class="break"></dd>
 <dt id="OAUTH-XAA">[OAUTH-XAA]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Parecki, A.</span>, <span class="refAuthor">McGuinness, K.</span>, and <span class="refAuthor">B. Campbell</span>, <span class="refTitle">"Identity Assertion JWT Authorization Grant"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-oauth-identity-assertion-authz-grant-06</span>, <time datetime="2026-10-30" class="refDate">30 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-identity-assertion-authz-grant-06">https://datatracker.ietf.org/doc/html/draft-ietf-oauth-identity-assertion-authz-grant-06</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="OHTTP">[OHTTP]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Thomson, M.</span> and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Oblivious HTTP"</span>, <span class="seriesInfo">RFC 9458</span>, <span class="seriesInfo">DOI 10.17487/RFC9458</span>, <time datetime="2024-01" class="refDate">January 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9458">https://www.rfc-editor.org/rfc/rfc9458</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="POPPY">[POPPY]</dt>
-        <dd>
+      <dd>
 <span class="refTitle">"Personal Agent Protocol, draft 0.3"</span>, <span>n.d.</span>, <span>&lt;<a href="https://github.com/personal-agent-protocol/personal-agent-protocol/blob/1de1990e4978b42179fe0e3e0ae554271808c308/content/versions/0.3/spec.mdx">https://github.com/personal-agent-protocol/personal-agent-protocol/blob/1de1990e4978b42179fe0e3e0ae554271808c308/content/versions/0.3/spec.mdx</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="USER-AGENT-HISTORY">[USER-AGENT-HISTORY]</dt>
-        <dd>
+      <dd>
 <span class="refTitle">"WebAIM: History of the browser user-agent string"</span>, <span>n.d.</span>, <span>&lt;<a href="https://webaim.org/blog/user-agent-string-history/">https://webaim.org/blog/user-agent-string-history/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="WBA-ABA">[WBA-ABA]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Rescorla, E.</span> and <span class="refAuthor">R. Barnes</span>, <span class="refTitle">"Anonymous Bot Authentication: Authorization and Rate Limiting for Web Agents"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-rescorla-anonymous-webbotauth-01</span>, <time datetime="2026-07-19" class="refDate">19 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-rescorla-anonymous-webbotauth-01">https://datatracker.ietf.org/doc/html/draft-rescorla-anonymous-webbotauth-01</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="WBA-HTTPSIG">[WBA-HTTPSIG]</dt>
-        <dd>
+      <dd>
 <span class="refAuthor">Meunier, T.</span> and <span class="refAuthor">S. Major</span>, <span class="refTitle">"HTTP Message Signatures for automated traffic"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-webbotauth-httpsig-protocol-01</span>, <time datetime="2026-10-29" class="refDate">29 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-webbotauth-httpsig-protocol-01">https://datatracker.ietf.org/doc/html/draft-ietf-webbotauth-httpsig-protocol-01</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="WIMSE-AIMS">[WIMSE-AIMS]</dt>
-      <dd>
+    <dd>
 <span class="refAuthor">Kasselman, P.</span>, <span class="refAuthor">Lombardo, J.</span>, <span class="refAuthor">Rosomakho, Y.</span>, <span class="refAuthor">Campbell, B.</span>, <span class="refAuthor">Steele, N.</span>, and <span class="refAuthor">A. Parecki</span>, <span class="refTitle">"AI Identity Management System"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-wimse-aims-00</span>, <time datetime="2026-09-15" class="refDate">15 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-wimse-aims-00">https://datatracker.ietf.org/doc/html/draft-ietf-wimse-aims-00</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
-</section>
-</div>
 </section>
 </div>
 <div id="acknowledgments">
