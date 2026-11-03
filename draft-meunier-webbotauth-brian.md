@@ -308,7 +308,7 @@ difference: a Challenge on a 401 response means a presentation is required,
 and a Challenge on a 200 response means it is optional and would, for
 instance, raise a limit.
 
-# Attribution and moderation {#system}
+## Attribution and authorization {#system}
 
 A platform can identify itself to origins using {{WBA-HTTPSIG}}, rather than
 leaving origins to infer a platform from IP addresses. Whether a party
@@ -336,31 +336,49 @@ that is costly to duplicate. The origin chooses which Anchors it accepts.
 An origin that accepts an Anchor it cannot evaluate is trusting it with the
 scarcity of its own budgets.
 
-The deployment examples of {{examples}} differ in who signs, who endorses,
-how many
-intermediaries sit on the path, and whether the agent runs on the user's
-device or on a platform. None of that is visible to the origin, and none of it
-needs to be.
+# Moderating access {#processing-steps}
 
-The origin sees a request that offers some amount of identifying information
-by default. It can moderate on the basis of this information, or request that
-more information be disclosed (through identities or MOLE credentials).
+In practice, an agentic stack will differ in many ways:
+- How many and what arrangement of users, agents, workloads, tenants, and platforms exist;
+- Who signs, who endorses, and how many intermediaries sit on the path; and
+- Whether the agent runs on the user's device or on a platform.
 
-This is what lets one implementation serve every example. An origin does not
+By default, none of this information is known to the origin that is moderating
+access to its site, and none of it needs to be. The origin sees a request that
+offers some amount of identifying information by default. It can moderate on the
+basis of this information, or request that more information be disclosed (through
+identities or MOLE credentials).
+
+This is what lets one implementation serve many scenarios. An origin does not
 configure itself per platform or per topology. It configures a Moderator
 policy, including an Anchor Set, one or more credential contexts, and the
-amounts it charges and refunds. Everything else follows from what each request
-carries.
+amounts it charges and refunds. Everything else follows from an exchange,
+which has four steps:
 
-## Processing a request {#processing-steps}
+1. An Anchor grants the client an Endorsement based on their existing
+   relationship.
+2. The client redeems that Endorsement at the Moderator for a Credential
+   with an initial budget.
+3. The client answers a Moderator challenge with a presentation on its
+   request. An HTTP intermediary may add its platform signature.
+4. The Moderator verifies the presentation and applies its budget policy.
+   It returns an Update that the client uses to obtain the Credential for
+   its next presentation. The origin can also apply an aggregate limit to
+   an identified signer.
+
+The protocol exchanges and HTTP carriage are defined in {{MOLE-PROTOCOLS}}
+and {{MOLE-HTTP}}. This example uses one budget; composing workload and user
+budgets remains an open point below.
 
 Every request is an exchange in which the client offers and the origin either
 accepts or challenges. The client offers whatever it is willing to disclose
 on this request. The origin accepts the offer if it is enough for what this
 request needs, and otherwise challenges for more. What it challenges for
-depends on the need, not on the topology behind the request.
+depends on the need, not on the topology behind the request. In this section,
+the specifics of this transaction and how origins applies moderation is discussed
+further.
 
-### Client offer {#offers}
+## Client offer {#offers}
 
 A request carries some combination of the following, any of which may be
 absent.
@@ -393,7 +411,7 @@ Identity:
   is. Identity is offered only when asked, and with the consent of the party it
   identifies, as {{principles}} requires.
 
-### Offer acceptance {#accepting}
+## Offer acceptance {#accepting}
 
 The origin first verifies what was offered, then decides whether it is
 enough.
@@ -430,7 +448,7 @@ affecting one another, and a valid presentation at the grain it cares about
 is enough. For a request that nothing in the offer covers, the origin serves
 the baseline, which may be very little, and challenges.
 
-### Offer challenge {#challenging}
+## Offer challenge {#challenging}
 
 The challenge names what the origin needs. Two needs are distinct, and the
 origin asks for the one it has.
@@ -471,7 +489,7 @@ published in advance, and the origin chooses when, and of whom, to ask. An
 origin that sees nothing of concern may never challenge. One under load may
 challenge every request to a given path.
 
-### Serving and charging {#serving}
+## Serving and charging {#serving}
 
 Having accepted or challenged, the origin serves the request at the level
 the accepted offer warrants and attaches an Update for each valid presentation
