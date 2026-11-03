@@ -1,5 +1,5 @@
 ---
-title: "Attributable Platforms and Anonymous Agents"
+title: "Attributable Platforms and Authorized Agents"
 abbrev: "Brian"
 category: info
 
@@ -36,6 +36,7 @@ informative:
   OHTTP: RFC9458
   PRIVACY-PARTITIONING: RFC9614
   HTTP: RFC9110
+  HTTPSIG: RFC9421
   INTERNET-FOR-END-USER: RFC8890
   IPv6: RFC8200
   MOLE-ARCH: I-D.draft-jms-mole-architecture
@@ -64,9 +65,10 @@ Origins rate limit requests by address or by the platform they come through.
 Behind a shared platform, such as an AI agent service, a VPN, or a network
 operator, every user then shares the same fate. This document describes the
 problem of limiting consumption without requiring users or their agents to
-disclose a stable identifier. It sketches a direction in which providers
-endorse their clients, origins apply anonymous budgets, and platforms can
-identify themselves for separate aggregate limits.
+disclose a stable identifier. It sketches a direction in which Anchors
+endorse agents, origins authorize those agents through anonymous budgets
+rather than identities, and platforms identify themselves for separate
+aggregate limits.
 
 --- middle
 
@@ -287,7 +289,7 @@ Implementing these principles requires no new protocol mechanism. MOLE
 {{MOLE-ARCH}} and Web Bot Auth {{WBA-HTTPSIG}} exist and compose to
 authenticate a request with graduated disclosure of identifying information.
 
-## Capacity and identity
+## Capacity and identity {#capacity}
 
 Capacity control and authorization answer different questions. For a public
 resource, knowing an agent's identity does not establish how much it should
@@ -334,125 +336,312 @@ that is costly to duplicate. The origin chooses which Anchors it accepts.
 An origin that accepts an Anchor it cannot evaluate is trusting it with the
 scarcity of its own budgets.
 
-## Request flow
-
-A simple exchange has four steps:
-
-1. An Anchor grants the client an Endorsement based on their existing
-   relationship.
-2. The client redeems that Endorsement at the Moderator for a Credential
-   with an initial budget.
-3. The client answers a Moderator challenge with a presentation on its
-   request. An HTTP intermediary may add its platform signature.
-4. The Moderator verifies the presentation and applies its budget policy.
-   It returns an Update that the client uses to obtain the Credential for
-   its next presentation. The origin can also apply an aggregate limit to
-   an identified signer.
-
-The protocol exchanges and HTTP carriage are defined in {{MOLE-PROTOCOLS}}
-and {{MOLE-HTTP}}. This example uses one budget; composing workload and user
-budgets remains an open point below.
-
-## What the origin sees {#origin-view}
-
-The topologies below differ in who signs, who endorses, how many
+The deployment examples of {{examples}} differ in who signs, who endorses,
+how many
 intermediaries sit on the path, and whether the agent runs on the user's
-device or on a platform. None of that needs to be visible to the origin. It
-sees a request that carries zero or more {{WBA-HTTPSIG}} signatures and zero
-or more MOLE presentations, which provide the signals for these budgets and
-aggregate limits.
+device or on a platform. None of that is visible to the origin, and none of it
+needs to be.
 
-The table describes what these cryptographic signals disclose, not everything
-an origin can learn from a request. Cookies, application authentication,
-source addresses, and other metadata may identify a user or link requests
-(see {{security}}).
+The origin sees a request that offers some amount of identifying information
+by default. It can moderate on the basis of this information, or request that
+more information be disclosed (through identities or MOLE credentials).
 
-| The origin sees                         | The origin does not see       |
-|-----------------------------------------|-------------------------------|
-| Which platform or operator signed       | Where the agent runs          |
-| A valid presentation at workload grain  | Which workload or tenant      |
-| A valid presentation at user grain      | Which user                    |
-| That the Anchor is in the Anchor Set    | Which Anchor in the set       |
-| The spend the presentation answers      | The hidden balance            |
-| The outcome of its policy for a request | Earlier requests of the agent |
-{: #origin-view-table title="What an origin sees"}
+This is what lets one implementation serve every example. An origin does not
+configure itself per platform or per topology. It configures a Moderator
+policy, including an Anchor Set, one or more credential contexts, and the
+amounts it charges and refunds. Everything else follows from what each request
+carries.
 
-An origin does not configure itself per platform or per topology. It
-configures a Moderator policy, including an Anchor Set and the amounts it
-charges and refunds. Everything else follows from what each request carries.
+## Processing a request {#processing-steps}
 
-## Deployment examples
+Every request is an exchange in which the client offers and the origin either
+accepts or challenges. The client offers whatever it is willing to disclose
+on this request. The origin accepts the offer if it is enough for what this
+request needs, and otherwise challenges for more. What it challenges for
+depends on the need, not on the topology behind the request.
 
-The following topologies separate the traffic path from the endorsement
-relationship. An Anchor may be the platform, a tenant, or an independent party
-accepted by the origin. The origin's Moderator may be operated by the origin
-or delegated to a provider acting on its behalf.
+### Client offer {#offers}
 
-| Topology | Possible signer | Budget scope |
-|----------|-----------------|--------------|
-| Device agent via a platform | HTTP intermediary | User or agent |
-| Device agent connecting directly | None needed | User or agent |
-| Consumer AI service | Service operator | User or agent |
-| Hosted tenant workloads | Platform | Workload |
-| Hosted agents with stacked limits | Platform | Workload and user (open) |
-| Enterprise gateway | HTTP gateway | Employee or agent |
-| CDN-operated Moderator | As above | As above, across origins |
-| Chained intermediaries | Each HTTP-terminating hop | As above |
-{: #topologies title="Recurring deployment topologies"}
+A request carries some combination of the following, any of which may be
+absent.
 
-The budget scopes describe the intended allocation, not identities revealed
-to the origin. A platform signature allows a separate aggregate limit. Signing
-forwarded requests needs the profile discussed below. A tunnel carrying the
-client's TLS session untouched cannot add such a signature.
+Nothing:
+: A bare request. This is the zero-disclosure baseline that every origin
+  serves at some level, possibly heavily rate limited.
 
-In {{fig-intermediary}}, a device agent presents through an HTTP intermediary.
-The Anchor is drawn separately to show that it need not operate that
-intermediary. A consumer AI service can combine these roles and host the agent.
+A signature:
+: A {{WBA-HTTPSIG}} signature from a platform or bot operator. It is offered
+  opportunistically. A platform adds one if it has one to add; a
+  device-resident agent connecting directly has none to offer. It discloses
+  the signer, not the agent, tenant, or user.
+
+A MOLE presentation:
+: Proof that the agent holds a Credential whose balance covers the spend the
+  origin asked for, at tenant, workload, or user grain, or several. It discloses
+  nothing about who, only that a budget exists and is being spent. It is
+  offered only in answer to a presentation Challenge.
+
+A CredentialRequest:
+: A Redemption of an Endorsement from some Anchor in the Anchor Set, with a
+  request for a Credential. It discloses membership of the set, not the
+  Anchor. It is offered only in answer to a redemption Challenge.
+
+Identity:
+: Who the entity is, through authentication or authorization such as {{AAUTH}}
+  or {{OAUTH-XAA}}; which workload this is, through a workload identity such
+  as {{WIMSE-AIMS}} or a tenant identifying its workload; or which session this
+  is. Identity is offered only when asked, and with the consent of the party it
+  identifies, as {{principles}} requires.
+
+### Offer acceptance {#accepting}
+
+The origin first verifies what was offered, then decides whether it is
+enough.
+
+1. A signature, if present, is verified. A valid one attributes the request
+   to its signer and places it under that signer's aggregate limit. An absent
+   or invalid signature leaves the request unattributed, under whatever
+   address-based limit the origin applied before. This is not a failure. An
+   origin can ask for a signature with the Accept-Signature field of
+   {{HTTPSIG}}, but cannot count on receiving one. When a signature and a
+   presentation arrive together, the signature is expected to cover the
+   field carrying the presentation, so that the signer is accountable for
+   the pairing; see {{security}}.
+2. A CredentialRequest, if present, is the answer to a redemption Challenge.
+   The origin verifies the Redemption against the Anchor Set, checks the
+   Endorsement's nullifier has not been redeemed, chooses the initial balance
+   from policy, records the nullifier, and returns a Credential. This
+   exchange yields a Credential, not content.
+3. A presentation, if present, is the answer to a presentation Challenge.
+   The origin determines which Challenge from the credential context and the
+   request, confirms the key and context are current, rejects a replayed
+   nullifier, checks the spend and top-up match the Challenge, and verifies
+   the proof and the predicate that the balance covers the spend. A failed
+   presentation is treated as not offered. Whenever an intermediary is on
+   the path, the Moderator uses the request-bound profile of
+   {{MOLE-PROTOCOLS}}, with a request context that covers the method, the
+   target, and the body, so that a presentation seen in transit cannot be
+   attached to a different request; see {{security}}.
+4. Identity, if present, is verified by whatever mechanism carried it.
+
+The offer is enough when it covers what the request class needs. For most
+content, the origin needs only to manage capacity and keep users from
+affecting one another, and a valid presentation at the grain it cares about
+is enough. For a request that nothing in the offer covers, the origin serves
+the baseline, which may be very little, and challenges.
+
+### Offer challenge {#challenging}
+
+The challenge names what the origin needs. Two needs are distinct, and the
+origin asks for the one it has.
+
+Capacity:
+: The origin needs to limit consumption per workload or per user without
+  knowing who they are. It challenges for MOLE. Because it cannot tell
+  whether the agent lacks a Credential or merely did not present one, it
+  issues both Challenges together: a redemption Challenge carrying a
+  redemption context that names the Moderator, its policy, and a time
+  window, and a presentation Challenge carrying the credential context and
+  the terms of a presentation, spend s and top-up a. An agent with an Endorsement
+  but no Credential answers the first and then the second. An agent with a
+  Credential answers the second. An agent with neither keeps receiving the
+  baseline. The origin challenges at the level of granularity it wants:
+  tenant, workload, user, or several, and may offer several endorsement or credential
+  types at once; the agent ignores types it does not support and answers
+  one it does.
+
+Identity:
+: The origin needs to know who, because the resource is permissioned: an
+  account-bound action, a paid API, a resource with per-principal access
+  control. It challenges for identity, using the authentication or
+  authorization scheme appropriate to the principal, and serves according to
+  that identity once offered. MOLE does not satisfy this need, and the origin
+  should not pretend it does by inferring identity from a presentation.
+
+The two are not interchangeable in either direction, as {{capacity}}
+explains. An origin may need both and then asks for both. What it must not do
+is ask for more than the request needs, and the agent is free to decline any
+challenge. A public resource keeps serving the baseline, since that floor is
+what makes disclosure voluntary rather than coerced. A permissioned resource
+has no public floor and may refuse.
+
+The challenge is interactive. The origin asks in response to a specific
+request, and the agent answers on the request that follows. Nothing is
+published in advance, and the origin chooses when, and of whom, to ask. An
+origin that sees nothing of concern may never challenge. One under load may
+challenge every request to a given path.
+
+### Serving and charging {#serving}
+
+Having accepted or challenged, the origin serves the request at the level
+the accepted offer warrants and attaches an Update for each valid presentation
+with the refund t it has chosen. If it wants the agent's next request
+moderated, it also attaches the next presentation Challenge, since no
+presentation is made without one. It records each presentation's result
+atomically so a retry returns the same result and a copy of the Credential
+is refused.
+
+## Request flow {#flow}
+
+{{sequence}} shows the exchange of {{processing-steps}} for an origin that
+needs a fair share and a client that starts by offering only a signature, as
+a request moves from a remote agent through its platform's intermediary to an
+origin's Moderator. The exchanges follow {{MOLE-PROTOCOLS}} (the message names
+below are those of that document).
+
+~~~
+Anchor       Agent      Intermediary (P)       Origin
+  |            |                   |              (Moderator)
+  | Endorsement|                   |                 |
+  |----------->|                   |                 |
+  |            |                   |                 |
+  |            | (1) request, no presentation        |
+  |            |------------------>| add WBA(P)      |
+  |            |                   |---------------->| verify WBA(P),
+  |            |                   |                 | aggregate limit
+  |            | (2) baseline response + Challenges  |
+  |            |<------------------|<----------------|
+  |            |   redemption: redemption_context    |
+  |            |   presentation: spend s, top-up a   |
+  |            |                   |                 |
+  |            | (3) CredentialRequest               |
+  |            |------------------>|---------------->| verify Redemption
+  |            |   Redemption over Anchor Set        | over Anchor Set,
+  |            |   + IssuanceRequest                 | check nullifier,
+  |            |                   |                 | balance c, record
+  |            | (4) CredentialResponse              |
+  |            |<------------------|<----------------|
+  |            | Credential (c)    |                 |
+  |            |                   |                 |
+  |            | (5) request + Presentation(s, a)    |
+  |            |------------------>| add WBA(P)      |
+  |            |                   |---------------->| verify WBA(P),
+  |            |                   |                 | aggregate limit;
+  |            |                   |                 | nullifier lookup;
+  |            |                   |                 | VerifySpend:
+  |            |                   |                 |  proof, c >= s;
+  |            |                   |                 | choose refund t;
+  |            |                   |                 | record; serve
+  |            | (6) response + Update + Challenge   |
+  |            |<------------------|<----------------|
+  |            | Credential (c-s+t)|                 |
+  |            |                   |                 |
+  |            | (7) repeat from (5), answering each Challenge
+~~~
+{: #sequence title="A request moving through the system"}
+
+1. The agent sends a request with no presentation. The intermediary adds the
+   platform's {{WBA-HTTPSIG}} signature and forwards it.
+2. The origin verifies the signature, if there is one, attributes the request
+   to the platform, and applies its aggregate limit. Finding no presentation,
+   and wanting this request class moderated, it serves the baseline level of
+   access, possibly heavily rate limited, and issues both Challenges. The
+   redemption Challenge carries a redemption context that names the Moderator,
+   its policy, and a time window. The presentation Challenge carries the
+   credential context and the terms of a presentation: a spend amount s and
+   a maximum top-up a. Because the baseline was served, the Challenges travel
+   on a 200 response and are optional.
+3. The agent has no Credential for this Moderator, so it answers the
+   redemption Challenge first. It fetches the Moderator's configuration from
+   the Redeem and Issue endpoint, which lists the Anchor Set, and sends a
+   CredentialRequest to that endpoint: a Redemption that proves its
+   Endorsement comes from some Anchor in the set, without revealing which,
+   and an IssuanceRequest for a Credential.
+4. The origin verifies the Redemption, checks that the Endorsement's
+   nullifier has not been redeemed before, chooses an initial balance c
+   according to its policy, records the nullifier, and returns a
+   CredentialResponse. The agent finalizes it into a Credential with hidden
+   balance c.
+5. The agent now answers the presentation Challenge. It repeats the request
+   with a Presentation that proves its balance covers the spend amount s
+   without revealing the balance, and includes a request for a top-up of at
+   most a. The intermediary signs as before, if there is one.
+6. The origin verifies the signature, if any, and applies the aggregate
+   limit as in step 2. It then looks up the presentation's nullifier to reject a replay,
+   verifies the proof and the predicate that the balance is at least s,
+   chooses a refund t between 0 and s + a, records the result under the
+   nullifier, and serves the request. The response carries an Update with
+   the refund, and a new presentation Challenge for the agent's next
+   request. The agent finalizes the Update into a fresh Credential with
+   balance c - s + t.
+7. Subsequent requests repeat from step 5, each answering the Challenge
+   carried on the previous response. Each presentation uses a fresh
+   nullifier, so the origin cannot link one request to the next.
+
+Every presentation answers a Challenge. An agent never presents unprompted,
+and a presentation that answers no Challenge the origin issued is invalid.
+For the chain to continue, each response that the origin wants followed by a
+moderated request carries the next presentation Challenge, as step 6 shows.
+An origin that stops challenging stops receiving presentations, and the agent
+falls back to the baseline. The Challenge is the origin's to issue, when and
+to whom it chooses, in response to a request it has seen. Graduated
+disclosure, as described in {{principles}}, is the origin's choice of when to
+ask.
+
+If the presentation fails verification, or the balance does not cover s, the
+origin falls back to the baseline response of step 2. The agent can obtain a
+new Credential only by redeeming another Endorsement, which its Anchor grants
+scarcely. That is what makes the limit bind.
+
+## Deployment examples {#examples}
+
+The following examples separate the traffic path from the endorsement
+relationship, using the notation of {{terminology}}. An Anchor may be the
+platform, a tenant, or an independent party accepted by the origin. The
+origin's Moderator may be operated by the origin or delegated to a provider
+acting on its behalf. A platform signature allows a separate aggregate limit.
+Signing forwarded requests needs the profile discussed below. A tunnel
+carrying the client's TLS session untouched cannot add such a signature.
+
+In {{fig-intermediary}}, a device agent presents MOLE(U) through the HTTP
+intermediary of platform P, which adds WBA(P). Anchor U is drawn separately
+to show that it need not operate that intermediary. A consumer AI service can
+combine these roles and host the agent.
 
 ~~~aasvg
 +----------+
-|  Anchor  |
+| Anchor U |
 +----+-----+
      | Endorsement
      v
 +----------+           +--------------+          +-----------+
-|  Device  +-- MOLE -->| Intermediary +-- MOLE ->|   Origin  |
-|  agent   |           |  (platform)  |  + WBA   | Moderator |
+|  Device  +-MOLE(U)-->| Intermediary +-MOLE(U)->|   Origin  |
+|  agent   |           | (platform P) |  +WBA(P) | Moderator |
 +----------+           +--------------+          +-----------+
 ~~~
-{: #fig-intermediary title="A device agent reaching an origin through a platform"}
+{: #fig-intermediary title="A device agent reaching an origin through platform P, endorsed by Anchor U"}
 
-In {{fig-direct}}, the agent connects directly. It still has an Anchor
-relationship and can present a Credential without an intermediary signature.
+In {{fig-direct}}, the agent connects directly. It still has a relationship
+with Anchor U and presents MOLE(U) without any signature on the request.
 
 ~~~aasvg
 +----------+
-|  Anchor  |
+| Anchor U |
 +----+-----+
      | Endorsement
      v
 +----------+                                    +-----------+
-|  Device  +--------------- MOLE -------------->|   Origin  |
-|  agent   |                                    | Moderator |
+|  Device  +-------------- MOLE(U) ------------>|   Origin  |
+|  agent   |             no WBA(X)              | Moderator |
 +----------+                                    +-----------+
 ~~~
-{: #fig-direct title="A direct connection with an Anchor off the traffic path"}
+{: #fig-direct title="A direct connection with Anchor U off the traffic path"}
 
-A platform can endorse a hosted workload, and an Anchor with a user
-relationship can endorse its users' agents. {{fig-stacked}} illustrates the
-intended scopes of a stacked arrangement. MOLE(W) and MOLE(U) follow the
-notation of {{terminology}}: workload and user budgets, not visible
-identifiers. This is a deployment
-goal, not a defined composition of presentations or a shared-budget mechanism.
+Anchor W, typically platform P itself, can endorse a hosted workload, and
+Anchor U can endorse its users' agents. {{fig-stacked}} illustrates the
+intended scopes of a stacked arrangement: the request carries MOLE(W) and
+MOLE(U), which are workload and user budgets, not visible identifiers, and
+WBA(P). This is a deployment goal, not a defined composition of presentations
+or a shared-budget mechanism.
 
 ~~~aasvg
 +---------------------+       +---------------------+
-|   Workload Anchor   |       |     User Anchor     |
+|      Anchor W       |       |      Anchor U       |
 +----------+----------+       +----------+----------+
            | Endorsement                 | Endorsement
            v                             v
 +--------------------------------------------------+
-| Platform                                         |
+| Platform P                                       |
 |  +--------------------------------------------+  |
 |  | Tenant workload with user agents           |  |
 |  +----------------------+---------------------+  |
@@ -464,7 +653,7 @@ goal, not a defined composition of presentations or a shared-budget mechanism.
 +--------------------------------------------------+   |
                                                        | MOLE(W)
                                                        | MOLE(U)
-                                                       | + WBA
+                                                       | +WBA(P)
                                                        v
                                                  +-----------+
                                                  |   Origin  |
@@ -474,7 +663,7 @@ goal, not a defined composition of presentations or a shared-budget mechanism.
 {: #fig-stacked title="Workload and user budget scopes in a proposed stacked deployment"}
 
 An origin may delegate the Moderator to a CDN or similar service that fronts
-it. Any of the topologies above can sit in front of it. The Moderator's Anchor
+it. Any of the examples above can sit in front of it. The Moderator's Anchor
 Set and policy are then shared across the origins the CDN serves under that
 configuration, which makes the anonymity set larger. A Credential issued by
 the CDN is valid at every origin it moderates under the same context. The CDN
