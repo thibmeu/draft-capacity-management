@@ -1,0 +1,86 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2026-11-03T05:00:41.134079+00:00",
+  "repo": "thibmeu/draft-brian",
+  "labels": [
+    {
+      "name": "accessibility",
+      "description": "Barrier affecting people with disabilities",
+      "color": "f143ab"
+    },
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [],
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOVf4rpc8AAAABMdBSuA",
+      "title": "Expand and elaborate",
+      "url": "https://github.com/thibmeu/draft-brian/pull/1",
+      "state": "OPEN",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This change integrates guiding principles, expands the architectural concepts, gives more deployment shapes, and provides moderation guidance. It expands the musings I put together and, with the help of Claude, provides a more thorough exploration of the deployment topologies. I made an attempt at reframing the core position of the draft too, moving away from rate limiting and towards the balance of attribution and private authentication. ",
+      "createdAt": "2026-11-03T02:12:03Z",
+      "updatedAt": "2026-11-03T02:12:03Z",
+      "baseRepository": "thibmeu/draft-brian",
+      "baseRefName": "main",
+      "baseRefOid": "3dc3510d5d72378df7c064aea44be4845f519a5b",
+      "headRepository": null,
+      "headRefName": "caw/principles-and-shapes-and-flows",
+      "headRefOid": "c227eb044dbef1b76b21e2cfd61ad0778163a1ef",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    }
+  ]
+}
