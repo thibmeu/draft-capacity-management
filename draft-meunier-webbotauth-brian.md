@@ -135,7 +135,7 @@ Poppy {{POPPY}} uses User IDs and sessions, including for anonymous browsing.
 though it also allows a fresh token per request. Here, the aim is to maintain a
 per-agent budget without linking its presentations.
 
-# Conventions and Definitions
+# Conventions and Definitions {#terminology}
 
 This document uses the HTTP terminology of {{HTTP}}, the MOLE terminology of
 {{MOLE-ARCH}}, and the workload terminology of {{Section 2 of WIMSE-ARCH}}.
@@ -161,12 +161,61 @@ Platform:
 Tenant:
 : A customer that deploys workloads on a platform.
 
+User:
+: A person on whose behalf requests are made. A user has an existing
+  relationship with an Anchor, such as an account, a subscription, or an
+  employment contract.
+
+Agent:
+: Software that makes requests for one user at a time, either on the user's
+  device or as a remote agent within a tenant's workload on a platform.
+
+Bot:
+: An agent with no user behind it, such as a crawler or a monitor, or a
+  workload made of such agents. Having no user to shield, a bot identifies
+  rather than being moderated anonymously.
+
 Anchor:
 : The MOLE role that grants Endorsements to Clients {{MOLE-ARCH}}.
 
 Moderator:
 : The MOLE role that issues Credentials and evaluates their presentations
   {{MOLE-ARCH}}.
+
+The parties above form a hierarchy of layers. {{role-hierarchy}} shows the
+delineation. Anchors are not in it: an Anchor is a role that any party with
+a relationship to a layer can play.
+
+~~~aasvg
+Platform P
+  |
+  +-- Tenant T
+  |     |
+  |     +-- Workload W
+  |     |     |
+  |     |     +-- Agent A, acting for User U
+  |     |
+  |     +-- Bot workload B
+  |
+  +-- Intermediary
+~~~
+{: #role-hierarchy title="Layers of the hierarchy"}
+
+This document also uses the following notation throughout.
+
+Anchor X:
+: An Anchor that endorses parties at layer X. For example, Anchor T endorses
+  tenants, Anchor W endorses workloads, and so on.
+
+MOLE(X):
+: A MOLE Credential (or a presentation of one) derived from an Endorsement by
+  Anchor X. It lets an origin moderate one party at layer X among all the
+  parties at that layer that share Anchor X, without distinguishing them.
+  For example, MOLE(T) is a Credential over all tenants endorsed by Anchor T.
+
+WBA(X):
+: A {{WBA-HTTPSIG}} signature by entity X, such as a platform, over a
+  request. It lets an origin attribute the request to X.
 
 # Principles {#principles}
 
@@ -213,6 +262,30 @@ problem remains, even if its scope is smaller than a whole platform. Platforms
 and workloads can help origins moderate those smaller units without requiring
 stable identifiers for each of them. How to compose these limits remains an
 open question.
+
+Altogether, this leads to the following principles:
+
+1. A platform can identify itself to origins, using {{WBA-HTTPSIG}}, rather
+   than leaving origins to infer a platform from IP addresses. Bots and bot
+   workloads on the platform identify under that identity or under a
+   per-tenant key. Bots elsewhere identify with their own {{WBA-HTTPSIG}}
+   identity.
+2. A platform helps origins moderate its tenants and their workloads. It is
+   the natural Anchor for them, endorsing each tenant, each workload whose
+   agents act for users, or both; where another Anchor endorses them
+   instead, the platform lets their presentations through. The endorsed
+   party exchanges its Endorsements for Credentials that the origin
+   moderates. A tenant identifies itself or its workload only if asked, and
+   with consent of the tenant.
+3. A workload helps origins moderate its individual users. The user's agent
+   presents a Credential derived from an Endorsement by the user's Anchor,
+   and the workload lets that presentation reach the origin. The user's
+   Anchor may be the tenant, but need not be. A user identifies themselves
+   only if asked, and with consent.
+
+Implementing these principles requires no new protocol mechanism. MOLE
+{{MOLE-ARCH}} and Web Bot Auth {{WBA-HTTPSIG}} exist and compose to
+authenticate a request with graduated disclosure of identifying information.
 
 ## Capacity and identity
 
@@ -367,8 +440,9 @@ relationship and can present a Credential without an intermediary signature.
 
 A platform can endorse a hosted workload, and an Anchor with a user
 relationship can endorse its users' agents. {{fig-stacked}} illustrates the
-intended scopes of a stacked arrangement. MOLE(W) and MOLE(U) denote workload
-and user budgets. They do not denote visible identifiers. This is a deployment
+intended scopes of a stacked arrangement. MOLE(W) and MOLE(U) follow the
+notation of {{terminology}}: workload and user budgets, not visible
+identifiers. This is a deployment
 goal, not a defined composition of presentations or a shared-budget mechanism.
 
 ~~~aasvg
