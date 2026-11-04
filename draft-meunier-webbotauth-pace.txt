@@ -3,9 +3,9 @@
 
 
 Network Working Group                                         T. Meunier
-Internet-Draft                                                Cloudflare
-Intended status: Informational                           4 November 2026
-Expires: 8 May 2027
+Internet-Draft                                                C. A. Wood
+Intended status: Informational                                Cloudflare
+Expires: 8 May 2027                                      4 November 2026
 
 
              Proportionate Access and Capacity Enforcement
@@ -94,7 +94,7 @@ Table of Contents
    7.  IANA Considerations
    8.  Informative References
    Acknowledgments
-   Author's Address
+   Authors' Addresses
 
 1.  Introduction
 
@@ -1184,8 +1184,13 @@ Acknowledgments
 
    TODO acknowledge.
 
-Author's Address
+Authors' Addresses
 
    Thibault Meunier
    Cloudflare
    Email: ot-ietf@thibault.uk
+
+
+   Christopher A. Wood
+   Cloudflare
+   Email: caw@heapingbits.net
