@@ -1,9 +1,9 @@
 ---
-title: "Attributable Platforms and Authorized Agents"
-abbrev: "Brian"
+title: "Anonymous Presentation for Proportionate Access"
+abbrev: "APPA"
 category: info
 
-docname: draft-meunier-webbotauth-brian-latest
+docname: draft-meunier-webbotauth-appa-latest
 submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
 number:
 date:
@@ -19,7 +19,7 @@ venue:
 #  mail: "web-bot-auth@ietf.org"
 #  arch: "https://mailarchive.ietf.org/arch/browse/web-bot-auth/"
   github: "thibmeu/draft-brian"
-  latest: "https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-brian.html"
+  latest: "https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-appa.html"
 
 author:
  -
@@ -349,10 +349,11 @@ coexist with anonymous moderation of the agents behind it.
 An Anchor endorses a party at some layer: a user's agent, a workload, a
 tenant. That party, as MOLE Client, redeems its Endorsement for a Credential
 from the Moderator, then presents and updates that Credential on the requests
-it makes or forwards ({{MOLE-PROTOCOLS}}). The origin can apply a rate limit or spendable
-budget without linking the Credential's presentations. Where an intermediary
-identifies its forwarded traffic with Web Bot Auth, the origin can also limit
-that traffic in aggregate.
+it makes or forwards ({{MOLE-PROTOCOLS}}). The origin can apply a spendable
+budget without linking the Credential's presentations. Per-user rate
+enforcement requires further policy and mechanisms, as discussed in
+{{dynamics}}. Where an intermediary identifies its forwarded traffic with
+Web Bot Auth, the origin can also limit that traffic in aggregate.
 
 Each limit constrains a different party. The aggregate limit constrains the
 signer. It says nothing about an Anchor that is a different party. A workload
@@ -459,10 +460,12 @@ Session:
   origin join every request in the session together. Established by whatever
   scheme the origin uses for sessions.
 
-An origin that needs more than one thing asks for more than one: a
-WWW-Authenticate field may carry several challenges ({{Section 11.6.1 of
-HTTP}}), and an agent answers those it is willing to. {{processing-steps}}
-describes the exchange.
+An origin may need several kinds of evidence together. A WWW-Authenticate
+field may carry several challenges ({{Section 11.6.1 of HTTP}}), but that
+alone does not express that all must be satisfied rather than offering
+alternatives. Signaling cumulative requirements and carrying their responses
+remain open composition questions. {{processing-steps}} describes the intended
+exchange, without defining that composition.
 
 # Moderating access {#processing-steps}
 
@@ -600,7 +603,8 @@ Permission:
   a principal from a presentation.
 
 The two are not interchangeable in either direction, as {{capacity}}
-explains. An origin may need both and then asks for both. What it must not do
+explains. An origin may need both; how it signals that cumulative requirement
+remains open, as described in {{options}}. What it must not do
 is ask for more than the request needs, and the agent is free to decline any
 challenge. A public resource keeps serving the baseline, since that floor is
 what makes disclosure voluntary rather than coerced. A permissioned resource
@@ -615,7 +619,8 @@ challenge every request to a given path.
 ## Serving and charging {#serving}
 
 Having accepted or challenged, the origin serves the request at the level
-the accepted offer warrants and attaches an Update for each valid presentation
+the accepted offer warrants and, unless terminating the Credential chain as
+described in {{dynamics}}, attaches an Update for each valid presentation
 with the refund t it has chosen. If it wants the agent's next request
 moderated, it also attaches the next presentation Challenge, since no
 presentation is made without one. It records each presentation's result
@@ -633,19 +638,28 @@ presentation must prove against. An origin shapes a session in a few ways.
 
 * Pricing by request. Different request classes carry different spend
   amounts s, set by the Challenge the request answers, not by who sends it.
-* Rewarding behaviour. A request that completes normally is refunded in
-  full, so a well-behaved agent keeps its balance. One that trips an abuse
-  signal, fails authorization, or arrives in a burst is refunded partially or
-  not at all. Over a session the balance comes to reflect behaviour while the
-  origin never learns which agent it is.
+* Rewarding behaviour. A policy may refund a request that completes normally
+  in full, so the agent keeps its balance. A request that trips an abuse
+  signal or fails authorization may receive a partial or zero refund.
+  The balance then reflects those decisions without identifying the agent.
 * Topping up. A top-up a above zero lets the origin grow the balance of an
   agent it has come to trust, bootstrapping access from a cautious initial
   balance, and so accepting Anchors it trusts less.
 * Refreshing. A presentation with s and a both zero returns a Credential
   with a fresh nullifier and the same balance.
-* Ending the session. Declining to refund ends the Credential chain and
-  forfeits its balance. Retiring a credential context expires every
-  Credential issued under it. Both are revocation without identification.
+* Ending the session. Consuming the presentation without returning an Update
+  ends that Credential chain and forfeits its remaining balance. An Update
+  with a zero refund instead leaves a balance of c - s and does not necessarily
+  end the chain. Retiring a credential context expires every Credential
+  issued under it. Chain termination and context retirement are revocation
+  without identification.
+
+A policy that fully refunds successful requests does not bound their total
+consumption: an agent can repeat them without depleting its balance. Nor can
+the origin attribute a burst to one agent from unlinkable presentations alone.
+These policies describe behavior-based spending, not a per-user rate limit.
+Enforcing a per-user limit over time requires further policy and mechanisms
+that this document does not define.
 
 \[\[ Editor's note: there might be explicit sessions with delayed Update;
 this needs discussion. \]\]
