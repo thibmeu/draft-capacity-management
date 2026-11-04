@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
-<title>Attributable Platforms and Authorized Agents</title>
+<title>Anonymous Presentation for Proportionate Access</title>
 <meta content="Thibault Meunier" name="author">
 <meta content="
        Origins rate limit requests by address or by the platform they come through.
@@ -18,7 +18,7 @@ aggregate limits.
     " name="description">
 <meta content="xml2rfc 3.35.0" name="generator">
 <meta content="anonymous rate limiting" name="keyword">
-<meta content="draft-meunier-webbotauth-brian-latest" name="ietf.draft">
+<meta content="draft-meunier-webbotauth-appa-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.35.0
     Python 3.14.10
@@ -34,7 +34,7 @@ aggregate limits.
     requests 2.33.1
     wcwidth 0.9.4
 -->
-<link href="draft-meunier-webbotauth-brian.xml" rel="alternate" type="application/rfc+xml">
+<link href="draft-meunier-webbotauth-appa.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
 <style type="text/css">@font-face {
   font-family: 'Lora';
@@ -1047,7 +1047,7 @@ svg {
 <table class="ears">
 <thead><tr>
 <td class="left">Internet-Draft</td>
-<td class="center">Brian</td>
+<td class="center">APPA</td>
 <td class="right">November 2026</td>
 </tr></thead>
 <tfoot><tr>
@@ -1062,7 +1062,7 @@ svg {
 <dt class="label-workgroup">Workgroup:</dt>
 <dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
-<dd class="internet-draft">draft-meunier-webbotauth-brian-latest</dd>
+<dd class="internet-draft">draft-meunier-webbotauth-appa-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
 <time datetime="2026-11-04" class="published">4 November 2026</time>
@@ -1080,7 +1080,7 @@ svg {
 </dd>
 </dl>
 </div>
-<h1 id="title">Attributable Platforms and Authorized Agents</h1>
+<h1 id="title">Anonymous Presentation for Proportionate Access</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
 <p id="section-abstract-1">Origins rate limit requests by address or by the platform they come through.
@@ -1098,8 +1098,8 @@ aggregate limits.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
       </h2>
 <p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
 <p id="section-note.1-2">
-        The latest revision of this draft can be found at <span><a href="https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-brian.html">https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-brian.html</a></span>.
-        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-meunier-webbotauth-brian/">https://datatracker.ietf.org/doc/draft-meunier-webbotauth-brian/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+        The latest revision of this draft can be found at <span><a href="https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-appa.html">https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-appa.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-meunier-webbotauth-appa/">https://datatracker.ietf.org/doc/draft-meunier-webbotauth-appa/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
 <p id="section-note.1-3">Source for this draft and an issue tracker can be found at
         <span><a href="https://github.com/thibmeu/draft-brian">https://github.com/thibmeu/draft-brian</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
 </section>
@@ -1608,10 +1608,11 @@ coexist with anonymous moderation of the agents behind it.<a href="#section-4-2"
 <p id="section-4-3">An Anchor endorses a party at some layer: a user's agent, a workload, a
 tenant. That party, as MOLE Client, redeems its Endorsement for a Credential
 from the Moderator, then presents and updates that Credential on the requests
-it makes or forwards (<span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span>). The origin can apply a rate limit or spendable
-budget without linking the Credential's presentations. Where an intermediary
-identifies its forwarded traffic with Web Bot Auth, the origin can also limit
-that traffic in aggregate.<a href="#section-4-3" class="pilcrow">¶</a></p>
+it makes or forwards (<span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span>). The origin can apply a spendable
+budget without linking the Credential's presentations. Per-user rate
+enforcement requires further policy and mechanisms, as discussed in
+<a href="#dynamics" class="auto internal xref">Section 5.5</a>. Where an intermediary identifies its forwarded traffic with
+Web Bot Auth, the origin can also limit that traffic in aggregate.<a href="#section-4-3" class="pilcrow">¶</a></p>
 <p id="section-4-4">Each limit constrains a different party. The aggregate limit constrains the
 signer. It says nothing about an Anchor that is a different party. A workload
 budget confines shared fate to that workload rather than the whole platform.
@@ -1744,9 +1745,12 @@ scheme the origin uses for sessions.<a href="#section-4.1-4.16.1" class="pilcrow
 </dd>
         <dd class="break"></dd>
 </dl>
-<p id="section-4.1-5">An origin that needs more than one thing asks for more than one: a
-WWW-Authenticate field may carry several challenges (<span><a href="https://rfc-editor.org/rfc/rfc9110#section-11.6.1" class="relref">Section 11.6.1</a> of [<a href="#HTTP" class="cite xref">HTTP</a>]</span>), and an agent answers those it is willing to. <a href="#processing-steps" class="auto internal xref">Section 5</a>
-describes the exchange.<a href="#section-4.1-5" class="pilcrow">¶</a></p>
+<p id="section-4.1-5">An origin may need several kinds of evidence together. A WWW-Authenticate
+field may carry several challenges (<span><a href="https://rfc-editor.org/rfc/rfc9110#section-11.6.1" class="relref">Section 11.6.1</a> of [<a href="#HTTP" class="cite xref">HTTP</a>]</span>), but that
+alone does not express that all must be satisfied rather than offering
+alternatives. Signaling cumulative requirements and carrying their responses
+remain open composition questions. <a href="#processing-steps" class="auto internal xref">Section 5</a> describes the intended
+exchange, without defining that composition.<a href="#section-4.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1930,7 +1934,8 @@ a principal from a presentation.<a href="#section-5.3-2.4.1" class="pilcrow">¶<
         <dd class="break"></dd>
 </dl>
 <p id="section-5.3-3">The two are not interchangeable in either direction, as <a href="#capacity" class="auto internal xref">Section 3.1</a>
-explains. An origin may need both and then asks for both. What it must not do
+explains. An origin may need both; how it signals that cumulative requirement
+remains open, as described in <a href="#options" class="auto internal xref">Section 4.1</a>. What it must not do
 is ask for more than the request needs, and the agent is free to decline any
 challenge. A public resource keeps serving the baseline, since that floor is
 what makes disclosure voluntary rather than coerced. A permissioned resource
@@ -1948,7 +1953,8 @@ challenge every request to a given path.<a href="#section-5.3-4" class="pilcrow"
 <a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-serving-and-charging" class="section-name selfRef">Serving and charging</a>
         </h3>
 <p id="section-5.4-1">Having accepted or challenged, the origin serves the request at the level
-the accepted offer warrants and attaches an Update for each valid presentation
+the accepted offer warrants and, unless terminating the Credential chain as
+described in <a href="#dynamics" class="auto internal xref">Section 5.5</a>, attaches an Update for each valid presentation
 with the refund t it has chosen. If it wants the agent's next request
 moderated, it also attaches the next presentation Challenge, since no
 presentation is made without one. It records each presentation's result
@@ -1973,11 +1979,10 @@ presentation must prove against. An origin shapes a session in a few ways.<a hre
 amounts s, set by the Challenge the request answers, not by who sends it.<a href="#section-5.5-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-5.5-2.2">
-            <p id="section-5.5-2.2.1">Rewarding behaviour. A request that completes normally is refunded in
-full, so a well-behaved agent keeps its balance. One that trips an abuse
-signal, fails authorization, or arrives in a burst is refunded partially or
-not at all. Over a session the balance comes to reflect behaviour while the
-origin never learns which agent it is.<a href="#section-5.5-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-5.5-2.2.1">Rewarding behaviour. A policy may refund a request that completes normally
+in full, so the agent keeps its balance. A request that trips an abuse
+signal or fails authorization may receive a partial or zero refund.
+The balance then reflects those decisions without identifying the agent.<a href="#section-5.5-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-5.5-2.3">
             <p id="section-5.5-2.3.1">Topping up. A top-up a above zero lets the origin grow the balance of an
@@ -1989,13 +1994,22 @@ balance, and so accepting Anchors it trusts less.<a href="#section-5.5-2.3.1" cl
 with a fresh nullifier and the same balance.<a href="#section-5.5-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-5.5-2.5">
-            <p id="section-5.5-2.5.1">Ending the session. Declining to refund ends the Credential chain and
-forfeits its balance. Retiring a credential context expires every
-Credential issued under it. Both are revocation without identification.<a href="#section-5.5-2.5.1" class="pilcrow">¶</a></p>
+            <p id="section-5.5-2.5.1">Ending the session. Consuming the presentation without returning an Update
+ends that Credential chain and forfeits its remaining balance. An Update
+with a zero refund instead leaves a balance of c - s and does not necessarily
+end the chain. Retiring a credential context expires every Credential
+issued under it. Chain termination and context retirement are revocation
+without identification.<a href="#section-5.5-2.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-5.5-3">[[ Editor's note: there might be explicit sessions with delayed Update;
-this needs discussion. ]]<a href="#section-5.5-3" class="pilcrow">¶</a></p>
+<p id="section-5.5-3">A policy that fully refunds successful requests does not bound their total
+consumption: an agent can repeat them without depleting its balance. Nor can
+the origin attribute a burst to one agent from unlinkable presentations alone.
+These policies describe behavior-based spending, not a per-user rate limit.
+Enforcing a per-user limit over time requires further policy and mechanisms
+that this document does not define.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
+<p id="section-5.5-4">[[ Editor's note: there might be explicit sessions with delayed Update;
+this needs discussion. ]]<a href="#section-5.5-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="flow">
