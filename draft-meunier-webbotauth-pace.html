@@ -1516,48 +1516,52 @@ may be heavily rate limited and remains subject to available capacity and
 request behavior. Scarce endorsements can support access above that floor.
 Here, zero disclosure means no additional authentication signal. Ordinary
 HTTP and network metadata remain visible.<a href="#section-3-3" class="pilcrow">¶</a></p>
-<p id="section-3-4">Privacy partitioning <span>[<a href="#PRIVACY-PARTITIONING" class="cite xref">PRIVACY-PARTITIONING</a>]</span> provides the framing: separate
+<p id="section-3-4">This follows the guidance in <span><a href="https://datatracker.ietf.org/doc/html/draft-meunier-bcp-civil-00#section-3.4" class="relref">Section 3.4</a> of [<a href="#CIVIL" class="cite xref">CIVIL</a>]</span>: "Absence of an active
+signal does not itself establish abuse." Anonymous budgets and platform
+signatures provide active signals for graduated enforcement while preserving
+that baseline access.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-5">Privacy partitioning <span>[<a href="#PRIVACY-PARTITIONING" class="cite xref">PRIVACY-PARTITIONING</a>]</span> provides the framing: separate
 knowledge of who a user is from knowledge of what they do. An Anchor can use
 its relationship with a user to endorse an agent, while an origin evaluates
 consumption without learning that identity from the presentation. A provider
 that also forwards requests may see both. This separation is a privacy goal,
-not a guarantee against that provider or its collusion with the origin.<a href="#section-3-4" class="pilcrow">¶</a></p>
-<p id="section-3-5">Moderation granularity should follow differences in behavior. Shared fate
+not a guarantee against that provider or its collusion with the origin.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-6">Moderation granularity should follow differences in behavior. Shared fate
 within a workload may be acceptable while its agents behave alike. When one
 user's behavior causes unrelated users to be throttled, the noisy neighbour
 problem remains, even if its scope is smaller than a whole platform. Platforms
 and workloads can help origins moderate those smaller units without requiring
 stable identifiers for each of them. How to compose these limits remains an
-open question.<a href="#section-3-5" class="pilcrow">¶</a></p>
-<p id="section-3-6">Altogether, this leads to the following principles:<a href="#section-3-6" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-3-7">
-<li id="section-3-7.1">
-          <p id="section-3-7.1.1">A platform can identify itself to origins, using <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>, rather
+open question.<a href="#section-3-6" class="pilcrow">¶</a></p>
+<p id="section-3-7">Altogether, this leads to the following principles:<a href="#section-3-7" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-3-8">
+<li id="section-3-8.1">
+          <p id="section-3-8.1.1">A platform can identify itself to origins, using <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>, rather
 than leaving origins to infer a platform from IP addresses. Bots and bot
 workloads on the platform identify under that identity or under a
 per-tenant key. Bots elsewhere identify with their own <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>
-identity.<a href="#section-3-7.1.1" class="pilcrow">¶</a></p>
+identity.<a href="#section-3-8.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-3-7.2">
-          <p id="section-3-7.2.1">A platform helps origins moderate its tenants and their workloads. It is
+        <li id="section-3-8.2">
+          <p id="section-3-8.2.1">A platform helps origins moderate its tenants and their workloads. It is
 the natural Anchor for them, endorsing each tenant, each workload whose
 agents act for users, or both; where another Anchor endorses them
 instead, the platform lets their presentations through. The endorsed
 party exchanges its Endorsements for Credentials that the origin
 moderates. A tenant identifies itself or its workload only if asked, and
-with consent of the tenant.<a href="#section-3-7.2.1" class="pilcrow">¶</a></p>
+with consent of the tenant.<a href="#section-3-8.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-3-7.3">
-          <p id="section-3-7.3.1">A workload helps origins moderate its individual users. The user's agent
+        <li id="section-3-8.3">
+          <p id="section-3-8.3.1">A workload helps origins moderate its individual users. The user's agent
 presents a Credential derived from an Endorsement by the user's Anchor,
 and the workload lets that presentation reach the origin. The user's
 Anchor may be the tenant, but need not be. A user identifies themselves
-only if asked, and with consent.<a href="#section-3-7.3.1" class="pilcrow">¶</a></p>
+only if asked, and with consent.<a href="#section-3-8.3.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-3-8">Implementing these principles requires no new protocol mechanism. MOLE
+<p id="section-3-9">Implementing these principles requires no new protocol mechanism. MOLE
 <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span> and Web Bot Auth <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> exist and compose to
-authenticate a request with graduated disclosure of identifying information.<a href="#section-3-8" class="pilcrow">¶</a></p>
+authenticate a request with graduated disclosure of identifying information.<a href="#section-3-9" class="pilcrow">¶</a></p>
 <div id="capacity">
 <section id="section-3.1">
         <h3 id="name-capacity-and-identity">
@@ -2468,6 +2472,10 @@ applying capacity and behavior-based controls.<a href="#section-6.6-1" class="pi
 <dt id="BEARER">[BEARER]</dt>
       <dd>
 <span class="refAuthor">Jones, M.</span> and <span class="refAuthor">D. Hardt</span>, <span class="refTitle">"The OAuth 2.0 Authorization Framework: Bearer Token Usage"</span>, <span class="seriesInfo">RFC 6750</span>, <span class="seriesInfo">DOI 10.17487/RFC6750</span>, <time datetime="2012-10" class="refDate">October 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6750">https://www.rfc-editor.org/rfc/rfc6750</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="CIVIL">[CIVIL]</dt>
+      <dd>
+<span class="refAuthor">Meunier, T.</span> and <span class="refAuthor">K. Kelley</span>, <span class="refTitle">"Principles for Web Traffic Management by Intermediaries"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-meunier-bcp-civil-00</span>, <time datetime="2026-10-29" class="refDate">29 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-meunier-bcp-civil-00">https://datatracker.ietf.org/doc/html/draft-meunier-bcp-civil-00</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="CONNECT-IP">[CONNECT-IP]</dt>
       <dd>

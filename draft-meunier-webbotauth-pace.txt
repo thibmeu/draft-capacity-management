@@ -280,6 +280,11 @@ Table of Contents
    disclosure means no additional authentication signal.  Ordinary HTTP
    and network metadata remain visible.
 
+   This follows the guidance in Section 3.4 of [CIVIL]: "Absence of an
+   active signal does not itself establish abuse."  Anonymous budgets
+   and platform signatures provide active signals for graduated
+   enforcement while preserving that baseline access.
+
    Privacy partitioning [PRIVACY-PARTITIONING] provides the framing:
    separate knowledge of who a user is from knowledge of what they do.
    An Anchor can use its relationship with a user to endorse an agent,
@@ -1034,6 +1039,12 @@ Anchor       Agent      Intermediary (P)       Origin
               Framework: Bearer Token Usage", RFC 6750,
               DOI 10.17487/RFC6750, October 2012,
               <https://www.rfc-editor.org/rfc/rfc6750>.
+
+   [CIVIL]    Meunier, T. and K. Kelley, "Principles for Web Traffic
+              Management by Intermediaries", Work in Progress, Internet-
+              Draft, draft-meunier-bcp-civil-00, 29 October 2026,
+              <https://datatracker.ietf.org/doc/html/draft-meunier-bcp-
+              civil-00>.
 
    [CONNECT-IP]
               Pauly, T., Ed., Schinazi, D., Chernyakhovsky, A.,
