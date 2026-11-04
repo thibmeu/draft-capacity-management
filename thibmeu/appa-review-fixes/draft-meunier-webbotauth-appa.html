@@ -1,0 +1,2599 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Anonymous Presentation for Proportionate Access</title>
+<meta content="Thibault Meunier" name="author">
+<meta content="
+       Origins rate limit requests by address or by the platform they come through.
+Behind a shared platform, such as an AI agent service, a VPN, or a network
+operator, every user then shares the same fate. This document describes the
+problem of limiting consumption without requiring users or their agents to
+disclose a stable identifier. It sketches a direction in which Anchors
+endorse agents, origins authorize those agents through anonymous budgets
+rather than identities, and platforms identify themselves for separate
+aggregate limits. 
+    " name="description">
+<meta content="xml2rfc 3.35.0" name="generator">
+<meta content="anonymous rate limiting" name="keyword">
+<meta content="draft-meunier-webbotauth-appa-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.35.0
+    Python 3.14.10
+    ConfigArgParse 1.9.0
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.14.3
+    pycountry 24.6.1
+    PyYAML 6.0.3
+    requests 2.33.1
+    wcwidth 0.9.4
+-->
+<link href="draft-meunier-webbotauth-appa.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
+}
+svg {
+  display: block;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
+}
+.alignCenter {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+      float: none;
+    }
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a {
+  text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
+}
+.iref + a[href].internal {
+  color: var(--text-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
+  }
+  @media print {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+  & .prepared {
+    float: right;
+  }
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
+  }
+}
+
+/* Comments */
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
+      }
+    }
+    & a.toplink {
+      float: right;
+    }
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
+    }
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc {
+    page-break-before: always;
+    border-top: none;
+    padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">APPA</td>
+<td class="right">November 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Meunier</td>
+<td class="center">Expires 8 May 2027</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Network Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-meunier-webbotauth-appa-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-11-04" class="published">4 November 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Informational</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2027-05-08">8 May 2027</time></dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">T. Meunier</div>
+<div class="org">Cloudflare</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Anonymous Presentation for Proportionate Access</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">Origins rate limit requests by address or by the platform they come through.
+Behind a shared platform, such as an AI agent service, a VPN, or a network
+operator, every user then shares the same fate. This document describes the
+problem of limiting consumption without requiring users or their agents to
+disclose a stable identifier. It sketches a direction in which Anchors
+endorse agents, origins authorize those agents through anonymous budgets
+rather than identities, and platforms identify themselves for separate
+aggregate limits.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-about-this-document">
+<a href="#name-about-this-document" class="section-name selfRef">About This Document</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">
+        The latest revision of this draft can be found at <span><a href="https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-appa.html">https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-appa.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-meunier-webbotauth-appa/">https://datatracker.ietf.org/doc/draft-meunier-webbotauth-appa/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/thibmeu/draft-brian">https://github.com/thibmeu/draft-brian</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 8 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-motivating-use-cases" class="internal xref">Motivating use cases</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-related-work" class="internal xref">Related work</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-principles" class="internal xref">Principles</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-capacity-and-identity" class="internal xref">Capacity and identity</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-attribution-and-authorizati" class="internal xref">Attribution and authorization</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-disclosure-options" class="internal xref">Disclosure options</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-moderating-access" class="internal xref">Moderating access</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-agent-offer" class="internal xref">Agent offer</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-offer-acceptance" class="internal xref">Offer acceptance</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-offer-challenge" class="internal xref">Offer challenge</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="auto internal xref">5.4</a>.  <a href="#name-serving-and-charging" class="internal xref">Serving and charging</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.5">
+                <p id="section-toc.1-1.5.2.5.1"><a href="#section-5.5" class="auto internal xref">5.5</a>.  <a href="#name-shaping-a-budget-over-a-ses" class="internal xref">Shaping a budget over a session</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.6">
+                <p id="section-toc.1-1.5.2.6.1"><a href="#section-5.6" class="auto internal xref">5.6</a>.  <a href="#name-request-flow" class="internal xref">Request flow</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.7">
+                <p id="section-toc.1-1.5.2.7.1"><a href="#section-5.7" class="auto internal xref">5.7</a>.  <a href="#name-deployment-examples" class="internal xref">Deployment examples</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-provider-collusion-and-meta" class="internal xref">Provider collusion and metadata</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-anchor-issuance-and-trust" class="internal xref">Anchor issuance and trust</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-presentation-reuse-by-inter" class="internal xref">Presentation reuse by intermediaries</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.4">
+                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="auto internal xref">6.4</a>.  <a href="#name-binding-signatures-to-prese" class="internal xref">Binding signatures to presentations</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.5">
+                <p id="section-toc.1-1.6.2.5.1"><a href="#section-6.5" class="auto internal xref">6.5</a>.  <a href="#name-multiple-budgets-across-anc" class="internal xref">Multiple budgets across Anchors</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.6">
+                <p id="section-toc.1-1.6.2.6.1"><a href="#section-6.6" class="auto internal xref">6.6</a>.  <a href="#name-unsigned-requests" class="internal xref">Unsigned requests</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="intro">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">Agents are increasingly used in business and user workflows, including AI
+assistants, search indexing, content aggregation, and automated testing. Their
+relationship with origins is symbiotic. They need information from origins, and
+origins need signals to apply rate-limit policies. These can be binary, like
+allow or block when an origin cannot serve traffic, or resource-based to ensure
+fair access to everyone.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">Historically, most of these signals have been enshrined into deployments of
+internet protocols. An agent needs an IP address to receive a response from an
+origin. Its TLS stack and browser behavior provide further signals. It provides
+a familiar User-Agent because middleboxes might otherwise filter its traffic
+(see <span>[<a href="#USER-AGENT-HISTORY" class="cite xref">USER-AGENT-HISTORY</a>]</span>).<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">Recent developments break these patterns. Agents use proxies
+(<span>[<a href="#CONNECT-UDP" class="cite xref">CONNECT-UDP</a>]</span>, <span>[<a href="#CONNECT-IP" class="cite xref">CONNECT-IP</a>]</span>, <span>[<a href="#OHTTP" class="cite xref">OHTTP</a>]</span>, or plain <span>[<a href="#HTTP" class="cite xref">HTTP</a>]</span>).
+As platforms make requests on behalf of users, the user's TLS stack may no
+longer be the one visible to the origin. AI agents, on the user's device or
+hosted remotely, fetch and render information in place of browsers. User-Agent
+strings are still spoofed.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">Origins need to apply policy despite these changes. Many approaches rely on
+obtaining a stable identifier. An address, including an <span>[<a href="#IPv6" class="cite xref">IPv6</a>]</span> address, is not
+necessarily a user. Blocking a shared IP range can affect everyone behind it.
+In enterprise settings, an agent can identify as a workload <span>[<a href="#WIMSE-AIMS" class="cite xref">WIMSE-AIMS</a>]</span>.
+Platforms that can tolerate attribution can identify using <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>.
+Other approaches involve user authentication or authorization, such as <span>[<a href="#AAUTH" class="cite xref">AAUTH</a>]</span>
+and <span>[<a href="#OAUTH-XAA" class="cite xref">OAUTH-XAA</a>]</span>. <a href="#options" class="auto internal xref">Section 4.1</a> places these options side by side.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">While identification solves many problems, it should not be necessary just to
+limit an agent's consumption. The problem is to give origins that control
+without requiring users or their agents to disclose a stable identifier. This
+supports the user interests discussed in <span>[<a href="#INTERNET-FOR-END-USER" class="cite xref">INTERNET-FOR-END-USER</a>]</span>.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<div id="motivating-use-cases">
+<section id="section-1.1">
+        <h3 id="name-motivating-use-cases">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-motivating-use-cases" class="section-name selfRef">Motivating use cases</a>
+        </h3>
+<p id="section-1.1-1">In the cases below, traffic passes through platforms. Each user also has a
+relationship with some Anchor, often but not necessarily that platform, which
+can grant scarce Endorsements. Origins could use those to apply rate-limit
+policies without learning who the user is.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-1.1-2">
+<li id="section-1.1-2.1">
+            <p id="section-1.1-2.1.1">AI agent services host remote agents and concentrate their traffic on a
+small set of IP addresses. One user's activity can affect others when an
+origin can only limit the shared address or the platform as a whole.<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-1.1-2.2">
+            <p id="section-1.1-2.2.1">Network operators carry traffic from device-resident agents behind shared
+IP ranges. Policies applied to an address range or an entire ASN give these
+users a shared fate.<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-1.1-2.3">
+            <p id="section-1.1-2.3.1">VPN providers and enterprise ZTNA gateways have a noisy neighbour problem.
+They may know their users, but should not have to expose them to each
+origin. An origin able to tell employees apart could single out an
+executive's activity for instance.<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+</section>
+</div>
+<div id="related-work">
+<section id="section-1.2">
+        <h3 id="name-related-work">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-related-work" class="section-name selfRef">Related work</a>
+        </h3>
+<p id="section-1.2-1"><span>[<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span> shares the anonymous rate-limiting goal and the MOLE construction.
+This document is a companion to it. It focuses on platforms that already have
+a relationship with their users, and on composing with a platform's
+<span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> identity.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<p id="section-1.2-2">Poppy <span>[<a href="#POPPY" class="cite xref">POPPY</a>]</span> uses User IDs and sessions, including for anonymous browsing.
+<span>[<a href="#AAP" class="cite xref">AAP</a>]</span> uses anonymous admission tokens and recommends a session afterwards,
+though it also allows a fresh token per request. Here, the aim is to maintain a
+per-agent budget without linking its presentations.<a href="#section-1.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="terminology">
+<section id="section-2">
+      <h2 id="name-conventions-and-definitions">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
+      </h2>
+<p id="section-2-1">This document uses the HTTP terminology of <span>[<a href="#HTTP" class="cite xref">HTTP</a>]</span>, the MOLE terminology of
+<span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>, and the workload terminology of <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-wimse-arch-08#section-2" class="relref">Section 2</a> of [<a href="#WIMSE-ARCH" class="cite xref">WIMSE-ARCH</a>]</span>.
+For instance:<a href="#section-2-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-2-2">
+        <dt id="section-2-2.1">User agent:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.2">
+          <p id="section-2-2.2.1">A client program that initiates a request <span><a href="https://rfc-editor.org/rfc/rfc9110#section-3.5" class="relref">Section 3.5</a> of [<a href="#HTTP" class="cite xref">HTTP</a>]</span>.<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.3">Intermediary:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.4">
+          <p id="section-2-2.4.1">A proxy, gateway, or tunnel <span><a href="https://rfc-editor.org/rfc/rfc9110#section-3.7" class="relref">Section 3.7</a> of [<a href="#HTTP" class="cite xref">HTTP</a>]</span>.<a href="#section-2-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.5">Origin server:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.6">
+          <p id="section-2-2.6.1">A program that can originate authoritative responses for a target resource
+<span><a href="https://rfc-editor.org/rfc/rfc9110#section-3.6" class="relref">Section 3.6</a> of [<a href="#HTTP" class="cite xref">HTTP</a>]</span>.<a href="#section-2-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.7">Workload:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.8">
+          <p id="section-2-2.8.1">A logical software entity that may run as one or more workload instances
+<span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-wimse-arch-08#section-2" class="relref">Section 2</a> of [<a href="#WIMSE-ARCH" class="cite xref">WIMSE-ARCH</a>]</span>.<a href="#section-2-2.8.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.9">Platform:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.10">
+          <p id="section-2-2.10.1">A provider that hosts or carries traffic for agents.<a href="#section-2-2.10.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.11">Tenant:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.12">
+          <p id="section-2-2.12.1">A customer that deploys workloads on a platform.<a href="#section-2-2.12.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.13">User:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.14">
+          <p id="section-2-2.14.1">A person on whose behalf requests are made. A user has an existing
+relationship with an Anchor, such as an account, a subscription, or an
+employment contract.<a href="#section-2-2.14.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.15">Agent:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.16">
+          <p id="section-2-2.16.1">Software that makes requests for one user at a time, either on the user's
+device or as a remote agent within a tenant's workload on a platform.<a href="#section-2-2.16.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.17">Bot:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.18">
+          <p id="section-2-2.18.1">An agent with no user behind it, such as a crawler or a monitor, or a
+workload made of such agents. Having no user to shield, a bot identifies
+rather than being moderated anonymously.<a href="#section-2-2.18.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.19">Anchor:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.20">
+          <p id="section-2-2.20.1">The MOLE role that grants Endorsements to Clients <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>.<a href="#section-2-2.20.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.21">Moderator:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.22">
+          <p id="section-2-2.22.1">The MOLE role that issues Credentials and evaluates their presentations
+<span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>.<a href="#section-2-2.22.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.23">Client:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.24">
+          <p id="section-2-2.24.1">The MOLE role that redeems an Endorsement and presents the resulting
+Credential <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>. Which party plays it depends on the layer being
+moderated: a user's agent for MOLE(U), a workload or a component presenting
+on behalf of its agents for MOLE(W), a tenant for MOLE(T). This document
+uses the term only for that role.<a href="#section-2-2.24.1" class="pilcrow">¶</a></p>
+</dd>
+      <dd class="break"></dd>
+</dl>
+<p id="section-2-3">The parties above form a hierarchy of layers. <a href="#role-hierarchy" class="auto internal xref">Figure 1</a> shows the
+delineation. Anchors are not in it: an Anchor is a role that any party with
+a relationship to a layer can play.<a href="#section-2-3" class="pilcrow">¶</a></p>
+<span id="name-layers-of-the-hierarchy"></span><div id="role-hierarchy">
+<figure id="figure-1">
+        <div id="section-2-4.1">
+          <div class="alignLeft art-svg artwork" id="section-2-4.1.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="208" width="360" viewBox="0 0 360 208" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+              <path d="M 24,48 L 24,192" fill="none" stroke="black"></path>
+              <path d="M 72,80 L 72,160" fill="none" stroke="black"></path>
+              <path d="M 120,112 L 120,128" fill="none" stroke="black"></path>
+              <path d="M 24,64 L 40,64" fill="none" stroke="black"></path>
+              <path d="M 72,96 L 88,96" fill="none" stroke="black"></path>
+              <path d="M 120,128 L 136,128" fill="none" stroke="black"></path>
+              <path d="M 72,160 L 88,160" fill="none" stroke="black"></path>
+              <path d="M 24,192 L 40,192" fill="none" stroke="black"></path>
+              <g class="text">
+                <text x="36" y="36">Platform</text>
+                <text x="80" y="36">P</text>
+                <text x="76" y="68">Tenant</text>
+                <text x="112" y="68">T</text>
+                <text x="132" y="100">Workload</text>
+                <text x="176" y="100">W</text>
+                <text x="168" y="132">Agent</text>
+                <text x="204" y="132">A,</text>
+                <text x="244" y="132">acting</text>
+                <text x="288" y="132">for</text>
+                <text x="324" y="132">User</text>
+                <text x="352" y="132">U</text>
+                <text x="112" y="164">Bot</text>
+                <text x="164" y="164">workload</text>
+                <text x="208" y="164">B</text>
+                <text x="100" y="196">Intermediary</text>
+              </g>
+            </svg><a href="#section-2-4.1.1" class="pilcrow">¶</a>
+</div>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-layers-of-the-hierarchy" class="selfRef">Layers of the hierarchy</a>
+        </figcaption></figure>
+</div>
+<p id="section-2-5">This document also uses the following notation throughout.<a href="#section-2-5" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-2-6">
+        <dt id="section-2-6.1">Anchor X:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-6.2">
+          <p id="section-2-6.2.1">An Anchor that endorses parties at layer X. For example, Anchor T endorses
+tenants, Anchor W endorses workloads, and so on.<a href="#section-2-6.2.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-6.3">MOLE(X):</dt>
+        <dd style="margin-left: 1.5em" id="section-2-6.4">
+          <p id="section-2-6.4.1">A MOLE Credential (or a presentation of one) derived from an Endorsement by
+Anchor X. It lets an origin moderate one party at layer X among all the
+parties at that layer that share Anchor X, without distinguishing them.
+For example, MOLE(T) is a Credential over all tenants endorsed by Anchor T.<a href="#section-2-6.4.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-6.5">WBA(X):</dt>
+        <dd style="margin-left: 1.5em" id="section-2-6.6">
+          <p id="section-2-6.6.1">A <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> signature by entity X, such as a platform, over a
+request. It lets an origin attribute the request to X.<a href="#section-2-6.6.1" class="pilcrow">¶</a></p>
+</dd>
+      <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="principles">
+<section id="section-3">
+      <h2 id="name-principles">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-principles" class="section-name selfRef">Principles</a>
+      </h2>
+<p id="section-3-1">Finer-grained identity can give origins a finer-grained policy key, but it
+also introduces four problems.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-3-2">
+        <dt id="section-3-2.1">Security:</dt>
+        <dd style="margin-left: 1.5em" id="section-3-2.2">
+          <p id="section-3-2.2.1">An agent can spoof an unauthenticated identifier. Authenticating it
+establishes who supplied a request, not whether that request is harmless.<a href="#section-3-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-3-2.3">Equitability and scarcity:</dt>
+        <dd style="margin-left: 1.5em" id="section-3-2.4">
+          <p id="section-3-2.4.1">Origins need scarce budgets to keep agents from evading limits by starting
+over. Access to a trusted identity or an Anchor relationship is uneven,
+however. Scarcity based on those relationships cannot offer everyone the
+same opportunity to obtain a budget.<a href="#section-3-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-3-2.5">Privacy:</dt>
+        <dd style="margin-left: 1.5em" id="section-3-2.6">
+          <p id="section-3-2.6.1">A stable identifier lets origins correlate activity across requests,
+agents, and sessions, even when all they need is a limit on consumption.<a href="#section-3-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-3-2.7">Agency:</dt>
+        <dd style="margin-left: 1.5em" id="section-3-2.8">
+          <p id="section-3-2.8.1">Users should choose how much their agents disclose, from nothing through
+an anonymous Credential to a full identity (<a href="#options" class="auto internal xref">Section 4.1</a>). Requiring
+disclosure for any access to public content makes that choice a condition
+of participation.<a href="#section-3-2.8.1" class="pilcrow">¶</a></p>
+</dd>
+      <dd class="break"></dd>
+</dl>
+<p id="section-3-3">The design goal for public resources is therefore a baseline level of access
+without an identity, a platform signature, or a MOLE presentation. This floor
+may be heavily rate limited and remains subject to available capacity and
+request behavior. Scarce endorsements can support access above that floor.
+Here, zero disclosure means no additional authentication signal. Ordinary
+HTTP and network metadata remain visible.<a href="#section-3-3" class="pilcrow">¶</a></p>
+<p id="section-3-4">Privacy partitioning <span>[<a href="#PRIVACY-PARTITIONING" class="cite xref">PRIVACY-PARTITIONING</a>]</span> provides the framing: separate
+knowledge of who a user is from knowledge of what they do. An Anchor can use
+its relationship with a user to endorse an agent, while an origin evaluates
+consumption without learning that identity from the presentation. A provider
+that also forwards requests may see both. This separation is a privacy goal,
+not a guarantee against that provider or its collusion with the origin.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-5">Moderation granularity should follow differences in behavior. Shared fate
+within a workload may be acceptable while its agents behave alike. When one
+user's behavior causes unrelated users to be throttled, the noisy neighbour
+problem remains, even if its scope is smaller than a whole platform. Platforms
+and workloads can help origins moderate those smaller units without requiring
+stable identifiers for each of them. How to compose these limits remains an
+open question.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-6">Altogether, this leads to the following principles:<a href="#section-3-6" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-3-7">
+<li id="section-3-7.1">
+          <p id="section-3-7.1.1">A platform can identify itself to origins, using <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>, rather
+than leaving origins to infer a platform from IP addresses. Bots and bot
+workloads on the platform identify under that identity or under a
+per-tenant key. Bots elsewhere identify with their own <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>
+identity.<a href="#section-3-7.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-3-7.2">
+          <p id="section-3-7.2.1">A platform helps origins moderate its tenants and their workloads. It is
+the natural Anchor for them, endorsing each tenant, each workload whose
+agents act for users, or both; where another Anchor endorses them
+instead, the platform lets their presentations through. The endorsed
+party exchanges its Endorsements for Credentials that the origin
+moderates. A tenant identifies itself or its workload only if asked, and
+with consent of the tenant.<a href="#section-3-7.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-3-7.3">
+          <p id="section-3-7.3.1">A workload helps origins moderate its individual users. The user's agent
+presents a Credential derived from an Endorsement by the user's Anchor,
+and the workload lets that presentation reach the origin. The user's
+Anchor may be the tenant, but need not be. A user identifies themselves
+only if asked, and with consent.<a href="#section-3-7.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-3-8">Implementing these principles requires no new protocol mechanism. MOLE
+<span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span> and Web Bot Auth <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> exist and compose to
+authenticate a request with graduated disclosure of identifying information.<a href="#section-3-8" class="pilcrow">¶</a></p>
+<div id="capacity">
+<section id="section-3.1">
+        <h3 id="name-capacity-and-identity">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-capacity-and-identity" class="section-name selfRef">Capacity and identity</a>
+        </h3>
+<p id="section-3.1-1">Capacity control and permission answer different questions. For a public
+resource, knowing an agent's identity does not establish how much it should
+consume or replace an anonymous budget. For a permissioned resource, a MOLE
+budget does not establish the principal or permissions needed for access.
+An origin can require a principal's identity or an authorization grant for
+such a resource and apply capacity limits as well. The public-access floor
+does not grant access to permissioned resources. Both are authorization
+decisions in the sense of <a href="#system" class="auto internal xref">Section 4</a>; they differ in what the origin needs to
+know to make them.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.1-2">The two are not interchangeable in either direction. Demanding identity on a
+public resource is the coerced disclosure that the agency principle warns
+against, and hands the origin a linkable key it did not need. An origin may
+need both, for instance a permissioned API that also wants a per-user budget,
+and then asks for both. The HTTP transport for MOLE <span>[<a href="#MOLE-HTTP" class="cite xref">MOLE-HTTP</a>]</span> marks the
+difference: a Challenge on a 401 response means a presentation is required,
+and a Challenge on a 200 response means it is optional and would, for
+instance, raise a limit.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="system">
+<section id="section-4">
+      <h2 id="name-attribution-and-authorizati">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-attribution-and-authorizati" class="section-name selfRef">Attribution and authorization</a>
+      </h2>
+<p id="section-4-1">Authorization, in this document, is an origin's decision to serve a request,
+and on what terms. It is a spectrum rather than a binary. At one end the
+origin knows nothing about the requester and serves a baseline. In the middle
+it knows that the request draws on a scarce, anonymous budget whose balance
+reflects past behaviour: a private reputation. At the other end it knows a
+principal and the permissions granted to it. Attribution of the platform that
+carried the request is a separate axis, and can accompany any of these.
+<a href="#options" class="auto internal xref">Section 4.1</a> describes the options and the parameters that distinguish them;
+the rest of the document is about how an origin asks, one request at a time.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">A platform can identify itself to origins using <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>, rather than
+leaving origins to infer a platform from IP addresses. Whether a party
+identifies depends on whether it can tolerate attribution. Concentrated
+traffic from one operator, such as a crawler or a hosting platform, usually
+can. Traffic distributed across users, from a person or from an agent acting
+for one, usually cannot, whatever software sends it. This attribution can
+coexist with anonymous moderation of the agents behind it.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-3">An Anchor endorses a party at some layer: a user's agent, a workload, a
+tenant. That party, as MOLE Client, redeems its Endorsement for a Credential
+from the Moderator, then presents and updates that Credential on the requests
+it makes or forwards (<span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span>). The origin can apply a spendable
+budget without linking the Credential's presentations. Per-user rate
+enforcement requires further policy and mechanisms, as discussed in
+<a href="#dynamics" class="auto internal xref">Section 5.5</a>. Where an intermediary identifies its forwarded traffic with
+Web Bot Auth, the origin can also limit that traffic in aggregate.<a href="#section-4-3" class="pilcrow">¶</a></p>
+<p id="section-4-4">Each limit constrains a different party. The aggregate limit constrains the
+signer. It says nothing about an Anchor that is a different party. A workload
+budget confines shared fate to that workload rather than the whole platform.
+A user budget gives fairness among an honest Anchor's users. An exhausted
+aggregate budget still affects everyone sharing it.<a href="#section-4-4" class="pilcrow">¶</a></p>
+<p id="section-4-5">The Anchor limits how many Endorsements it grants, based on a relationship
+that is costly to duplicate. The origin chooses which Anchors it accepts.
+An origin that accepts an Anchor it cannot evaluate is trusting it with the
+scarcity of its own budgets.<a href="#section-4-5" class="pilcrow">¶</a></p>
+<div id="options">
+<section id="section-4.1">
+        <h3 id="name-disclosure-options">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-disclosure-options" class="section-name selfRef">Disclosure options</a>
+        </h3>
+<p id="section-4.1-1">What an agent offers, and what an origin asks for, differs along four
+parameters. They are what an origin weighs when it decides what to ask for,
+and what an agent weighs when it decides what to offer.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-4.1-2">
+          <dt id="section-4.1-2.1">Principal type:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-2.2">
+            <p id="section-4.1-2.2.1">None, carrier, anonymous set member, workload, or user. This decides who
+bears the consequences of the origin's decision and whether a person is
+exposed at all. A carrier can be held to an aggregate; a set member can
+only be charged against a budget; a workload or user can be held to
+terms, and a user can be harmed by what the origin records.<a href="#section-4.1-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-2.3">Linkability:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-2.4">
+            <p id="section-4.1-2.4.1">None, per session, or per principal. With none, the origin must decide
+each request on what that request carries, which is why a MOLE balance
+carries history for it. Per session lets it see a task unfold. Per
+principal lets it build a profile, which is the capability the privacy
+principle warns against when it is not needed.<a href="#section-4.1-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-2.5">What is conveyed:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-2.6">
+            <p id="section-4.1-2.6.1">The existence of a budget, an identity, or permissions with scopes and
+claims. A budget answers only how much; an identity answers who, and
+gives recourse; permissions answer what may be done. None substitutes for
+another. A permissioned resource that receives only a budget has no
+principal to grant access to, and a public resource that receives an
+identity has a linkable key it did not need (<a href="#capacity" class="auto internal xref">Section 3.1</a>).<a href="#section-4.1-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-2.7">Who vouches:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-2.8">
+            <p id="section-4.1-2.8.1">Nobody, the signer itself, an Anchor hidden in a set, the platform's
+Workload Identity Provider, an authorization server, or an identity
+provider. This decides whom the origin must trust and configure, and what
+recourse it has: an Anchor Set it curates and can drop members from, a
+Workload Identity Provider registration it can revoke, an authorization
+server or identity provider it federates with, or, for a signer, only the
+signer's own key directory.<a href="#section-4.1-2.8.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-4.1-3">The authorization options available today offer different tradeoffs along these
+parameters. Each tells the origin a different property, is asked for differently,
+and has different consequences for the party it concerns. A request may carry
+several at once.<a href="#section-4.1-3" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-4.1-4">
+          <dt id="section-4.1-4.1">Nothing:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-4.2">
+            <p id="section-4.1-4.2.1">A bare request. The origin learns nothing beyond network and HTTP
+metadata and serves the baseline of <a href="#principles" class="auto internal xref">Section 3</a>. Nothing is asked for.<a href="#section-4.1-4.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-4.3">Attribution:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-4.4">
+            <p id="section-4.1-4.4.1">WBA(X), a <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> signature by the platform or bot that sent the
+request. The origin learns who carried the request and can hold that party
+to an aggregate limit or send it abuse reports. It learns nothing about the
+agent, tenant, or user behind the signer. Asked for with the
+Accept-Signature field of <span>[<a href="#HTTPSIG" class="cite xref">HTTPSIG</a>]</span>; a signature is offered
+opportunistically and cannot be compelled.<a href="#section-4.1-4.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-4.5">Anonymous budget:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-4.6">
+            <p id="section-4.1-4.6.1">MOLE(X), a Credential presentation at tenant, workload, or user grain. The
+origin learns that one member of Anchor X's set has budget left, and the
+balance carries that member's history with this origin into every later
+request (<a href="#dynamics" class="auto internal xref">Section 5.5</a>). It cannot tell which member, nor link two
+presentations. Asked for with the Mole challenge of <span>[<a href="#MOLE-HTTP" class="cite xref">MOLE-HTTP</a>]</span>.<a href="#section-4.1-4.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-4.7">Workload identity:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-4.8">
+            <p id="section-4.1-4.8.1">WBA(T) for a tenant signing with its own key, or a workload identity such
+as <span>[<a href="#WIMSE-AIMS" class="cite xref">WIMSE-AIMS</a>]</span>. The origin learns which software is acting, stably
+across that workload's requests, and nothing about its users. Asked for
+with Accept-Signature or the workload's own authentication scheme.<a href="#section-4.1-4.8.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-4.9">Workload authorization grant:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-4.10">
+            <p id="section-4.1-4.10.1">An access token obtained by the workload for itself, as in <span>[<a href="#WAG" class="cite xref">WAG</a>]</span>: the
+platform's Workload Identity Provider signs an assertion naming the
+workload by an opaque, never-reassigned identifier, optionally with scopes
+and claims such as a tenant, and the origin's authorization server
+exchanges it for a token. The origin learns a stable workload identifier
+and what that workload may do. No user is involved. Asked for with a
+Bearer challenge <span>[<a href="#BEARER" class="cite xref">BEARER</a>]</span> that points at the origin's protected resource
+metadata <span>[<a href="#OAUTH-RS-META" class="cite xref">OAUTH-RS-META</a>]</span>.<a href="#section-4.1-4.10.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-4.11">User-delegated grant:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-4.12">
+            <p id="section-4.1-4.12.1">An access token obtained on a user's behalf through a delegation flow such
+as <span>[<a href="#OAUTH-XAA" class="cite xref">OAUTH-XAA</a>]</span> or <span>[<a href="#AAUTH" class="cite xref">AAUTH</a>]</span> <span>[<a href="#OAUTH" class="cite xref">OAUTH</a>]</span>. The origin learns a subject and the
+permissions that user consented to, with the agent as the actor. Asked for
+with the same Bearer challenge; where a token is present but too weak,
+<span>[<a href="#STEPUP" class="cite xref">STEPUP</a>]</span> names what is missing.<a href="#section-4.1-4.12.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-4.13">User identity:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-4.14">
+            <p id="section-4.1-4.14.1">An authenticated person, through <span>[<a href="#OIDC" class="cite xref">OIDC</a>]</span> or the origin's own accounts. The
+origin learns who. Asked for with the origin's login.<a href="#section-4.1-4.14.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-4.15">Session:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-4.16">
+            <p id="section-4.1-4.16.1">A session identifier, as in <span>[<a href="#POPPY" class="cite xref">POPPY</a>]</span> or <span>[<a href="#AAP" class="cite xref">AAP</a>]</span>, added to any of the
+above. It changes nothing about who is known or vouched for; it lets the
+origin join every request in the session together. Established by whatever
+scheme the origin uses for sessions.<a href="#section-4.1-4.16.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-4.1-5">An origin may need several kinds of evidence together. A WWW-Authenticate
+field may carry several challenges (<span><a href="https://rfc-editor.org/rfc/rfc9110#section-11.6.1" class="relref">Section 11.6.1</a> of [<a href="#HTTP" class="cite xref">HTTP</a>]</span>), but that
+alone does not express that all must be satisfied rather than offering
+alternatives. Signaling cumulative requirements and carrying their responses
+remain open composition questions. <a href="#processing-steps" class="auto internal xref">Section 5</a> describes the intended
+exchange, without defining that composition.<a href="#section-4.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="processing-steps">
+<section id="section-5">
+      <h2 id="name-moderating-access">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-moderating-access" class="section-name selfRef">Moderating access</a>
+      </h2>
+<p id="section-5-1">In practice, agentic stacks differ in many ways:<a href="#section-5-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5-2.1">
+          <p id="section-5-2.1.1">how many users, agents, workloads, tenants, and platforms there are, and
+how they are arranged;<a href="#section-5-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-2.2">
+          <p id="section-5-2.2.1">who signs, who endorses, and how many intermediaries sit on the path; and<a href="#section-5-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-5-2.3">
+          <p id="section-5-2.3.1">whether the agent runs on the user's device or on a platform.<a href="#section-5-2.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-5-3">By default, none of this is known to the origin that is moderating access to
+its resources, and none of it needs to be. The origin sees a request that
+discloses some of the options of <a href="#options" class="auto internal xref">Section 4.1</a>. It can moderate on that basis, or
+challenge for more.<a href="#section-5-3" class="pilcrow">¶</a></p>
+<p id="section-5-4">This is what lets one implementation serve many scenarios. An origin does not
+configure itself per platform or per topology. It configures a Moderator
+policy, including an Anchor Set, one or more credential contexts, and the
+amounts it charges and refunds, together with whatever authentication schemes
+its permissioned resources use. Everything else follows from the exchange on
+each request: the agent offers what it is willing to disclose, the origin
+accepts the offer if it is enough for what this request needs, and otherwise
+challenges for more. What it challenges for depends on the need, not on the
+topology behind the request. The protocol exchanges and HTTP carriage for the
+anonymous budget are defined in <span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span> and <span>[<a href="#MOLE-HTTP" class="cite xref">MOLE-HTTP</a>]</span>; the
+subsections below describe the exchange, and <a href="#flow" class="auto internal xref">Section 5.6</a> walks through one.<a href="#section-5-4" class="pilcrow">¶</a></p>
+<div id="offers">
+<section id="section-5.1">
+        <h3 id="name-agent-offer">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-agent-offer" class="section-name selfRef">Agent offer</a>
+        </h3>
+<p id="section-5.1-1">A request carries some combination of the following, any of which may be
+absent.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-5.1-2">
+          <dt id="section-5.1-2.1">Nothing:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.1-2.2">
+            <p id="section-5.1-2.2.1">A bare request. This is the zero-disclosure baseline that every origin
+serves at some level, possibly heavily rate limited.<a href="#section-5.1-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.1-2.3">A signature:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.1-2.4">
+            <p id="section-5.1-2.4.1">A <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> signature from a platform or bot operator. It is offered
+opportunistically. A platform adds one if it has one to add; a
+device-resident agent connecting directly has none to offer. It discloses
+the signer, not the agent, tenant, or user.<a href="#section-5.1-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.1-2.5">A MOLE presentation:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.1-2.6">
+            <p id="section-5.1-2.6.1">Proof that the agent holds a Credential whose balance covers the spend the
+origin asked for, at tenant, workload, or user grain, or several. It discloses
+nothing about who, only that a budget exists and is being spent. It is
+offered only in answer to a presentation Challenge.<a href="#section-5.1-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.1-2.7">A CredentialRequest:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.1-2.8">
+            <p id="section-5.1-2.8.1">A Redemption of an Endorsement from some Anchor in the Anchor Set, with a
+request for a Credential. It discloses membership of the set, not the
+Anchor. It is offered only in answer to a redemption Challenge.<a href="#section-5.1-2.8.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.1-2.9">A session, a workload identity, a grant, or a user identity:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.1-2.10">
+            <p id="section-5.1-2.10.1">The remaining options of <a href="#options" class="auto internal xref">Section 4.1</a>: a session identifier; a workload identity
+such as <span>[<a href="#WIMSE-AIMS" class="cite xref">WIMSE-AIMS</a>]</span> or a tenant identifying its workload; an access token
+obtained on the user's behalf through <span>[<a href="#OAUTH-XAA" class="cite xref">OAUTH-XAA</a>]</span> or <span>[<a href="#AAUTH" class="cite xref">AAUTH</a>]</span>; or an
+authenticated user. Each is offered only when asked, and with the consent
+of the party it identifies, as <a href="#principles" class="auto internal xref">Section 3</a> requires. For a grant, that
+consent is given at the authorization server when the user delegates; for
+a workload identity, by the tenant.<a href="#section-5.1-2.10.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="accepting">
+<section id="section-5.2">
+        <h3 id="name-offer-acceptance">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-offer-acceptance" class="section-name selfRef">Offer acceptance</a>
+        </h3>
+<p id="section-5.2-1">The origin first verifies what was offered, then decides whether it is
+enough.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-5.2-2">
+<li id="section-5.2-2.1">
+            <p id="section-5.2-2.1.1">A signature, if present, is verified. A valid one attributes the request
+to its signer and places it under that signer's aggregate limit. An absent
+or invalid signature leaves the request unattributed, under whatever
+address-based limit the origin applied before. This is not a failure. An
+origin can ask for a signature with the Accept-Signature field of
+<span>[<a href="#HTTPSIG" class="cite xref">HTTPSIG</a>]</span>, but cannot count on receiving one. When a signature and a
+presentation arrive together, the signature is expected to cover the
+field carrying the presentation, so that the signer is accountable for
+the pairing; see <a href="#security" class="auto internal xref">Section 6</a>.<a href="#section-5.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.2-2.2">
+            <p id="section-5.2-2.2.1">A CredentialRequest, if present, is the answer to a redemption Challenge.
+The origin verifies the Redemption against the Anchor Set, checks the
+Endorsement's nullifier has not been redeemed, chooses the initial balance
+from policy, records the nullifier, and returns a Credential. This
+exchange yields a Credential, not content.<a href="#section-5.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.2-2.3">
+            <p id="section-5.2-2.3.1">A presentation, if present, is the answer to a presentation Challenge.
+The origin determines which Challenge from the credential context and the
+request, confirms the key and context are current, rejects a replayed
+nullifier, checks the spend and top-up match the Challenge, and verifies
+the proof and the predicate that the balance covers the spend. A failed
+presentation is treated as not offered. Whenever an intermediary is on
+the path, the Moderator uses the request-bound profile of
+<span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span>, with a request context that covers the method, the
+target, and the body, so that a presentation seen in transit cannot be
+attached to a different request; see <a href="#security" class="auto internal xref">Section 6</a>.<a href="#section-5.2-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.2-2.4">
+            <p id="section-5.2-2.4.1">A session, workload identity, grant, or user identity, if present, is
+verified by the scheme that carried it: the token's issuer and scope for
+a grant, the workload's authentication for a workload identity, the
+origin's own account system for a user.<a href="#section-5.2-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-5.2-3">The offer is enough when it covers what the request class needs. For most
+content, the origin needs only to manage capacity and keep users from
+affecting one another, and a valid presentation at the grain it cares about
+is enough. For a request that nothing in the offer covers, the origin serves
+the baseline, which may be very little, and challenges.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="challenging">
+<section id="section-5.3">
+        <h3 id="name-offer-challenge">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-offer-challenge" class="section-name selfRef">Offer challenge</a>
+        </h3>
+<p id="section-5.3-1">The challenge names what the origin needs. Two needs are distinct, and the
+origin asks for the one it has.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-5.3-2">
+          <dt id="section-5.3-2.1">Capacity:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.3-2.2">
+            <p id="section-5.3-2.2.1">The origin needs to limit consumption per workload or per user without
+knowing who they are. It challenges for MOLE. Because it cannot tell
+whether the agent lacks a Credential or merely did not present one, it
+issues both Challenges together: a redemption Challenge carrying a
+redemption context that names the Moderator, its policy, and a time
+window, and a presentation Challenge carrying the credential context and
+the terms of a presentation, spend s and top-up a. An agent with an Endorsement
+but no Credential answers the first and then the second. An agent with a
+Credential answers the second. An agent with neither keeps receiving the
+baseline. The origin challenges at the level of granularity it wants:
+tenant, workload, user, or several, and may offer several endorsement or credential
+types at once; the agent ignores types it does not support and answers
+one it does.<a href="#section-5.3-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.3-2.3">Permission:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.3-2.4">
+            <p id="section-5.3-2.4.1">The origin needs a principal, because the resource is permissioned: an
+account-bound action, a paid API, a resource with per-principal access
+control. It challenges for the option of <a href="#options" class="auto internal xref">Section 4.1</a> that establishes that
+principal. For an API the user has delegated access to, that is a Bearer
+challenge <span>[<a href="#BEARER" class="cite xref">BEARER</a>]</span> naming the resource metadata <span>[<a href="#OAUTH-RS-META" class="cite xref">OAUTH-RS-META</a>]</span> from
+which the agent learns the authorization server, and the agent obtains a
+token there through <span>[<a href="#OAUTH-XAA" class="cite xref">OAUTH-XAA</a>]</span> or <span>[<a href="#AAUTH" class="cite xref">AAUTH</a>]</span>; where a token is present but
+too weak, <span>[<a href="#STEPUP" class="cite xref">STEPUP</a>]</span> names what is missing. For a resource restricted to
+known workloads, it is the workload's authentication scheme, such as
+<span>[<a href="#WIMSE-AIMS" class="cite xref">WIMSE-AIMS</a>]</span>. For an account, it is the origin's login. MOLE does not
+satisfy this need, and the origin should not pretend it does by inferring
+a principal from a presentation.<a href="#section-5.3-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-5.3-3">The two are not interchangeable in either direction, as <a href="#capacity" class="auto internal xref">Section 3.1</a>
+explains. An origin may need both; how it signals that cumulative requirement
+remains open, as described in <a href="#options" class="auto internal xref">Section 4.1</a>. What it must not do
+is ask for more than the request needs, and the agent is free to decline any
+challenge. A public resource keeps serving the baseline, since that floor is
+what makes disclosure voluntary rather than coerced. A permissioned resource
+has no public floor and may refuse.<a href="#section-5.3-3" class="pilcrow">¶</a></p>
+<p id="section-5.3-4">The challenge is interactive. The origin asks in response to a specific
+request, and the agent answers on the request that follows. Nothing is
+published in advance, and the origin chooses when, and of whom, to ask. An
+origin that sees nothing of concern may never challenge. One under load may
+challenge every request to a given path.<a href="#section-5.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="serving">
+<section id="section-5.4">
+        <h3 id="name-serving-and-charging">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-serving-and-charging" class="section-name selfRef">Serving and charging</a>
+        </h3>
+<p id="section-5.4-1">Having accepted or challenged, the origin serves the request at the level
+the accepted offer warrants and, unless terminating the Credential chain as
+described in <a href="#dynamics" class="auto internal xref">Section 5.5</a>, attaches an Update for each valid presentation
+with the refund t it has chosen. If it wants the agent's next request
+moderated, it also attaches the next presentation Challenge, since no
+presentation is made without one. It records each presentation's result
+atomically so a retry returns the same result and a copy of the Credential
+is refused.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="dynamics">
+<section id="section-5.5">
+        <h3 id="name-shaping-a-budget-over-a-ses">
+<a href="#section-5.5" class="section-number selfRef">5.5. </a><a href="#name-shaping-a-budget-over-a-ses" class="section-name selfRef">Shaping a budget over a session</a>
+        </h3>
+<p id="section-5.5-1">A Credential's hidden balance is what makes the anonymous budget a reputation
+rather than a counter. The chain of Credentials that descends from one Redeem
+and Issue is, from the agent's point of view, a session with the origin. The
+origin cannot link the presentations in that chain to each other, but the
+consequences of each request are written into the balance that the next
+presentation must prove against. An origin shapes a session in a few ways.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.5-2.1">
+            <p id="section-5.5-2.1.1">Pricing by request. Different request classes carry different spend
+amounts s, set by the Challenge the request answers, not by who sends it.<a href="#section-5.5-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-2.2">
+            <p id="section-5.5-2.2.1">Rewarding behaviour. A policy may refund a request that completes normally
+in full, so the agent keeps its balance. A request that trips an abuse
+signal or fails authorization may receive a partial or zero refund.
+The balance then reflects those decisions without identifying the agent.<a href="#section-5.5-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-2.3">
+            <p id="section-5.5-2.3.1">Topping up. A top-up a above zero lets the origin grow the balance of an
+agent it has come to trust, bootstrapping access from a cautious initial
+balance, and so accepting Anchors it trusts less.<a href="#section-5.5-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-2.4">
+            <p id="section-5.5-2.4.1">Refreshing. A presentation with s and a both zero returns a Credential
+with a fresh nullifier and the same balance.<a href="#section-5.5-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-2.5">
+            <p id="section-5.5-2.5.1">Ending the session. Consuming the presentation without returning an Update
+ends that Credential chain and forfeits its remaining balance. An Update
+with a zero refund instead leaves a balance of c - s and does not necessarily
+end the chain. Retiring a credential context expires every Credential
+issued under it. Chain termination and context retirement are revocation
+without identification.<a href="#section-5.5-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-5.5-3">A policy that fully refunds successful requests does not bound their total
+consumption: an agent can repeat them without depleting its balance. Nor can
+the origin attribute a burst to one agent from unlinkable presentations alone.
+These policies describe behavior-based spending, not a per-user rate limit.
+Enforcing a per-user limit over time requires further policy and mechanisms
+that this document does not define.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
+<p id="section-5.5-4">[[ Editor's note: there might be explicit sessions with delayed Update;
+this needs discussion. ]]<a href="#section-5.5-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="flow">
+<section id="section-5.6">
+        <h3 id="name-request-flow">
+<a href="#section-5.6" class="section-number selfRef">5.6. </a><a href="#name-request-flow" class="section-name selfRef">Request flow</a>
+        </h3>
+<p id="section-5.6-1"><a href="#sequence" class="auto internal xref">Figure 2</a> shows the exchange of <a href="#processing-steps" class="auto internal xref">Section 5</a> for an origin that
+needs a fair share and an agent that offers nothing, behind an intermediary
+that adds its platform's signature, as a request moves from a remote agent
+through that intermediary to an origin's Moderator. The exchanges follow <span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span> (the message names
+below are those of that document).<a href="#section-5.6-1" class="pilcrow">¶</a></p>
+<span id="name-a-request-moving-through-th"></span><div id="sequence">
+<figure id="figure-2">
+          <div class="alignLeft art-text artwork" id="section-5.6-2.1">
+<pre>
+Anchor       Agent      Intermediary (P)       Origin
+  |            |                   |              (Moderator)
+  | Endorsement|                   |                 |
+  |-----------&gt;|                   |                 |
+  |            |                   |                 |
+  |            | (1) request, no presentation        |
+  |            |------------------&gt;| add WBA(P)      |
+  |            |                   |----------------&gt;| verify WBA(P),
+  |            |                   |                 | aggregate limit
+  |            | (2) baseline response + Challenges  |
+  |            |&lt;------------------|&lt;----------------|
+  |            |   redemption: redemption_context    |
+  |            |   presentation: spend s, top-up a   |
+  |            |                   |                 |
+  |            | (3) CredentialRequest               |
+  |            |------------------&gt;|----------------&gt;| verify Redemption
+  |            |   Redemption over Anchor Set        | over Anchor Set,
+  |            |   + IssuanceRequest                 | check nullifier,
+  |            |                   |                 | balance c, record
+  |            | (4) CredentialResponse              |
+  |            |&lt;------------------|&lt;----------------|
+  |            | Credential (c)    |                 |
+  |            |                   |                 |
+  |            | (5) request + Presentation(s, a)    |
+  |            |------------------&gt;| add WBA(P)      |
+  |            |                   |----------------&gt;| verify WBA(P),
+  |            |                   |                 | aggregate limit;
+  |            |                   |                 | nullifier lookup;
+  |            |                   |                 | VerifySpend:
+  |            |                   |                 |  proof, c &gt;= s;
+  |            |                   |                 | choose refund t;
+  |            |                   |                 | record; serve
+  |            | (6) response + Update + Challenge   |
+  |            |&lt;------------------|&lt;----------------|
+  |            | Credential (c-s+t)|                 |
+  |            |                   |                 |
+  |            | (7) repeat from (5), answering each Challenge
+</pre>
+</div>
+<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
+<a href="#name-a-request-moving-through-th" class="selfRef">A request moving through the system</a>
+          </figcaption></figure>
+</div>
+<ol start="1" type="1" class="normal type-1" id="section-5.6-3">
+<li id="section-5.6-3.1">
+            <p id="section-5.6-3.1.1">The agent sends a request with no presentation. The intermediary adds the
+platform's <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> signature and forwards it.<a href="#section-5.6-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.6-3.2">
+            <p id="section-5.6-3.2.1">The origin verifies the signature, if there is one, attributes the request
+to the platform, and applies its aggregate limit. Finding no presentation,
+and wanting this request class moderated, it serves the baseline level of
+access, possibly heavily rate limited, and issues both Challenges. The
+redemption Challenge carries a redemption context that names the Moderator,
+its policy, and a time window. The presentation Challenge carries the
+credential context and the terms of a presentation: a spend amount s and
+a maximum top-up a. Because the baseline was served, the Challenges travel
+on a 200 response and are optional.<a href="#section-5.6-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.6-3.3">
+            <p id="section-5.6-3.3.1">The agent has no Credential for this Moderator, so it answers the
+redemption Challenge first. It fetches the Moderator's configuration from
+the Redeem and Issue endpoint, which lists the Anchor Set, and sends a
+CredentialRequest to that endpoint: a Redemption that proves its
+Endorsement comes from some Anchor in the set, without revealing which,
+and an IssuanceRequest for a Credential.<a href="#section-5.6-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.6-3.4">
+            <p id="section-5.6-3.4.1">The origin verifies the Redemption, checks that the Endorsement's
+nullifier has not been redeemed before, chooses an initial balance c
+according to its policy, records the nullifier, and returns a
+CredentialResponse. The agent finalizes it into a Credential with hidden
+balance c.<a href="#section-5.6-3.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.6-3.5">
+            <p id="section-5.6-3.5.1">The agent now answers the presentation Challenge. It repeats the request
+with a Presentation that proves its balance covers the spend amount s
+without revealing the balance, and includes a request for a top-up of at
+most a. The intermediary signs as before, if there is one.<a href="#section-5.6-3.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.6-3.6">
+            <p id="section-5.6-3.6.1">The origin verifies the signature, if any, and applies the aggregate
+limit as in step 2. It then looks up the presentation's nullifier to reject a replay,
+verifies the proof and the predicate that the balance is at least s,
+chooses a refund t between 0 and s + a, records the result under the
+nullifier, and serves the request. The response carries an Update with
+the refund, and a new presentation Challenge for the agent's next
+request. The agent finalizes the Update into a fresh Credential with
+balance c - s + t.<a href="#section-5.6-3.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.6-3.7">
+            <p id="section-5.6-3.7.1">Subsequent requests repeat from step 5, each answering the Challenge
+carried on the previous response. Each presentation uses a fresh
+nullifier, so the origin cannot link one request to the next.<a href="#section-5.6-3.7.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-5.6-4">Every presentation answers a Challenge. An agent never presents unprompted,
+and a presentation that answers no Challenge the origin issued is invalid.
+For the chain to continue, each response that the origin wants followed by a
+moderated request carries the next presentation Challenge, as step 6 shows.
+An origin that stops challenging stops receiving presentations, and the agent
+falls back to the baseline. The Challenge is the origin's to issue, when and
+to whom it chooses, in response to a request it has seen. Graduated
+disclosure, as described in <a href="#principles" class="auto internal xref">Section 3</a>, is the origin's choice of when to
+ask.<a href="#section-5.6-4" class="pilcrow">¶</a></p>
+<p id="section-5.6-5">If the presentation fails verification, or the balance does not cover s, the
+origin falls back to the baseline response of step 2. The agent can obtain a
+new Credential only by redeeming another Endorsement, which its Anchor grants
+scarcely. That is what makes the limit bind.<a href="#section-5.6-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="examples">
+<section id="section-5.7">
+        <h3 id="name-deployment-examples">
+<a href="#section-5.7" class="section-number selfRef">5.7. </a><a href="#name-deployment-examples" class="section-name selfRef">Deployment examples</a>
+        </h3>
+<p id="section-5.7-1">The following examples separate the traffic path from the endorsement
+relationship, using the notation of <a href="#terminology" class="auto internal xref">Section 2</a>. An Anchor may be the
+platform, a tenant, or an independent party accepted by the origin. The
+origin's Moderator may be operated by the origin or delegated to a provider
+acting on its behalf. A platform signature allows a separate aggregate limit.
+Signing forwarded requests needs the profile discussed below. A tunnel
+carrying the agent's TLS session untouched cannot add such a signature.<a href="#section-5.7-1" class="pilcrow">¶</a></p>
+<p id="section-5.7-2">In <a href="#fig-intermediary" class="auto internal xref">Figure 3</a>, a device agent presents MOLE(U) through the HTTP
+intermediary of platform P, which adds WBA(P). Anchor U is drawn separately
+to show that it need not operate that intermediary. A consumer AI service can
+combine these roles and host the agent.<a href="#section-5.7-2" class="pilcrow">¶</a></p>
+<span id="name-a-device-agent-reaching-an-"></span><div id="fig-intermediary">
+<figure id="figure-3">
+          <div id="section-5.7-3.1">
+            <div class="alignLeft art-svg artwork" id="section-5.7-3.1.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="176" width="504" viewBox="0 0 504 176" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+                <path d="M 8,32 L 8,64" fill="none" stroke="black"></path>
+                <path d="M 8,112 L 8,160" fill="none" stroke="black"></path>
+                <path d="M 48,64 L 48,104" fill="none" stroke="black"></path>
+                <path d="M 96,32 L 96,64" fill="none" stroke="black"></path>
+                <path d="M 96,112 L 96,160" fill="none" stroke="black"></path>
+                <path d="M 192,112 L 192,160" fill="none" stroke="black"></path>
+                <path d="M 312,112 L 312,160" fill="none" stroke="black"></path>
+                <path d="M 400,112 L 400,160" fill="none" stroke="black"></path>
+                <path d="M 496,112 L 496,160" fill="none" stroke="black"></path>
+                <path d="M 8,32 L 96,32" fill="none" stroke="black"></path>
+                <path d="M 8,64 L 96,64" fill="none" stroke="black"></path>
+                <path d="M 8,112 L 96,112" fill="none" stroke="black"></path>
+                <path d="M 192,112 L 312,112" fill="none" stroke="black"></path>
+                <path d="M 400,112 L 496,112" fill="none" stroke="black"></path>
+                <path d="M 160,128 L 184,128" fill="none" stroke="black"></path>
+                <path d="M 376,128 L 392,128" fill="none" stroke="black"></path>
+                <path d="M 8,160 L 96,160" fill="none" stroke="black"></path>
+                <path d="M 192,160 L 312,160" fill="none" stroke="black"></path>
+                <path d="M 400,160 L 496,160" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="400,128 388,122.4 388,133.6" fill="black" transform="rotate(0,392,128)"></polygon>
+                <polygon class="arrowhead" points="192,128 180,122.4 180,133.6" fill="black" transform="rotate(0,184,128)"></polygon>
+                <polygon class="arrowhead" points="56,104 44,98.4 44,109.6" fill="black" transform="rotate(90,48,104)"></polygon>
+                <g class="text">
+                  <text x="44" y="52">Anchor</text>
+                  <text x="80" y="52">U</text>
+                  <text x="104" y="84">Endorsement</text>
+                  <text x="52" y="132">Device</text>
+                  <text x="128" y="132">-MOLE(U</text>
+                  <text x="252" y="132">Intermediary</text>
+                  <text x="344" y="132">-MOLE(U</text>
+                  <text x="452" y="132">Origin</text>
+                  <text x="48" y="148">agent</text>
+                  <text x="240" y="148">(platform</text>
+                  <text x="292" y="148">P)</text>
+                  <text x="360" y="148">+WBA(P)</text>
+                  <text x="448" y="148">Moderator</text>
+                </g>
+              </svg><a href="#section-5.7-3.1.1" class="pilcrow">¶</a>
+</div>
+</div>
+<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
+<a href="#name-a-device-agent-reaching-an-" class="selfRef">A device agent reaching an origin through platform P, endorsed by Anchor U</a>
+          </figcaption></figure>
+</div>
+<p id="section-5.7-4">In <a href="#fig-direct" class="auto internal xref">Figure 4</a>, the agent connects directly. It still has a relationship
+with Anchor U and presents MOLE(U) without any signature on the request.<a href="#section-5.7-4" class="pilcrow">¶</a></p>
+<span id="name-a-direct-connection-with-an"></span><div id="fig-direct">
+<figure id="figure-4">
+          <div id="section-5.7-5.1">
+            <div class="alignLeft art-svg artwork" id="section-5.7-5.1.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="176" width="496" viewBox="0 0 496 176" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+                <path d="M 8,32 L 8,64" fill="none" stroke="black"></path>
+                <path d="M 8,112 L 8,160" fill="none" stroke="black"></path>
+                <path d="M 48,64 L 48,104" fill="none" stroke="black"></path>
+                <path d="M 96,32 L 96,64" fill="none" stroke="black"></path>
+                <path d="M 96,112 L 96,160" fill="none" stroke="black"></path>
+                <path d="M 392,112 L 392,160" fill="none" stroke="black"></path>
+                <path d="M 488,112 L 488,160" fill="none" stroke="black"></path>
+                <path d="M 8,32 L 96,32" fill="none" stroke="black"></path>
+                <path d="M 8,64 L 96,64" fill="none" stroke="black"></path>
+                <path d="M 8,112 L 96,112" fill="none" stroke="black"></path>
+                <path d="M 392,112 L 488,112" fill="none" stroke="black"></path>
+                <path d="M 96,128 L 208,128" fill="none" stroke="black"></path>
+                <path d="M 288,128 L 384,128" fill="none" stroke="black"></path>
+                <path d="M 8,160 L 96,160" fill="none" stroke="black"></path>
+                <path d="M 392,160 L 488,160" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="392,128 380,122.4 380,133.6" fill="black" transform="rotate(0,384,128)"></polygon>
+                <polygon class="arrowhead" points="56,104 44,98.4 44,109.6" fill="black" transform="rotate(90,48,104)"></polygon>
+                <g class="text">
+                  <text x="44" y="52">Anchor</text>
+                  <text x="80" y="52">U</text>
+                  <text x="104" y="84">Endorsement</text>
+                  <text x="52" y="132">Device</text>
+                  <text x="248" y="132">MOLE(U)</text>
+                  <text x="444" y="132">Origin</text>
+                  <text x="48" y="148">agent</text>
+                  <text x="212" y="148">no</text>
+                  <text x="252" y="148">WBA(X)</text>
+                  <text x="440" y="148">Moderator</text>
+                </g>
+              </svg><a href="#section-5.7-5.1.1" class="pilcrow">¶</a>
+</div>
+</div>
+<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
+<a href="#name-a-direct-connection-with-an" class="selfRef">A direct connection with Anchor U off the traffic path</a>
+          </figcaption></figure>
+</div>
+<p id="section-5.7-6">Anchor W, typically platform P itself, can endorse a hosted workload, and
+Anchor U can endorse its users' agents. <a href="#fig-stacked" class="auto internal xref">Figure 5</a> illustrates the
+intended scopes of a stacked arrangement: the request carries MOLE(W) and
+MOLE(U), which are workload and user budgets, not visible identifiers, and
+WBA(P). How several presentations compose on one request, and any shared-budget
+mechanism, are not yet defined; see the editor's note below.<a href="#section-5.7-6" class="pilcrow">¶</a></p>
+<span id="name-workload-and-user-budget-sc"></span><div id="fig-stacked">
+<figure id="figure-5">
+          <div id="section-5.7-7.1">
+            <div class="alignLeft art-svg artwork" id="section-5.7-7.1.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="416" width="520" viewBox="0 0 520 416" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+                <path d="M 8,32 L 8,64" fill="none" stroke="black"></path>
+                <path d="M 8,112 L 8,272" fill="none" stroke="black"></path>
+                <path d="M 32,144 L 32,176" fill="none" stroke="black"></path>
+                <path d="M 96,64 L 96,104" fill="none" stroke="black"></path>
+                <path d="M 152,224 L 152,256" fill="none" stroke="black"></path>
+                <path d="M 184,32 L 184,64" fill="none" stroke="black"></path>
+                <path d="M 216,176 L 216,216" fill="none" stroke="black"></path>
+                <path d="M 248,32 L 248,64" fill="none" stroke="black"></path>
+                <path d="M 272,224 L 272,256" fill="none" stroke="black"></path>
+                <path d="M 336,64 L 336,104" fill="none" stroke="black"></path>
+                <path d="M 392,144 L 392,176" fill="none" stroke="black"></path>
+                <path d="M 400,352 L 400,400" fill="none" stroke="black"></path>
+                <path d="M 416,112 L 416,272" fill="none" stroke="black"></path>
+                <path d="M 424,32 L 424,64" fill="none" stroke="black"></path>
+                <path d="M 448,240 L 448,344" fill="none" stroke="black"></path>
+                <path d="M 496,352 L 496,400" fill="none" stroke="black"></path>
+                <path d="M 8,32 L 184,32" fill="none" stroke="black"></path>
+                <path d="M 248,32 L 424,32" fill="none" stroke="black"></path>
+                <path d="M 8,64 L 184,64" fill="none" stroke="black"></path>
+                <path d="M 248,64 L 424,64" fill="none" stroke="black"></path>
+                <path d="M 8,112 L 416,112" fill="none" stroke="black"></path>
+                <path d="M 32,144 L 392,144" fill="none" stroke="black"></path>
+                <path d="M 32,176 L 392,176" fill="none" stroke="black"></path>
+                <path d="M 152,224 L 272,224" fill="none" stroke="black"></path>
+                <path d="M 272,240 L 448,240" fill="none" stroke="black"></path>
+                <path d="M 152,256 L 272,256" fill="none" stroke="black"></path>
+                <path d="M 8,272 L 416,272" fill="none" stroke="black"></path>
+                <path d="M 400,352 L 496,352" fill="none" stroke="black"></path>
+                <path d="M 400,400 L 496,400" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="456,344 444,338.4 444,349.6" fill="black" transform="rotate(90,448,344)"></polygon>
+                <polygon class="arrowhead" points="344,104 332,98.4 332,109.6" fill="black" transform="rotate(90,336,104)"></polygon>
+                <polygon class="arrowhead" points="224,216 212,210.4 212,221.6" fill="black" transform="rotate(90,216,216)"></polygon>
+                <polygon class="arrowhead" points="104,104 92,98.4 92,109.6" fill="black" transform="rotate(90,96,104)"></polygon>
+                <g class="text">
+                  <text x="84" y="52">Anchor</text>
+                  <text x="120" y="52">W</text>
+                  <text x="324" y="52">Anchor</text>
+                  <text x="360" y="52">U</text>
+                  <text x="152" y="84">Endorsement</text>
+                  <text x="392" y="84">Endorsement</text>
+                  <text x="52" y="132">Platform</text>
+                  <text x="96" y="132">P</text>
+                  <text x="68" y="164">Tenant</text>
+                  <text x="132" y="164">workload</text>
+                  <text x="188" y="164">with</text>
+                  <text x="228" y="164">user</text>
+                  <text x="276" y="164">agents</text>
+                  <text x="212" y="244">Intermediary</text>
+                  <text x="488" y="292">MOLE(W)</text>
+                  <text x="488" y="308">MOLE(U)</text>
+                  <text x="488" y="324">+WBA(P)</text>
+                  <text x="452" y="372">Origin</text>
+                  <text x="448" y="388">Moderator</text>
+                </g>
+              </svg><a href="#section-5.7-7.1.1" class="pilcrow">¶</a>
+</div>
+</div>
+<figcaption><a href="#figure-5" class="selfRef">Figure 5</a>:
+<a href="#name-workload-and-user-budget-sc" class="selfRef">Workload and user budget scopes in a proposed stacked deployment</a>
+          </figcaption></figure>
+</div>
+<p id="section-5.7-8">An origin may delegate the Moderator to a CDN or similar service that fronts
+it. Any of the examples above can sit in front of it. The Moderator's Anchor
+Set and policy are then shared across the origins the CDN serves under that
+configuration, which makes the anonymity set larger. A Credential issued by
+the CDN is valid at every origin it moderates under the same context. The CDN
+sees presentations across those origins. MOLE keeps them unlinkable, but
+source addresses and timing remain visible to it (see <a href="#security" class="auto internal xref">Section 6</a>).<a href="#section-5.7-8" class="pilcrow">¶</a></p>
+<p id="section-5.7-9">A request may also cross more than one intermediary, for instance a device
+agent behind an enterprise ZTNA gateway whose traffic then leaves through a
+consumer VPN. Only an intermediary that terminates HTTP can sign. The origin
+can attribute the request to every intermediary that signs, and sees a tunnel
+only as a source address. Aggregate limits apply per signer. The MOLE
+presentations are unaffected, because the Anchors that endorsed the workload
+and the user are not tied to any intermediary on the path.<a href="#section-5.7-9" class="pilcrow">¶</a></p>
+<p id="section-5.7-10">[[ Editor's note: Open points include:<a href="#section-5.7-10" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.7-11.1">
+            <p id="section-5.7-11.1.1">Budget allocation: how to apply limits to users and individual agents,
+including a user with several agents or a workload with many users.<a href="#section-5.7-11.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.7-11.2">
+            <p id="section-5.7-11.2.1">Concurrent requests: one Credential chain cannot be used in parallel.
+Several Credentials provide separate budgets. Splitting a shared budget
+and enforcing workload and user limits together need further work. One
+option is for an Anchor to grant a workload k Endorsements per epoch,
+redeemed into a pool of k Credentials, one per concurrent agent. How to
+choose k, and whether the origin should see it, is open.<a href="#section-5.7-11.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.7-11.3">
+            <p id="section-5.7-11.3.1">Intermediary signing: signing forwarded requests on behalf of others may
+require a profile of <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>, including its binding to MOLE
+presentations (see <a href="#security" class="auto internal xref">Section 6</a>).<a href="#section-5.7-11.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.7-11.4">
+            <p id="section-5.7-11.4.1">Chained intermediaries: when several HTTP-terminating intermediaries sign,
+which signers' aggregate limits the origin should apply.
+]]<a href="#section-5.7-11.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="security">
+<section id="section-6">
+      <h2 id="name-security-considerations">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-6-1">The security of MOLE itself is treated in <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span> and
+<span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span>.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<div id="provider-collusion-and-metadata">
+<section id="section-6.1">
+        <h3 id="name-provider-collusion-and-meta">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-provider-collusion-and-meta" class="section-name selfRef">Provider collusion and metadata</a>
+        </h3>
+<p id="section-6.1-1">Anonymous presentations do not prevent a forwarding
+provider that knows the user from disclosing which requests are theirs to the
+origin. The deployment does not protect against this provider-origin collusion.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-2">Unlinkable presentations do not hide source addresses, cookies, request
+contents, or timing. A platform signature also narrows the anonymity set.
+Origins must not infer that issuer hiding conceals an intermediary already
+identified by its signature or address.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="anchor-issuance-and-trust">
+<section id="section-6.2">
+        <h3 id="name-anchor-issuance-and-trust">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-anchor-issuance-and-trust" class="section-name selfRef">Anchor issuance and trust</a>
+        </h3>
+<p id="section-6.2-1">An Anchor controls how many Endorsements exist. The origin's recourse against
+one that does not constrain issuance is to drop it from the Anchor Set.
+Credential lifetime and retirement determine how long existing budgets remain
+usable. Endorsement reuse and replay protection depend on the protocol chosen.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="presentation-reuse-by-intermediaries">
+<section id="section-6.3">
+        <h3 id="name-presentation-reuse-by-inter">
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-presentation-reuse-by-inter" class="section-name selfRef">Presentation reuse by intermediaries</a>
+        </h3>
+<p id="section-6.3-1">An HTTP intermediary that can read a presentation in transit may try to use it
+on a request of its own before the agent's request arrives. Single-use
+verification prevents two accepted uses, but does not decide which request is
+authorized. This deployment therefore needs request-bound presentations that
+cover all request components affecting authorization, including the body where
+relevant. Request binding does not prevent an intermediary from racing an
+identical request or withholding it.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="binding-signatures-to-presentations">
+<section id="section-6.4">
+        <h3 id="name-binding-signatures-to-prese">
+<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-binding-signatures-to-prese" class="section-name selfRef">Binding signatures to presentations</a>
+        </h3>
+<p id="section-6.4-1">A composition profile should also require the Web Bot Auth signature to cover
+the field carrying the MOLE presentation, along with the relevant request
+components. This binds the signer's attribution to that presentation. It does
+not replace request binding against a malicious signer. This document does
+not define the profile or claim that existing signatures provide this binding.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="multiple-budgets-across-anchors">
+<section id="section-6.5">
+        <h3 id="name-multiple-budgets-across-anc">
+<a href="#section-6.5" class="section-number selfRef">6.5. </a><a href="#name-multiple-budgets-across-anc" class="section-name selfRef">Multiple budgets across Anchors</a>
+        </h3>
+<p id="section-6.5-1">A user or workload with Endorsements from several accepted Anchors can obtain
+several independent budgets. Unlinkable presentations do not let the origin
+detect that those budgets belong to the same party. Anchor Set selection and
+issuance policy affect the exposure but do not enforce one budget per user
+across Anchors.<a href="#section-6.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="unsigned-requests">
+<section id="section-6.6">
+        <h3 id="name-unsigned-requests">
+<a href="#section-6.6" class="section-number selfRef">6.6. </a><a href="#name-unsigned-requests" class="section-name selfRef">Unsigned requests</a>
+        </h3>
+<p id="section-6.6-1">An absent signature is not evidence of an attack. Direct agents and agents
+behind tunnels may have no platform signature to offer. For public resources,
+origins should preserve the baseline access described in <a href="#principles" class="auto internal xref">Section 3</a>, while
+applying capacity and behavior-based controls.<a href="#section-6.6-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="iana">
+<section id="section-7">
+      <h2 id="name-iana-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-7-1">This document has no IANA actions.<a href="#section-7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-8">
+      <h2 id="name-informative-references">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+      </h2>
+<dl class="references">
+<dt id="AAP">[AAP]</dt>
+      <dd>
+<span class="refTitle">"Agent Attestation Protocol"</span>, <span>n.d.</span>, <span>&lt;<a href="https://github.com/agentic-protocols/agentic-attestation-protocol/blob/1328a6bbfda24ea18bcd8996a5417a6702c8f274/draft-agent-attestation-protocol.md">https://github.com/agentic-protocols/agentic-attestation-protocol/blob/1328a6bbfda24ea18bcd8996a5417a6702c8f274/draft-agent-attestation-protocol.md</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="AAUTH">[AAUTH]</dt>
+      <dd>
+<span class="refAuthor">Hardt, D.</span>, <span class="refTitle">"AAuth Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-hardt-oauth-aauth-protocol-11</span>, <time datetime="2026-09-25" class="refDate">25 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-hardt-oauth-aauth-protocol-11">https://datatracker.ietf.org/doc/html/draft-hardt-oauth-aauth-protocol-11</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="BEARER">[BEARER]</dt>
+      <dd>
+<span class="refAuthor">Jones, M.</span> and <span class="refAuthor">D. Hardt</span>, <span class="refTitle">"The OAuth 2.0 Authorization Framework: Bearer Token Usage"</span>, <span class="seriesInfo">RFC 6750</span>, <span class="seriesInfo">DOI 10.17487/RFC6750</span>, <time datetime="2012-10" class="refDate">October 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6750">https://www.rfc-editor.org/rfc/rfc6750</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="CONNECT-IP">[CONNECT-IP]</dt>
+      <dd>
+<span class="refAuthor">Pauly, T., Ed.</span>, <span class="refAuthor">Schinazi, D.</span>, <span class="refAuthor">Chernyakhovsky, A.</span>, <span class="refAuthor">Kühlewind, M.</span>, and <span class="refAuthor">M. Westerlund</span>, <span class="refTitle">"Proxying IP in HTTP"</span>, <span class="seriesInfo">RFC 9484</span>, <span class="seriesInfo">DOI 10.17487/RFC9484</span>, <time datetime="2023-10" class="refDate">October 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9484">https://www.rfc-editor.org/rfc/rfc9484</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="CONNECT-UDP">[CONNECT-UDP]</dt>
+      <dd>
+<span class="refAuthor">Schinazi, D.</span>, <span class="refTitle">"Proxying UDP in HTTP"</span>, <span class="seriesInfo">RFC 9298</span>, <span class="seriesInfo">DOI 10.17487/RFC9298</span>, <time datetime="2022-08" class="refDate">August 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9298">https://www.rfc-editor.org/rfc/rfc9298</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="HTTP">[HTTP]</dt>
+      <dd>
+<span class="refAuthor">Fielding, R., Ed.</span>, <span class="refAuthor">Nottingham, M., Ed.</span>, and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"HTTP Semantics"</span>, <span class="seriesInfo">STD 97</span>, <span class="seriesInfo">RFC 9110</span>, <span class="seriesInfo">DOI 10.17487/RFC9110</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9110">https://www.rfc-editor.org/rfc/rfc9110</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="HTTPSIG">[HTTPSIG]</dt>
+      <dd>
+<span class="refAuthor">Backman, A., Ed.</span>, <span class="refAuthor">Richer, J., Ed.</span>, and <span class="refAuthor">M. Sporny</span>, <span class="refTitle">"HTTP Message Signatures"</span>, <span class="seriesInfo">RFC 9421</span>, <span class="seriesInfo">DOI 10.17487/RFC9421</span>, <time datetime="2024-02" class="refDate">February 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9421">https://www.rfc-editor.org/rfc/rfc9421</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="INTERNET-FOR-END-USER">[INTERNET-FOR-END-USER]</dt>
+      <dd>
+<span class="refAuthor">Nottingham, M.</span>, <span class="refTitle">"The Internet is for End Users"</span>, <span class="seriesInfo">RFC 8890</span>, <span class="seriesInfo">DOI 10.17487/RFC8890</span>, <time datetime="2020-08" class="refDate">August 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8890">https://www.rfc-editor.org/rfc/rfc8890</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="IPv6">[IPv6]</dt>
+      <dd>
+<span class="refAuthor">Deering, S.</span> and <span class="refAuthor">R. Hinden</span>, <span class="refTitle">"Internet Protocol, Version 6 (IPv6) Specification"</span>, <span class="seriesInfo">STD 86</span>, <span class="seriesInfo">RFC 8200</span>, <span class="seriesInfo">DOI 10.17487/RFC8200</span>, <time datetime="2017-07" class="refDate">July 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8200">https://www.rfc-editor.org/rfc/rfc8200</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="MOLE-ARCH">[MOLE-ARCH]</dt>
+      <dd>
+<span class="refAuthor">Schlesinger, S.</span>, <span class="refAuthor">Jackson, D.</span>, and <span class="refAuthor">T. Meunier</span>, <span class="refTitle">"Moderation of unLinkable Endorsements (MOLE) Architecture"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-jms-mole-architecture-01</span>, <time datetime="2026-11-02" class="refDate">2 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-jms-mole-architecture-01">https://datatracker.ietf.org/doc/html/draft-jms-mole-architecture-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="MOLE-HTTP">[MOLE-HTTP]</dt>
+      <dd>
+<span class="refAuthor">Schlesinger, S.</span>, <span class="refAuthor">Jackson, D.</span>, and <span class="refAuthor">T. Meunier</span>, <span class="refTitle">"MOLE HTTP Transport"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-jms-mole-http-transport-01</span>, <time datetime="2026-11-02" class="refDate">2 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-jms-mole-http-transport-01">https://datatracker.ietf.org/doc/html/draft-jms-mole-http-transport-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="MOLE-PROTOCOLS">[MOLE-PROTOCOLS]</dt>
+      <dd>
+<span class="refAuthor">Schlesinger, S.</span>, <span class="refAuthor">Jackson, D.</span>, and <span class="refAuthor">T. Meunier</span>, <span class="refTitle">"MOLE Protocols"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-jms-mole-protocols-01</span>, <time datetime="2026-11-02" class="refDate">2 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-jms-mole-protocols-01">https://datatracker.ietf.org/doc/html/draft-jms-mole-protocols-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="OAUTH">[OAUTH]</dt>
+      <dd>
+<span class="refAuthor">Hardt, D., Ed.</span>, <span class="refTitle">"The OAuth 2.0 Authorization Framework"</span>, <span class="seriesInfo">RFC 6749</span>, <span class="seriesInfo">DOI 10.17487/RFC6749</span>, <time datetime="2012-10" class="refDate">October 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6749">https://www.rfc-editor.org/rfc/rfc6749</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="OAUTH-RS-META">[OAUTH-RS-META]</dt>
+      <dd>
+<span class="refAuthor">Jones, M.B.</span>, <span class="refAuthor">Hunt, P.</span>, and <span class="refAuthor">A. Parecki</span>, <span class="refTitle">"OAuth 2.0 Protected Resource Metadata"</span>, <span class="seriesInfo">RFC 9728</span>, <span class="seriesInfo">DOI 10.17487/RFC9728</span>, <time datetime="2025-04" class="refDate">April 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9728">https://www.rfc-editor.org/rfc/rfc9728</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="OAUTH-XAA">[OAUTH-XAA]</dt>
+      <dd>
+<span class="refAuthor">Parecki, A.</span>, <span class="refAuthor">McGuinness, K.</span>, and <span class="refAuthor">B. Campbell</span>, <span class="refTitle">"Identity Assertion JWT Authorization Grant"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-oauth-identity-assertion-authz-grant-06</span>, <time datetime="2026-10-30" class="refDate">30 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-identity-assertion-authz-grant-06">https://datatracker.ietf.org/doc/html/draft-ietf-oauth-identity-assertion-authz-grant-06</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="OHTTP">[OHTTP]</dt>
+      <dd>
+<span class="refAuthor">Thomson, M.</span> and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Oblivious HTTP"</span>, <span class="seriesInfo">RFC 9458</span>, <span class="seriesInfo">DOI 10.17487/RFC9458</span>, <time datetime="2024-01" class="refDate">January 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9458">https://www.rfc-editor.org/rfc/rfc9458</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="OIDC">[OIDC]</dt>
+      <dd>
+<span class="refTitle">"OpenID Connect Core 1.0"</span>, <span>n.d.</span>, <span>&lt;<a href="https://openid.net/specs/openid-connect-core-1_0.html">https://openid.net/specs/openid-connect-core-1_0.html</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="POPPY">[POPPY]</dt>
+      <dd>
+<span class="refTitle">"Personal Agent Protocol, draft 0.3"</span>, <span>n.d.</span>, <span>&lt;<a href="https://github.com/personal-agent-protocol/personal-agent-protocol/blob/1de1990e4978b42179fe0e3e0ae554271808c308/content/versions/0.3/spec.mdx">https://github.com/personal-agent-protocol/personal-agent-protocol/blob/1de1990e4978b42179fe0e3e0ae554271808c308/content/versions/0.3/spec.mdx</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="PRIVACY-PARTITIONING">[PRIVACY-PARTITIONING]</dt>
+      <dd>
+<span class="refAuthor">Kühlewind, M.</span>, <span class="refAuthor">Pauly, T.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Partitioning as an Architecture for Privacy"</span>, <span class="seriesInfo">RFC 9614</span>, <span class="seriesInfo">DOI 10.17487/RFC9614</span>, <time datetime="2024-07" class="refDate">July 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9614">https://www.rfc-editor.org/rfc/rfc9614</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="STEPUP">[STEPUP]</dt>
+      <dd>
+<span class="refAuthor">Bertocci, V.</span> and <span class="refAuthor">B. Campbell</span>, <span class="refTitle">"OAuth 2.0 Step Up Authentication Challenge Protocol"</span>, <span class="seriesInfo">RFC 9470</span>, <span class="seriesInfo">DOI 10.17487/RFC9470</span>, <time datetime="2023-09" class="refDate">September 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9470">https://www.rfc-editor.org/rfc/rfc9470</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="USER-AGENT-HISTORY">[USER-AGENT-HISTORY]</dt>
+      <dd>
+<span class="refTitle">"WebAIM: History of the browser user-agent string"</span>, <span>n.d.</span>, <span>&lt;<a href="https://webaim.org/blog/user-agent-string-history/">https://webaim.org/blog/user-agent-string-history/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="WAG">[WAG]</dt>
+      <dd>
+<span class="refAuthor">Carleton, P.</span>, <span class="refAuthor">Steele, N.</span>, <span class="refAuthor">Parecki, A.</span>, <span class="refAuthor">Schwenkschuster, A.</span>, and <span class="refAuthor">B. Campbell</span>, <span class="refTitle">"Workload Authorization Grant"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-carleton-workload-authz-grant-02</span>, <time datetime="2026-11-02" class="refDate">2 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-carleton-workload-authz-grant-02">https://datatracker.ietf.org/doc/html/draft-carleton-workload-authz-grant-02</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="WBA-ABA">[WBA-ABA]</dt>
+      <dd>
+<span class="refAuthor">Rescorla, E.</span> and <span class="refAuthor">R. Barnes</span>, <span class="refTitle">"Anonymous Bot Authentication: Authorization and Rate Limiting for Web Agents"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-rescorla-anonymous-webbotauth-01</span>, <time datetime="2026-07-19" class="refDate">19 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-rescorla-anonymous-webbotauth-01">https://datatracker.ietf.org/doc/html/draft-rescorla-anonymous-webbotauth-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="WBA-HTTPSIG">[WBA-HTTPSIG]</dt>
+      <dd>
+<span class="refAuthor">Meunier, T.</span> and <span class="refAuthor">S. Major</span>, <span class="refTitle">"HTTP Message Signatures for automated traffic"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-webbotauth-httpsig-protocol-01</span>, <time datetime="2026-10-29" class="refDate">29 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-webbotauth-httpsig-protocol-01">https://datatracker.ietf.org/doc/html/draft-ietf-webbotauth-httpsig-protocol-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="WIMSE-AIMS">[WIMSE-AIMS]</dt>
+      <dd>
+<span class="refAuthor">Kasselman, P.</span>, <span class="refAuthor">Lombardo, J.</span>, <span class="refAuthor">Rosomakho, Y.</span>, <span class="refAuthor">Campbell, B.</span>, <span class="refAuthor">Steele, N.</span>, and <span class="refAuthor">A. Parecki</span>, <span class="refTitle">"AI Identity Management System"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-wimse-aims-01</span>, <time datetime="2026-11-02" class="refDate">2 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-wimse-aims-01">https://datatracker.ietf.org/doc/html/draft-ietf-wimse-aims-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="WIMSE-ARCH">[WIMSE-ARCH]</dt>
+    <dd>
+<span class="refAuthor">Salowey, J. A.</span>, <span class="refAuthor">Rosomakho, Y.</span>, and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"Workload Identity in a Multi System Environment (WIMSE) Architecture"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-wimse-arch-08</span>, <time datetime="2026-07-06" class="refDate">6 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-wimse-arch-08">https://datatracker.ietf.org/doc/html/draft-ietf-wimse-arch-08</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="acknowledgments">
+<section id="appendix-A">
+      <h2 id="name-acknowledgments">
+<a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="appendix-A-1">TODO acknowledge.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Thibault Meunier</span></div>
+<div dir="auto" class="left"><span class="org">Cloudflare</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:ot-ietf@thibault.uk" class="email">ot-ietf@thibault.uk</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
