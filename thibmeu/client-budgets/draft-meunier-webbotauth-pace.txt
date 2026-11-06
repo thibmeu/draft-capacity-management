@@ -397,33 +397,44 @@ Table of Contents
    already holds an Endorsement from an accepted Anchor.  Intermediary P
    adds its own signature.  The Moderator is shown at the origin.
 
-   Anchor        Client C      Intermediary P      Origin
-     |               |                |          (Moderator)
-     | Endorsement   |                |               |
-     |-------------->|                |               |
-     |               | request        |               |
-     |               |--------------->| + WBA(P)       |
-     |               |                |-------------->|
-     |               | baseline + redemption and      |
-     |               | presentation challenges        |
-     |               |<---------------|<--------------|
-     |               |                |               |
-     |               | Redeem & Issue |               |
-     |               |--------------->|-------------->|
-     |               | Credential with balance c      |
-     |               |<---------------|<--------------|
-     |               |                |               |
-     |               | request + MOLE(C)              |
-     |               |--------------->| + WBA(P)       |
-     |               |                |-------------->|
-     |               |                |     record spend result
-     |               |                |     attempt operation
-     |               | response + Update              |
-     |               |<---------------|<--------------|
-     |               | balance c - s + t              |
+ +-------------+  +-------------+   +---------------+  +---------------+
+ |   Anchor    |  |  Client C   |   | Intermediary  |  |    Origin     |
+ |             |  |             |   |       P       |  |   Moderator   |
+ +------+------+  +------+------+   +-------+-------+  +-------+-------+
+        |  Endorsement   |                  |                  |
+        +--------------->+                  |                  |
+        |                |                  |                  |
+        |                |     request      |                  |
+        |                +----------------->+                  |
+        |                |                  |                  |
+        |                |                  |     + WBA(P)     |
+        |                |                  +----------------->+
+        |                |                  |                  |
+        |                |      baseline + redemption and      |
+        |                |       presentation challenges       |
+        |                +<-----------------+------------------+
+        |                |                  |                  |
+        |                |           Redeem & Issue            |
+        |                +------------------+----------------->+
+        |                |                  |                  |
+        |                |      Credential with balance c      |
+        |                +<-----------------+------------------+
+        |                |                  |                  |
+        |                |request + MOLE(C) |                  |
+        |                +----------------->+                  |
+        |                |                  |                  |
+        |                |                  |     + WBA(P)     |
+        |                |                  +----------------->+
+        |                |                  |                  |
+        |                |   record spend, attempt operation   |
+        |                |        response with Update         |
+        |                +<-----------------+------------------+
+        |                |                  |                  |
 
-     Figure 1: Public access with carrier attribution and an anonymous
-                                   budget
+                    Client balance: c - s + t
+
+   Figure 1: Public access with carrier attribution and an anonymous
+                                 budget
 
    1.  The Client sends a request.  The intermediary adds WBA(P), which
        the origin verifies before applying its aggregate limit.
@@ -459,34 +470,42 @@ Table of Contents
    Provider Authorization Server for ID-JAG.  Each requires an existing
    trust arrangement with the resource's authorization server.
 
-   Grant issuer     Client       Authorization server     Resource
-        |              |                  |                  |
-        |              | operation request                   |
-        |              |------------------------------------>|
-        |              | challenge + resource metadata       |
-        |              |<------------------------------------|
-        |              |                  |                  |
-        |<-- request --|                  |                  |
-        |--- grant --->|                  |                  |
-        |              | grant exchange   |                  |
-        |              |----------------->|                  |
-        |              | access token     |                  |
-        |              |<-----------------|                  |
-        |              |                  |                  |
-        |              | operation + access token            |
-        |              | + proof of possession, if required  |
-        |              |------------------------------------>|
-        |              |                  |     verify permission
-        |              |                  |     apply capacity policy
-        |              | response         |                  |
-        |              |<------------------------------------|
-        |              |                  |                  |
-        |              | Optional separate MOLE budget       |
-        |              | follows flow 1. Combined carriage   |
-        |              | remains an open composition point.  |
+ +-------------+  +-------------+   +---------------+  +---------------+
+ |Grant issuer |  |   Client    |   | Authorization |  |   Resource    |
+ |             |  |             |   |    server     |  |               |
+ +------+------+  +------+------+   +-------+-------+  +-------+-------+
+        |                |          operation request          |
+        |                +------------------+----------------->+
+        |                |                  |                  |
+        |                |    challenge + resource metadata    |
+        |                +<-----------------+------------------+
+        |                |                  |                  |
+        | request grant  |                  |                  |
+        +<---------------+                  |                  |
+        |                |                  |                  |
+        |     grant      |                  |                  |
+        +--------------->+                  |                  |
+        |                |                  |                  |
+        |                |  grant exchange  |                  |
+        |                +----------------->+                  |
+        |                |                  |                  |
+        |                |   access token   |                  |
+        |                +<-----------------+                  |
+        |                |                  |                  |
+        |                |      operation + access token       |
+        |                |  proof of possession, if required   |
+        |                +------------------+----------------->+
+        |                |                  |                  |
+        |                |     verify permission and apply     |
+        |                |    capacity policy, then respond    |
+        |                +<-----------------+------------------+
+        |                |                  |                  |
 
-       Figure 2: Permissioned access with optional independent budget
-                                enforcement
+     Optional MOLE budget: flow 1.
+     Combined carriage remains undefined.
+
+     Figure 2: Permissioned access with optional independent budget
+                              enforcement
 
    For WAG, the Client exchanges a workload assertion for an access
    token.  For ID-JAG, it obtains a grant through the existing

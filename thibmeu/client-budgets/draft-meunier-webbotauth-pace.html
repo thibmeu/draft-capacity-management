@@ -1559,33 +1559,98 @@ an Endorsement from an accepted Anchor. Intermediary P adds its own signature.
 The Moderator is shown at the origin.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
 <span id="name-public-access-with-carrier-"></span><div id="sequence">
 <figure id="figure-1">
-          <div class="alignLeft art-text artwork" id="section-5.1-2.1">
-<pre>
-Anchor        Client C      Intermediary P      Origin
-  |               |                |          (Moderator)
-  | Endorsement   |                |               |
-  |--------------&gt;|                |               |
-  |               | request        |               |
-  |               |---------------&gt;| + WBA(P)       |
-  |               |                |--------------&gt;|
-  |               | baseline + redemption and      |
-  |               | presentation challenges        |
-  |               |&lt;---------------|&lt;--------------|
-  |               |                |               |
-  |               | Redeem &amp; Issue |               |
-  |               |---------------&gt;|--------------&gt;|
-  |               | Credential with balance c      |
-  |               |&lt;---------------|&lt;--------------|
-  |               |                |               |
-  |               | request + MOLE(C)              |
-  |               |---------------&gt;| + WBA(P)       |
-  |               |                |--------------&gt;|
-  |               |                |     record spend result
-  |               |                |     attempt operation
-  |               | response + Update              |
-  |               |&lt;---------------|&lt;--------------|
-  |               | balance c - s + t              |
-</pre>
+          <div id="section-5.1-2.1">
+            <div class="alignLeft art-svg artwork" id="section-5.1-2.1.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="592" width="576" viewBox="0 0 576 592" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+                <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
+                <path d="M 64,80 L 64,544" fill="none" stroke="black"></path>
+                <path d="M 120,32 L 120,80" fill="none" stroke="black"></path>
+                <path d="M 144,32 L 144,80" fill="none" stroke="black"></path>
+                <path d="M 200,80 L 200,544" fill="none" stroke="black"></path>
+                <path d="M 256,32 L 256,80" fill="none" stroke="black"></path>
+                <path d="M 288,32 L 288,80" fill="none" stroke="black"></path>
+                <path d="M 352,80 L 352,224" fill="none" stroke="black"></path>
+                <path d="M 352,272 L 352,288" fill="none" stroke="black"></path>
+                <path d="M 352,320 L 352,336" fill="none" stroke="black"></path>
+                <path d="M 352,368 L 352,480" fill="none" stroke="black"></path>
+                <path d="M 352,528 L 352,544" fill="none" stroke="black"></path>
+                <path d="M 416,32 L 416,80" fill="none" stroke="black"></path>
+                <path d="M 440,32 L 440,80" fill="none" stroke="black"></path>
+                <path d="M 504,80 L 504,544" fill="none" stroke="black"></path>
+                <path d="M 568,32 L 568,80" fill="none" stroke="black"></path>
+                <path d="M 8,32 L 120,32" fill="none" stroke="black"></path>
+                <path d="M 144,32 L 256,32" fill="none" stroke="black"></path>
+                <path d="M 288,32 L 416,32" fill="none" stroke="black"></path>
+                <path d="M 440,32 L 568,32" fill="none" stroke="black"></path>
+                <path d="M 8,80 L 120,80" fill="none" stroke="black"></path>
+                <path d="M 144,80 L 256,80" fill="none" stroke="black"></path>
+                <path d="M 288,80 L 416,80" fill="none" stroke="black"></path>
+                <path d="M 440,80 L 568,80" fill="none" stroke="black"></path>
+                <path d="M 64,112 L 192,112" fill="none" stroke="black"></path>
+                <path d="M 200,160 L 344,160" fill="none" stroke="black"></path>
+                <path d="M 352,208 L 496,208" fill="none" stroke="black"></path>
+                <path d="M 208,272 L 504,272" fill="none" stroke="black"></path>
+                <path d="M 200,320 L 496,320" fill="none" stroke="black"></path>
+                <path d="M 208,368 L 504,368" fill="none" stroke="black"></path>
+                <path d="M 200,416 L 344,416" fill="none" stroke="black"></path>
+                <path d="M 352,464 L 496,464" fill="none" stroke="black"></path>
+                <path d="M 208,528 L 504,528" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="504,464 492,458.4 492,469.6" fill="black" transform="rotate(0,496,464)"></polygon>
+                <polygon class="arrowhead" points="504,320 492,314.4 492,325.6" fill="black" transform="rotate(0,496,320)"></polygon>
+                <polygon class="arrowhead" points="504,208 492,202.4 492,213.6" fill="black" transform="rotate(0,496,208)"></polygon>
+                <polygon class="arrowhead" points="352,416 340,410.4 340,421.6" fill="black" transform="rotate(0,344,416)"></polygon>
+                <polygon class="arrowhead" points="352,160 340,154.4 340,165.6" fill="black" transform="rotate(0,344,160)"></polygon>
+                <polygon class="arrowhead" points="216,528 204,522.4 204,533.6" fill="black" transform="rotate(180,208,528)"></polygon>
+                <polygon class="arrowhead" points="216,368 204,362.4 204,373.6" fill="black" transform="rotate(180,208,368)"></polygon>
+                <polygon class="arrowhead" points="216,272 204,266.4 204,277.6" fill="black" transform="rotate(180,208,272)"></polygon>
+                <polygon class="arrowhead" points="200,112 188,106.4 188,117.6" fill="black" transform="rotate(0,192,112)"></polygon>
+                <g class="text">
+                  <text x="60" y="52">Anchor</text>
+                  <text x="188" y="52">Client</text>
+                  <text x="224" y="52">C</text>
+                  <text x="348" y="52">Intermediary</text>
+                  <text x="500" y="52">Origin</text>
+                  <text x="352" y="68">P</text>
+                  <text x="504" y="68">Moderator</text>
+                  <text x="128" y="100">Endorsement</text>
+                  <text x="272" y="148">request</text>
+                  <text x="400" y="196">+</text>
+                  <text x="436" y="196">WBA(P)</text>
+                  <text x="284" y="244">baseline</text>
+                  <text x="328" y="244">+</text>
+                  <text x="380" y="244">redemption</text>
+                  <text x="440" y="244">and</text>
+                  <text x="308" y="260">presentation</text>
+                  <text x="404" y="260">challenges</text>
+                  <text x="316" y="308">Redeem</text>
+                  <text x="352" y="308">&amp;</text>
+                  <text x="384" y="308">Issue</text>
+                  <text x="292" y="356">Credential</text>
+                  <text x="356" y="356">with</text>
+                  <text x="408" y="356">balance</text>
+                  <text x="448" y="356">c</text>
+                  <text x="232" y="404">request</text>
+                  <text x="272" y="404">+</text>
+                  <text x="312" y="404">MOLE(C)</text>
+                  <text x="400" y="452">+</text>
+                  <text x="436" y="452">WBA(P)</text>
+                  <text x="252" y="500">record</text>
+                  <text x="308" y="500">spend,</text>
+                  <text x="368" y="500">attempt</text>
+                  <text x="440" y="500">operation</text>
+                  <text x="300" y="516">response</text>
+                  <text x="356" y="516">with</text>
+                  <text x="404" y="516">Update</text>
+                  <text x="180" y="580">Client</text>
+                  <text x="244" y="580">balance:</text>
+                  <text x="288" y="580">c</text>
+                  <text x="304" y="580">-</text>
+                  <text x="320" y="580">s</text>
+                  <text x="336" y="580">+</text>
+                  <text x="352" y="580">t</text>
+                </g>
+              </svg><a href="#section-5.1-2.1.1" class="pilcrow">¶</a>
+</div>
 </div>
 <figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
 <a href="#name-public-access-with-carrier-" class="selfRef">Public access with carrier attribution and an anonymous budget</a>
@@ -1633,34 +1698,97 @@ Identity Provider Authorization Server for ID-JAG. Each requires an existing
 trust arrangement with the resource's authorization server.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
 <span id="name-permissioned-access-with-op"></span><div id="permission-sequence">
 <figure id="figure-2">
-          <div class="alignLeft art-text artwork" id="section-5.2-2.1">
-<pre>
-Grant issuer     Client       Authorization server     Resource
-     |              |                  |                  |
-     |              | operation request                   |
-     |              |------------------------------------&gt;|
-     |              | challenge + resource metadata       |
-     |              |&lt;------------------------------------|
-     |              |                  |                  |
-     |&lt;-- request --|                  |                  |
-     |--- grant ---&gt;|                  |                  |
-     |              | grant exchange   |                  |
-     |              |-----------------&gt;|                  |
-     |              | access token     |                  |
-     |              |&lt;-----------------|                  |
-     |              |                  |                  |
-     |              | operation + access token            |
-     |              | + proof of possession, if required  |
-     |              |------------------------------------&gt;|
-     |              |                  |     verify permission
-     |              |                  |     apply capacity policy
-     |              | response         |                  |
-     |              |&lt;------------------------------------|
-     |              |                  |                  |
-     |              | Optional separate MOLE budget       |
-     |              | follows flow 1. Combined carriage   |
-     |              | remains an open composition point.  |
-</pre>
+          <div id="section-5.2-2.1">
+            <div class="alignLeft art-svg artwork" id="section-5.2-2.1.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="560" width="576" viewBox="0 0 576 560" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+                <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
+                <path d="M 64,80 L 64,496" fill="none" stroke="black"></path>
+                <path d="M 120,32 L 120,80" fill="none" stroke="black"></path>
+                <path d="M 144,32 L 144,80" fill="none" stroke="black"></path>
+                <path d="M 200,80 L 200,496" fill="none" stroke="black"></path>
+                <path d="M 256,32 L 256,80" fill="none" stroke="black"></path>
+                <path d="M 288,32 L 288,80" fill="none" stroke="black"></path>
+                <path d="M 352,112 L 352,128" fill="none" stroke="black"></path>
+                <path d="M 352,160 L 352,368" fill="none" stroke="black"></path>
+                <path d="M 352,416 L 352,432" fill="none" stroke="black"></path>
+                <path d="M 352,480 L 352,496" fill="none" stroke="black"></path>
+                <path d="M 416,32 L 416,80" fill="none" stroke="black"></path>
+                <path d="M 440,32 L 440,80" fill="none" stroke="black"></path>
+                <path d="M 504,80 L 504,496" fill="none" stroke="black"></path>
+                <path d="M 568,32 L 568,80" fill="none" stroke="black"></path>
+                <path d="M 8,32 L 120,32" fill="none" stroke="black"></path>
+                <path d="M 144,32 L 256,32" fill="none" stroke="black"></path>
+                <path d="M 288,32 L 416,32" fill="none" stroke="black"></path>
+                <path d="M 440,32 L 568,32" fill="none" stroke="black"></path>
+                <path d="M 8,80 L 120,80" fill="none" stroke="black"></path>
+                <path d="M 144,80 L 256,80" fill="none" stroke="black"></path>
+                <path d="M 288,80 L 416,80" fill="none" stroke="black"></path>
+                <path d="M 440,80 L 568,80" fill="none" stroke="black"></path>
+                <path d="M 200,112 L 496,112" fill="none" stroke="black"></path>
+                <path d="M 208,160 L 504,160" fill="none" stroke="black"></path>
+                <path d="M 72,208 L 200,208" fill="none" stroke="black"></path>
+                <path d="M 64,256 L 192,256" fill="none" stroke="black"></path>
+                <path d="M 200,304 L 344,304" fill="none" stroke="black"></path>
+                <path d="M 208,352 L 352,352" fill="none" stroke="black"></path>
+                <path d="M 200,416 L 496,416" fill="none" stroke="black"></path>
+                <path d="M 208,480 L 504,480" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="504,416 492,410.4 492,421.6" fill="black" transform="rotate(0,496,416)"></polygon>
+                <polygon class="arrowhead" points="504,112 492,106.4 492,117.6" fill="black" transform="rotate(0,496,112)"></polygon>
+                <polygon class="arrowhead" points="352,304 340,298.4 340,309.6" fill="black" transform="rotate(0,344,304)"></polygon>
+                <polygon class="arrowhead" points="216,480 204,474.4 204,485.6" fill="black" transform="rotate(180,208,480)"></polygon>
+                <polygon class="arrowhead" points="216,352 204,346.4 204,357.6" fill="black" transform="rotate(180,208,352)"></polygon>
+                <polygon class="arrowhead" points="216,160 204,154.4 204,165.6" fill="black" transform="rotate(180,208,160)"></polygon>
+                <polygon class="arrowhead" points="200,256 188,250.4 188,261.6" fill="black" transform="rotate(0,192,256)"></polygon>
+                <polygon class="arrowhead" points="80,208 68,202.4 68,213.6" fill="black" transform="rotate(180,72,208)"></polygon>
+                <g class="text">
+                  <text x="32" y="52">Grant</text>
+                  <text x="84" y="52">issuer</text>
+                  <text x="196" y="52">Client</text>
+                  <text x="352" y="52">Authorization</text>
+                  <text x="500" y="52">Resource</text>
+                  <text x="348" y="68">server</text>
+                  <text x="320" y="100">operation</text>
+                  <text x="392" y="100">request</text>
+                  <text x="272" y="148">challenge</text>
+                  <text x="320" y="148">+</text>
+                  <text x="364" y="148">resource</text>
+                  <text x="436" y="148">metadata</text>
+                  <text x="104" y="196">request</text>
+                  <text x="160" y="196">grant</text>
+                  <text x="128" y="244">grant</text>
+                  <text x="240" y="292">grant</text>
+                  <text x="300" y="292">exchange</text>
+                  <text x="252" y="340">access</text>
+                  <text x="304" y="340">token</text>
+                  <text x="288" y="388">operation</text>
+                  <text x="336" y="388">+</text>
+                  <text x="372" y="388">access</text>
+                  <text x="424" y="388">token</text>
+                  <text x="240" y="404">proof</text>
+                  <text x="276" y="404">of</text>
+                  <text x="336" y="404">possession,</text>
+                  <text x="396" y="404">if</text>
+                  <text x="444" y="404">required</text>
+                  <text x="268" y="452">verify</text>
+                  <text x="340" y="452">permission</text>
+                  <text x="400" y="452">and</text>
+                  <text x="440" y="452">apply</text>
+                  <text x="268" y="468">capacity</text>
+                  <text x="336" y="468">policy,</text>
+                  <text x="388" y="468">then</text>
+                  <text x="440" y="468">respond</text>
+                  <text x="68" y="532">Optional</text>
+                  <text x="124" y="532">MOLE</text>
+                  <text x="176" y="532">budget:</text>
+                  <text x="228" y="532">flow</text>
+                  <text x="260" y="532">1.</text>
+                  <text x="68" y="548">Combined</text>
+                  <text x="140" y="548">carriage</text>
+                  <text x="208" y="548">remains</text>
+                  <text x="284" y="548">undefined.</text>
+                </g>
+              </svg><a href="#section-5.2-2.1.1" class="pilcrow">¶</a>
+</div>
 </div>
 <figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
 <a href="#name-permissioned-access-with-op" class="selfRef">Permissioned access with optional independent budget enforcement</a>
