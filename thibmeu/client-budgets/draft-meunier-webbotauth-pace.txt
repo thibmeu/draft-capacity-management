@@ -81,6 +81,7 @@ Table of Contents
      5.1.  Public access with WBA and MOLE
      5.2.  Permissioned access with a separate budget
    6.  Deployment considerations
+     6.1.  Budget scopes
    7.  Security considerations
      7.1.  Request integrity
      7.2.  Correlation and policy
@@ -202,12 +203,14 @@ Table of Contents
    [WIMSE-ARCH].  A Credential does not establish a unique account,
    workload, device, or other principal.
 
-   MOLE(C) denotes a presentation from Client C.  WBA(P) denotes a Web
-   Bot Auth signature from intermediary P.  C is a label in the figures,
-   not an identifier sent to the origin.  A credential chain is the
-   sequence of Credentials obtained by updating one initial Credential.
-   The Client experiences continuity through that chain without giving
-   the origin a session identifier.
+   MOLE(X) denotes a presentation for budget scope X.  MOLE(C) is a
+   Client's budget, while MOLE(T), MOLE(W), and MOLE(U) denote tenant,
+   workload, and account scopes.  These labels do not appear as
+   identifiers in presentations.  WBA(P) denotes a Web Bot Auth
+   signature from intermediary P.  A credential chain is the sequence of
+   Credentials obtained by updating one initial Credential.  The Client
+   experiences continuity through that chain without giving the origin a
+   session identifier.
 
 3.  Scope and principles
 
@@ -249,6 +252,27 @@ Table of Contents
    to allocate to it.  The evidence it accepts can establish
    attribution, permission, or a remaining budget.  A request may need
    more than one.
+
+   An implementer can assess each form of evidence along four
+   parameters:
+
+     +===========================+===================================+
+     | Parameter                 | Question                          |
+     +===========================+===================================+
+     | Principal or budget scope | Which party or allocation does    |
+     |                           | the evidence concern?             |
+     +---------------------------+-----------------------------------+
+     | Linkability               | Can requests be joined per        |
+     |                           | artifact, session, or principal?  |
+     +---------------------------+-----------------------------------+
+     | Property conveyed         | Does it establish attribution,    |
+     |                           | permission, or capacity?          |
+     +---------------------------+-----------------------------------+
+     | Trust source              | Which signer, Anchor Set, or      |
+     |                           | authority must the origin accept? |
+     +---------------------------+-----------------------------------+
+
+                                  Table 1
 
 4.1.  Attribution
 
@@ -401,20 +425,23 @@ Table of Contents
      Figure 1: Public access with carrier attribution and an anonymous
                                    budget
 
-   The origin verifies WBA(P) and applies any aggregate limit separately
-   from the Client's budget.  Because it serves the baseline, its
-   optional MOLE challenges travel on a 200 response.  A Client with a
-   suitable Credential can skip redemption.  Otherwise, it obtains the
-   Moderator configuration and redeems its Endorsement at the Redeem &
-   Issue endpoint.
+   1.  The Client sends a request.  The intermediary adds WBA(P), which
+       the origin verifies before applying its aggregate limit.
 
-   On the budgeted request, the Client proves that its balance covers s
-   and requests a top-up of at most a.  The Moderator verifies and
-   records the result before attempting the operation.  The example
-   continues the chain by returning an Update with 0 <= t <= s + a.
-   Each subsequent spend answers an applicable presentation challenge.
-   Successive fresh presentations have different nullifiers, and the
-   Credential does not provide a link between them.
+   2.  The origin serves the public baseline and offers redemption and
+       presentation challenges on the 200 response.  A Client with a
+       suitable Credential skips redemption.  Otherwise, it fetches the
+       Moderator configuration and redeems its Endorsement at the Redeem
+       & Issue endpoint.
+
+   3.  The Client presents proof that its balance covers s and requests
+       a top-up of at most a.  The Moderator verifies and records the
+       spend result atomically before attempting the operation.
+
+   4.  The response returns an Update with 0 <= t <= s + a, continuing
+       the chain with balance c - s + t.  Each subsequent spend answers
+       an applicable challenge and uses a fresh nullifier, without a
+       credential link to the previous presentation.
 
    A direct Client uses the same exchange without WBA(P).  A Client
    unable or unwilling to present continues at the public baseline,
@@ -423,12 +450,14 @@ Table of Contents
 
 5.2.  Permissioned access with a separate budget
 
-   The Client requests an operation requiring an OAuth access token.
-   The resource uses protected resource metadata [OAUTH-RS-META] to
-   identify its authorization server.  The grant issuer below is a
-   Workload Identity Provider for WAG, or an Identity Provider
-   Authorization Server for ID-JAG.  Each requires an existing trust
-   arrangement with the resource's authorization server.
+   In this example, the same software acts as the OAuth client and, when
+   a separate budget is required, the MOLE Client.  The roles need not
+   coincide in other deployments.  It requests an operation requiring an
+   OAuth access token.  The resource uses protected resource metadata
+   [OAUTH-RS-META] to identify its authorization server.  The grant
+   issuer below is a Workload Identity Provider for WAG, or an Identity
+   Provider Authorization Server for ID-JAG.  Each requires an existing
+   trust arrangement with the resource's authorization server.
 
    Grant issuer     Client       Authorization server     Resource
         |              |                  |                  |
@@ -437,8 +466,8 @@ Table of Contents
         |              | challenge + resource metadata       |
         |              |<------------------------------------|
         |              |                  |                  |
-        |<--- request --|                  |                  |
-        |---- grant --->|                  |                  |
+        |<-- request --|                  |                  |
+        |--- grant --->|                  |                  |
         |              | grant exchange   |                  |
         |              |----------------->|                  |
         |              | access token     |                  |
@@ -496,30 +525,57 @@ Table of Contents
 
         Figure 3: Separate endorsement and forwarding relationships
 
-   Independent allocations can coexist under one authenticated
-   principal, as in Figure 4.  Permission covers the operation each
-   Client may request.  Budget policy determines how much each may
-   consume.  Issuance policy must constrain the total allocation if
-   creating another Client is cheap.
+6.1.  Budget scopes
 
-   +-----------------------------+
-   | One authorized principal    |
-   |                             |
-   | +----------+  +----------+  |
-   | | Client A |  | Client B |  |
-   | | Budget A |  | Budget B |  |
-   | +-----+----+  +-----+----+  |
-   +-------+-------------+-------+
-           |             |
-           v             v
-   +-----------------------------+
-   | Resource                    |
-   | Permission for each request |
-   | Separate capacity budgets   |
-   +-----------------------------+
+   A platform P can host tenants T, each with workloads W serving
+   several Clients.  An account U may authorize several Clients.  The
+   noisy-neighbour boundary depends on which of these shares a budget.
+   A tenant budget separates tenants but leaves workloads within a
+   tenant sharing its allocation.  A workload budget separates workloads
+   but still groups their Clients.  Account budgets can isolate those
+   allocations further, while several Clients sharing one account budget
+   remain subject to the same limit.
 
-      Figure 4: Independent budgets under one principal, with combined
-                          carriage still undefined
+   In Figure 4, Anchor W endorses a workload and Anchor U endorses
+   account allocations.  The workload and its Clients play separate MOLE
+   roles.  The request carries their budget proofs alongside the
+   platform's signature.  The Anchors need not operate the forwarding
+   intermediary.  These are intended scopes, pending the multiple-
+   presentation carriage in Section 4.4.
+
+   +---------------------+       +---------------------+
+   |      Anchor W       |       |      Anchor U       |
+   +----------+----------+       +----------+----------+
+              | Endorsement                 | Endorsement
+              v                             v
+   +--------------------------------------------------+
+   | Platform P                                       |
+   |  +--------------------------------------------+  |
+   |  | Tenant workload with Clients                |  |
+   |  +----------------------+---------------------+  |
+   |                         |                        |
+   |                         v                        |
+   |                 +--------------+                 |
+   |                 | Intermediary +-----------------+---+
+   |                 +--------------+                 |   |
+   +--------------------------------------------------+   |
+                                                          | MOLE(W)
+                                                          | MOLE(U)
+                                                          | +WBA(P)
+                                                          v
+                                                    +-----------+
+                                                    |   Origin  |
+                                                    | Moderator |
+                                                    +-----------+
+
+         Figure 4: Workload and account budget scopes in a proposed
+                             stacked deployment
+
+   A principal can also receive several independent budgets, for example
+   one per Client.  Authorization determines what each Client may do,
+   while issuance policy constrains their combined allocation.  Adding
+   Clients must not yield unbounded replacement budgets.  Aggregate
+   platform limits still apply when individual budgets remain available.
 
    Concurrent requests need separate credential chains.  Several
    Credentials provide separate balances, so assigning more Credentials

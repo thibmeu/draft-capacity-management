@@ -1201,6 +1201,11 @@ composition with resource authorization needs further work.<a href="#section-abs
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
             <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-deployment-considerations" class="internal xref">Deployment considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-budget-scopes" class="internal xref">Budget scopes</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
             <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-security-considerations" class="internal xref">Security considerations</a></p>
@@ -1357,10 +1362,11 @@ terminates HTTP can sign forwarded requests under its own identity.<a href="#sec
 budgets for several Clients. Those allocations depend on Anchor and Moderator
 policy. A workload has the meaning given in <span>[<a href="#WIMSE-ARCH" class="cite xref">WIMSE-ARCH</a>]</span>. A Credential does
 not establish a unique account, workload, device, or other principal.<a href="#section-2-3" class="pilcrow">¶</a></p>
-<p id="section-2-4">MOLE(C) denotes a presentation from Client C. WBA(P) denotes a Web Bot Auth
-signature from intermediary P. C is a label in the figures, not an identifier
-sent to the origin. A credential chain is the sequence of Credentials obtained
-by updating one initial Credential. The Client experiences continuity through
+<p id="section-2-4">MOLE(X) denotes a presentation for budget scope X. MOLE(C) is a Client's
+budget, while MOLE(T), MOLE(W), and MOLE(U) denote tenant, workload, and
+account scopes. These labels do not appear as identifiers in presentations.
+WBA(P) denotes a Web Bot Auth signature from intermediary P. A credential
+chain is the sequence of Credentials obtained by updating one initial Credential. The Client experiences continuity through
 that chain without giving the origin a session identifier.<a href="#section-2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1403,6 +1409,34 @@ incomplete <span>[<a href="#EC-ACT" class="cite xref">EC-ACT</a>]</span>.<a href
 <p id="section-4-1">An origin decides whether to serve an operation and how much capacity to
 allocate to it. The evidence it accepts can establish attribution, permission,
 or a remaining budget. A request may need more than one.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">An implementer can assess each form of evidence along four parameters:<a href="#section-4-2" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+        <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">Parameter</th>
+            <th class="text-left" rowspan="1" colspan="1">Question</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Principal or budget scope</td>
+            <td class="text-left" rowspan="1" colspan="1">Which party or allocation does the evidence concern?</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Linkability</td>
+            <td class="text-left" rowspan="1" colspan="1">Can requests be joined per artifact, session, or principal?</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Property conveyed</td>
+            <td class="text-left" rowspan="1" colspan="1">Does it establish attribution, permission, or capacity?</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Trust source</td>
+            <td class="text-left" rowspan="1" colspan="1">Which signer, Anchor Set, or authority must the origin accept?</td>
+          </tr>
+        </tbody>
+      </table>
 <div id="attribution">
 <section id="section-4.1">
         <h3 id="name-attribution">
@@ -1557,20 +1591,32 @@ Anchor        Client C      Intermediary P      Origin
 <a href="#name-public-access-with-carrier-" class="selfRef">Public access with carrier attribution and an anonymous budget</a>
           </figcaption></figure>
 </div>
-<p id="section-5.1-3">The origin verifies WBA(P) and applies any aggregate limit separately from the
-Client's budget. Because it serves the baseline, its optional MOLE challenges
-travel on a 200 response. A Client with a suitable Credential can skip
-redemption. Otherwise, it obtains the Moderator configuration and redeems its
-Endorsement at the Redeem &amp; Issue endpoint.<a href="#section-5.1-3" class="pilcrow">¶</a></p>
-<p id="section-5.1-4">On the budgeted request, the Client proves that its balance covers s and
-requests a top-up of at most a. The Moderator verifies and records the result
-before attempting the operation. The example continues the chain by returning
-an Update with 0 &lt;= t &lt;= s + a. Each subsequent spend answers an applicable
-presentation challenge. Successive fresh presentations have different
-nullifiers, and the Credential does not provide a link between them.<a href="#section-5.1-4" class="pilcrow">¶</a></p>
-<p id="section-5.1-5">A direct Client uses the same exchange without WBA(P). A Client unable or
+<ol start="1" type="1" class="normal type-1" id="section-5.1-3">
+<li id="section-5.1-3.1">
+            <p id="section-5.1-3.1.1">The Client sends a request. The intermediary adds WBA(P), which the
+origin verifies before applying its aggregate limit.<a href="#section-5.1-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.1-3.2">
+            <p id="section-5.1-3.2.1">The origin serves the public baseline and offers redemption and presentation
+challenges on the 200 response. A Client with a suitable Credential skips
+redemption. Otherwise, it fetches the Moderator configuration and redeems
+its Endorsement at the Redeem &amp; Issue endpoint.<a href="#section-5.1-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.1-3.3">
+            <p id="section-5.1-3.3.1">The Client presents proof that its balance covers s and requests a top-up
+of at most a. The Moderator verifies and records the spend result atomically
+before attempting the operation.<a href="#section-5.1-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.1-3.4">
+            <p id="section-5.1-3.4.1">The response returns an Update with 0 &lt;= t &lt;= s + a, continuing the chain
+with balance c - s + t. Each subsequent spend answers an applicable
+challenge and uses a fresh nullifier, without a credential link to the
+previous presentation.<a href="#section-5.1-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-5.1-4">A direct Client uses the same exchange without WBA(P). A Client unable or
 unwilling to present continues at the public baseline, subject to origin policy.
-A failed presentation does not authorize the budgeted level of access.<a href="#section-5.1-5" class="pilcrow">¶</a></p>
+A failed presentation does not authorize the budgeted level of access.<a href="#section-5.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="flow2">
@@ -1578,8 +1624,10 @@ A failed presentation does not authorize the budgeted level of access.<a href="#
         <h3 id="name-permissioned-access-with-a-">
 <a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-permissioned-access-with-a-" class="section-name selfRef">Permissioned access with a separate budget</a>
         </h3>
-<p id="section-5.2-1">The Client requests an operation requiring an OAuth access token. The resource
-uses protected resource metadata <span>[<a href="#OAUTH-RS-META" class="cite xref">OAUTH-RS-META</a>]</span> to identify its authorization
+<p id="section-5.2-1">In this example, the same software acts as the OAuth client and, when a
+separate budget is required, the MOLE Client. The roles need not coincide in
+other deployments. It requests an operation requiring an OAuth access token.
+The resource uses protected resource metadata <span>[<a href="#OAUTH-RS-META" class="cite xref">OAUTH-RS-META</a>]</span> to identify its authorization
 server. The grant issuer below is a Workload Identity Provider for WAG, or an
 Identity Provider Authorization Server for ID-JAG. Each requires an existing
 trust arrangement with the resource's authorization server.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
@@ -1594,8 +1642,8 @@ Grant issuer     Client       Authorization server     Resource
      |              | challenge + resource metadata       |
      |              |&lt;------------------------------------|
      |              |                  |                  |
-     |&lt;--- request --|                  |                  |
-     |---- grant ---&gt;|                  |                  |
+     |&lt;-- request --|                  |                  |
+     |--- grant ---&gt;|                  |                  |
      |              | grant exchange   |                  |
      |              |-----------------&gt;|                  |
      |              | access token     |                  |
@@ -1690,81 +1738,116 @@ A tunnel carrying end-to-end TLS cannot add an HTTP signature.<a href="#section-
 <a href="#name-separate-endorsement-and-fo" class="selfRef">Separate endorsement and forwarding relationships</a>
         </figcaption></figure>
 </div>
-<p id="section-6-3">Independent allocations can coexist under one authenticated principal, as in
-<a href="#fig-budgets" class="auto internal xref">Figure 4</a>. Permission covers the operation each Client may request.
-Budget policy determines how much each may consume. Issuance policy must
-constrain the total allocation if creating another Client is cheap.<a href="#section-6-3" class="pilcrow">¶</a></p>
-<span id="name-independent-budgets-under-o"></span><div id="fig-budgets">
+<div id="budget-scopes">
+<section id="section-6.1">
+        <h3 id="name-budget-scopes">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-budget-scopes" class="section-name selfRef">Budget scopes</a>
+        </h3>
+<p id="section-6.1-1">A platform P can host tenants T, each with workloads W serving several
+Clients. An account U may authorize several Clients. The noisy-neighbour
+boundary depends on which of these shares a budget. A tenant budget separates
+tenants but leaves workloads within a tenant sharing its allocation. A
+workload budget separates workloads but still groups their Clients. Account
+budgets can isolate those allocations further, while several Clients sharing
+one account budget remain subject to the same limit.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-2">In <a href="#fig-stacked" class="auto internal xref">Figure 4</a>, Anchor W endorses a workload and Anchor U endorses account
+allocations. The workload and its Clients play separate MOLE roles. The
+request carries their budget proofs alongside the platform's signature.
+The Anchors need not operate the forwarding intermediary. These are intended
+scopes, pending the multiple-presentation carriage in <a href="#composition" class="auto internal xref">Section 4.4</a>.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+<span id="name-workload-and-account-budget"></span><div id="fig-stacked">
 <figure id="figure-4">
-        <div id="section-6-4.1">
-          <div class="alignLeft art-svg artwork" id="section-6-4.1.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="272" width="256" viewBox="0 0 256 272" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
-              <path d="M 8,32 L 8,144" fill="none" stroke="black"></path>
-              <path d="M 8,192 L 8,256" fill="none" stroke="black"></path>
-              <path d="M 24,80 L 24,128" fill="none" stroke="black"></path>
-              <path d="M 72,128 L 72,184" fill="none" stroke="black"></path>
-              <path d="M 112,80 L 112,128" fill="none" stroke="black"></path>
-              <path d="M 136,80 L 136,128" fill="none" stroke="black"></path>
-              <path d="M 184,128 L 184,184" fill="none" stroke="black"></path>
-              <path d="M 224,80 L 224,128" fill="none" stroke="black"></path>
-              <path d="M 248,32 L 248,144" fill="none" stroke="black"></path>
-              <path d="M 248,192 L 248,256" fill="none" stroke="black"></path>
-              <path d="M 8,32 L 248,32" fill="none" stroke="black"></path>
-              <path d="M 24,80 L 112,80" fill="none" stroke="black"></path>
-              <path d="M 136,80 L 224,80" fill="none" stroke="black"></path>
-              <path d="M 24,128 L 112,128" fill="none" stroke="black"></path>
-              <path d="M 136,128 L 224,128" fill="none" stroke="black"></path>
-              <path d="M 8,144 L 248,144" fill="none" stroke="black"></path>
-              <path d="M 8,192 L 248,192" fill="none" stroke="black"></path>
-              <path d="M 8,256 L 248,256" fill="none" stroke="black"></path>
-              <polygon class="arrowhead" points="192,184 180,178.4 180,189.6" fill="black" transform="rotate(90,184,184)"></polygon>
-              <polygon class="arrowhead" points="80,184 68,178.4 68,189.6" fill="black" transform="rotate(90,72,184)"></polygon>
-              <g class="text">
-                <text x="32" y="52">One</text>
-                <text x="92" y="52">authorized</text>
-                <text x="176" y="52">principal</text>
-                <text x="60" y="100">Client</text>
-                <text x="96" y="100">A</text>
-                <text x="172" y="100">Client</text>
-                <text x="208" y="100">B</text>
-                <text x="60" y="116">Budget</text>
-                <text x="96" y="116">A</text>
-                <text x="172" y="116">Budget</text>
-                <text x="208" y="116">B</text>
-                <text x="52" y="212">Resource</text>
-                <text x="60" y="228">Permission</text>
-                <text x="120" y="228">for</text>
-                <text x="156" y="228">each</text>
-                <text x="208" y="228">request</text>
-                <text x="52" y="244">Separate</text>
-                <text x="124" y="244">capacity</text>
-                <text x="192" y="244">budgets</text>
-              </g>
-            </svg><a href="#section-6-4.1.1" class="pilcrow">¶</a>
+          <div id="section-6.1-3.1">
+            <div class="alignLeft art-svg artwork" id="section-6.1-3.1.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="416" width="520" viewBox="0 0 520 416" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+                <path d="M 8,32 L 8,64" fill="none" stroke="black"></path>
+                <path d="M 8,112 L 8,272" fill="none" stroke="black"></path>
+                <path d="M 32,144 L 32,176" fill="none" stroke="black"></path>
+                <path d="M 96,64 L 96,104" fill="none" stroke="black"></path>
+                <path d="M 152,224 L 152,256" fill="none" stroke="black"></path>
+                <path d="M 184,32 L 184,64" fill="none" stroke="black"></path>
+                <path d="M 216,176 L 216,216" fill="none" stroke="black"></path>
+                <path d="M 248,32 L 248,64" fill="none" stroke="black"></path>
+                <path d="M 272,224 L 272,256" fill="none" stroke="black"></path>
+                <path d="M 336,64 L 336,104" fill="none" stroke="black"></path>
+                <path d="M 400,352 L 400,400" fill="none" stroke="black"></path>
+                <path d="M 416,112 L 416,144" fill="none" stroke="black"></path>
+                <path d="M 416,176 L 416,272" fill="none" stroke="black"></path>
+                <path d="M 424,32 L 424,64" fill="none" stroke="black"></path>
+                <path d="M 448,240 L 448,344" fill="none" stroke="black"></path>
+                <path d="M 496,352 L 496,400" fill="none" stroke="black"></path>
+                <path d="M 8,32 L 184,32" fill="none" stroke="black"></path>
+                <path d="M 248,32 L 424,32" fill="none" stroke="black"></path>
+                <path d="M 8,64 L 184,64" fill="none" stroke="black"></path>
+                <path d="M 248,64 L 424,64" fill="none" stroke="black"></path>
+                <path d="M 8,112 L 416,112" fill="none" stroke="black"></path>
+                <path d="M 32,144 L 384,144" fill="none" stroke="black"></path>
+                <path d="M 32,176 L 384,176" fill="none" stroke="black"></path>
+                <path d="M 152,224 L 272,224" fill="none" stroke="black"></path>
+                <path d="M 272,240 L 448,240" fill="none" stroke="black"></path>
+                <path d="M 152,256 L 272,256" fill="none" stroke="black"></path>
+                <path d="M 8,272 L 416,272" fill="none" stroke="black"></path>
+                <path d="M 400,352 L 496,352" fill="none" stroke="black"></path>
+                <path d="M 400,400 L 496,400" fill="none" stroke="black"></path>
+                <path d="M 384,144 C 392.83064,144 400,151.16936 400,160" fill="none" stroke="black"></path>
+                <path d="M 384,176 C 392.83064,176 400,168.83064 400,160" fill="none" stroke="black"></path>
+                <polygon class="arrowhead" points="456,344 444,338.4 444,349.6" fill="black" transform="rotate(90,448,344)"></polygon>
+                <polygon class="arrowhead" points="344,104 332,98.4 332,109.6" fill="black" transform="rotate(90,336,104)"></polygon>
+                <polygon class="arrowhead" points="224,216 212,210.4 212,221.6" fill="black" transform="rotate(90,216,216)"></polygon>
+                <polygon class="arrowhead" points="104,104 92,98.4 92,109.6" fill="black" transform="rotate(90,96,104)"></polygon>
+                <g class="text">
+                  <text x="84" y="52">Anchor</text>
+                  <text x="120" y="52">W</text>
+                  <text x="324" y="52">Anchor</text>
+                  <text x="360" y="52">U</text>
+                  <text x="152" y="84">Endorsement</text>
+                  <text x="392" y="84">Endorsement</text>
+                  <text x="52" y="132">Platform</text>
+                  <text x="96" y="132">P</text>
+                  <text x="68" y="164">Tenant</text>
+                  <text x="132" y="164">workload</text>
+                  <text x="188" y="164">with</text>
+                  <text x="240" y="164">Clients</text>
+                  <text x="424" y="164">|</text>
+                  <text x="212" y="244">Intermediary</text>
+                  <text x="488" y="292">MOLE(W)</text>
+                  <text x="488" y="308">MOLE(U)</text>
+                  <text x="488" y="324">+WBA(P)</text>
+                  <text x="452" y="372">Origin</text>
+                  <text x="448" y="388">Moderator</text>
+                </g>
+              </svg><a href="#section-6.1-3.1.1" class="pilcrow">¶</a>
 </div>
 </div>
 <figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
-<a href="#name-independent-budgets-under-o" class="selfRef">Independent budgets under one principal, with combined carriage still undefined</a>
-        </figcaption></figure>
+<a href="#name-workload-and-account-budget" class="selfRef">Workload and account budget scopes in a proposed stacked deployment</a>
+          </figcaption></figure>
 </div>
-<p id="section-6-5">Concurrent requests need separate credential chains. Several Credentials
+<p id="section-6.1-4">A principal can also receive several independent budgets, for example one per
+Client. Authorization determines what each Client may do, while issuance
+policy constrains their combined allocation. Adding Clients must not yield
+unbounded replacement budgets. Aggregate platform limits still apply when
+individual budgets remain available.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+<p id="section-6.1-5">Concurrent requests need separate credential chains. Several Credentials
 provide separate balances, so assigning more Credentials can increase both
 concurrency and total consumption. Shared-budget splitting and simultaneous
-checks of aggregate and individual anonymous budgets remain open.<a href="#section-6-5" class="pilcrow">¶</a></p>
-<p id="section-6-6">A CDN can operate a Moderator for several origins. All servers accepting the
+checks of aggregate and individual anonymous budgets remain open.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
+<p id="section-6.1-6">A CDN can operate a Moderator for several origins. All servers accepting the
 same credential key and context must share atomic replay state. Independent
 stores need disjoint keys or contexts. Sharing a credential context also
 shares its budget scope and can enlarge the anonymity set, but activity at
-one origin can then reduce the balance available at another.<a href="#section-6-6" class="pilcrow">¶</a></p>
-<p id="section-6-7">Anchors constrain new allocations, but the Moderator cannot identify the
+one origin can then reduce the balance available at another.<a href="#section-6.1-6" class="pilcrow">¶</a></p>
+<p id="section-6.1-7">Anchors constrain new allocations, but the Moderator cannot identify the
 issuing Anchor from a redemption. <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span> leaves privacy-preserving
 Anchor feedback unresolved. Removing an Anchor requires evidence from outside
 that anonymous redemption, and changing sets to probe Clients can reduce
-privacy. Endorsements from several accepted Anchors can yield several budgets.<a href="#section-6-7" class="pilcrow">¶</a></p>
-<p id="section-6-8">Deployment also needs bounded verification work and replay storage. Invalid
+privacy. Endorsements from several accepted Anchors can yield several budgets.<a href="#section-6.1-7" class="pilcrow">¶</a></p>
+<p id="section-6.1-8">Deployment also needs bounded verification work and replay storage. Invalid
 proofs can consume verification capacity, and replay markers must remain while
 their Credentials are accepted. Aggregate controls remain necessary for
-availability, even though they can reintroduce shared fate.<a href="#section-6-8" class="pilcrow">¶</a></p>
+availability, even though they can reintroduce shared fate.<a href="#section-6.1-8" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="security">
