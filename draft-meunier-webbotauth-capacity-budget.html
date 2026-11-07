@@ -1239,74 +1239,91 @@ authorization primitives needs further work.<a href="#section-abstract-2" class=
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">An address, including an <span>[<a href="#IPv6" class="cite xref">IPv6</a>]</span> address, is not necessarily a user. Blocking
+<p id="section-1-1">Agents are increasingly used in business and user workflows, including AI
+assistants, search indexing, content aggregation, and automated testing. Their
+relationship with origins is symbiotic. They need information from origins, and
+origins need signals to apply rate-limit policies. These can be binary, like
+allow or block when an origin cannot serve traffic, or resource-based to
+allocate capacity among clients.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">Historically, most of these signals have been enshrined into deployments of
+internet protocols. An agent needs an IP address to receive a response from an
+origin. Its TLS stack and browser behavior provide further signals. It provides
+a familiar User-Agent because middleboxes might otherwise filter its traffic
+(see <span>[<a href="#USER-AGENT-HISTORY" class="cite xref">USER-AGENT-HISTORY</a>]</span>).<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">Recent developments break these patterns. Agents use proxies
+(<span>[<a href="#CONNECT-UDP" class="cite xref">CONNECT-UDP</a>]</span>, <span>[<a href="#CONNECT-IP" class="cite xref">CONNECT-IP</a>]</span>, <span>[<a href="#OHTTP" class="cite xref">OHTTP</a>]</span>, or plain <span>[<a href="#HTTP" class="cite xref">HTTP</a>]</span>).
+As platforms make requests on behalf of users, the user's TLS stack may no
+longer be the one visible to the origin. AI agents, on the user's device or
+hosted remotely, fetch and render information in place of browsers. User-Agent
+strings are still spoofed.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">An address, including an <span>[<a href="#IPv6" class="cite xref">IPv6</a>]</span> address, is not necessarily a user. Blocking
 a shared IP range can affect everyone behind it. A platform signing requests under one
 <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> identity creates a similar shared fate: when one tenant's
 agent overloads an origin, limiting the platform also limits its other
 tenants. <span>[<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span> describes this problem and proposes
 signed product, project, and session identifiers to let an origin isolate
-traffic below the platform level.<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">More granular identifiers are useful when the origin needs to recognize a
+traffic below the platform level.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">More granular identifiers are useful when the origin needs to recognize a
 particular product or project, investigate abuse with its platform, or follow
 a task within a session. <span>[<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span> advocates for such
 identifiers. While they are pseudonymous, the receiving origin can link
 requests within the scope and lifetime of those identifiers. This has several
-privacy costs:<a href="#section-1-2" class="pilcrow">¶</a></p>
+privacy costs:<a href="#section-1-5" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-1-3.1">
-          <p id="section-1-3.1.1">Discriminatory treatment: Explicit identifiers allow for discriminatory
+<li class="normal" id="section-1-6.1">
+          <p id="section-1-6.1.1">Discriminatory treatment: Explicit identifiers allow for discriminatory
 treatment of traffic based on those identifiers. An origin can give
 preferential treatment to some products or projects, or block them
-regardless of their requests' behavior.<a href="#section-1-3.1.1" class="pilcrow">¶</a></p>
+regardless of their requests' behavior.<a href="#section-1-6.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-1-3.2">
-          <p id="section-1-3.2.1">Linkability: Explicit identifiers allow for linking traffic to that identifier.
+        <li class="normal" id="section-1-6.2">
+          <p id="section-1-6.2.1">Linkability: Explicit identifiers allow for linking traffic to that identifier.
 The scope and lifetime of the identifier, together with other request data,
-determine how much activity the origin can associate with it.<a href="#section-1-3.2.1" class="pilcrow">¶</a></p>
+determine how much activity the origin can associate with it.<a href="#section-1-6.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-1-3.3">
-          <p id="section-1-3.3.1">Relationship disclosure: Explicit identifiers reveal information about the
+        <li class="normal" id="section-1-6.3">
+          <p id="section-1-6.3.1">Relationship disclosure: Explicit identifiers reveal information about the
 relationship between an intermediary and its clients, such as which requests
 belong to the same project. Clients may have no clear view of how that
-information will be processed, stored, or shared.<a href="#section-1-3.3.1" class="pilcrow">¶</a></p>
+information will be processed, stored, or shared.<a href="#section-1-6.3.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-4">This presents a natural tension between the needs of an origin and the needs
+<p id="section-1-7">This presents a natural tension between the needs of an origin and the needs
 of a user. Identifiers give an origin a way to apply capacity and abuse
 controls at the granularity provided. This depends on the platform assigning
 them reliably. Agents using those controls bear the cost of attribution. An origin
 has to be able to apply policies to traffic whether it finds it abusive or
 acceptable. Bounding consumption does not always require more fine-grained
-identifiers.<a href="#section-1-4" class="pilcrow">¶</a></p>
-<p id="section-1-5">This document describes capacity budgets for agents using MOLE,
+identifiers.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<p id="section-1-8">This document describes capacity budgets for agents using MOLE,
 an architecture for private moderation <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>. Separately allocated
 budgets let the origin charge one Client's requests without consuming
 another's allocation. MOLE alone does not ensure one budget per agent or
 enforce a per-agent rate over time. The draft describes how Clients obtain
 Endorsements and Credentials, and how Anchor issuance and Moderator spending
-policies constrain those budgets.<a href="#section-1-5" class="pilcrow">¶</a></p>
-<p id="section-1-6">Avoiding unnecessary disclosure supports the end-user interests discussed in
+policies constrain those budgets.<a href="#section-1-8" class="pilcrow">¶</a></p>
+<p id="section-1-9">Avoiding unnecessary disclosure supports the end-user interests discussed in
 <span>[<a href="#INTERNET-FOR-END-USER" class="cite xref">INTERNET-FOR-END-USER</a>]</span>. For these capacity decisions, the origin need not
 receive product, project, or session identifiers. When used, a platform
 signature remains visible, along with public spending terms and other request
-data. This approach does not prevent discrimination based on that information.<a href="#section-1-6" class="pilcrow">¶</a></p>
-<p id="section-1-7">Such a mechanism is useful in a number of cases. Some examples follow:<a href="#section-1-7" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-1-8">
-<li id="section-1-8.1">
-          <p id="section-1-8.1.1">An AI agent service that hosts remote agents and concentrates their traffic
+data. This approach does not prevent discrimination based on that information.<a href="#section-1-9" class="pilcrow">¶</a></p>
+<p id="section-1-10">Such a mechanism is useful in a number of cases. Some examples follow:<a href="#section-1-10" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-1-11">
+<li id="section-1-11.1">
+          <p id="section-1-11.1.1">An AI agent service that hosts remote agents and concentrates their traffic
 on a small set of IP addresses. One user's activity can affect others when
-an origin can only limit the shared address or the platform as a whole.<a href="#section-1-8.1.1" class="pilcrow">¶</a></p>
+an origin can only limit the shared address or the platform as a whole.<a href="#section-1-11.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-1-8.2">
-          <p id="section-1-8.2.1">Network operators carry traffic from device-resident agents behind shared
+        <li id="section-1-11.2">
+          <p id="section-1-11.2.1">Network operators carry traffic from device-resident agents behind shared
 IP ranges. Policies applied to an address range or an entire ASN give these
-users a shared fate.<a href="#section-1-8.2.1" class="pilcrow">¶</a></p>
+users a shared fate.<a href="#section-1-11.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-1-8.3">
-          <p id="section-1-8.3.1">VPN providers and enterprise zero trust gateways have a noisy neighbour
+        <li id="section-1-11.3">
+          <p id="section-1-11.3.1">VPN providers and enterprise zero trust gateways have a noisy neighbour
 problem. They may know their users, but should not have to expose them to
 each origin. An origin able to tell employees apart could single out an
-executive's activity for instance.<a href="#section-1-8.3.1" class="pilcrow">¶</a></p>
+executive's activity for instance.<a href="#section-1-11.3.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <div id="scenarios">
@@ -2157,6 +2174,14 @@ a recorded termination only while the result remains available.<a href="#section
       <dd>
 <span class="refAuthor">Meunier, T.</span> and <span class="refAuthor">K. Kelley</span>, <span class="refTitle">"Principles for Web Traffic Management by Intermediaries"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-meunier-bcp-civil-00</span>, <time datetime="2026-10-29" class="refDate">29 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-meunier-bcp-civil-00">https://datatracker.ietf.org/doc/html/draft-meunier-bcp-civil-00</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="CONNECT-IP">[CONNECT-IP]</dt>
+      <dd>
+<span class="refAuthor">Pauly, T., Ed.</span>, <span class="refAuthor">Schinazi, D.</span>, <span class="refAuthor">Chernyakhovsky, A.</span>, <span class="refAuthor">Kühlewind, M.</span>, and <span class="refAuthor">M. Westerlund</span>, <span class="refTitle">"Proxying IP in HTTP"</span>, <span class="seriesInfo">RFC 9484</span>, <span class="seriesInfo">DOI 10.17487/RFC9484</span>, <time datetime="2023-10" class="refDate">October 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9484">https://www.rfc-editor.org/rfc/rfc9484</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="CONNECT-UDP">[CONNECT-UDP]</dt>
+      <dd>
+<span class="refAuthor">Schinazi, D.</span>, <span class="refTitle">"Proxying UDP in HTTP"</span>, <span class="seriesInfo">RFC 9298</span>, <span class="seriesInfo">DOI 10.17487/RFC9298</span>, <time datetime="2022-08" class="refDate">August 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9298">https://www.rfc-editor.org/rfc/rfc9298</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="DIGEST">[DIGEST]</dt>
       <dd>
 <span class="refAuthor">Polli, R.</span> and <span class="refAuthor">L. Pardue</span>, <span class="refTitle">"Digest Fields"</span>, <span class="seriesInfo">RFC 9530</span>, <span class="seriesInfo">DOI 10.17487/RFC9530</span>, <time datetime="2024-02" class="refDate">February 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9530">https://www.rfc-editor.org/rfc/rfc9530</a>&gt;</span>. </dd>
@@ -2209,6 +2234,10 @@ a recorded termination only while the result remains available.<a href="#section
       <dd>
 <span class="refAuthor">Parecki, A.</span>, <span class="refAuthor">McGuinness, K.</span>, and <span class="refAuthor">B. Campbell</span>, <span class="refTitle">"Identity Assertion JWT Authorization Grant"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-oauth-identity-assertion-authz-grant-06</span>, <time datetime="2026-10-30" class="refDate">30 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-identity-assertion-authz-grant-06">https://datatracker.ietf.org/doc/html/draft-ietf-oauth-identity-assertion-authz-grant-06</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="OHTTP">[OHTTP]</dt>
+      <dd>
+<span class="refAuthor">Thomson, M.</span> and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Oblivious HTTP"</span>, <span class="seriesInfo">RFC 9458</span>, <span class="seriesInfo">DOI 10.17487/RFC9458</span>, <time datetime="2024-01" class="refDate">January 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9458">https://www.rfc-editor.org/rfc/rfc9458</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="OIDC">[OIDC]</dt>
       <dd>
 <span class="refTitle">"OpenID Connect Core 1.0"</span>, <span>n.d.</span>, <span>&lt;<a href="https://openid.net/specs/openid-connect-core-1_0.html">https://openid.net/specs/openid-connect-core-1_0.html</a>&gt;</span>. </dd>
@@ -2232,6 +2261,10 @@ a recorded termination only while the result remains available.<a href="#section
 <dt id="SIGNED-AGENT-METADATA">[SIGNED-AGENT-METADATA]</dt>
       <dd>
 <span class="refAuthor">Vilgalys, R.</span> and <span class="refAuthor">P. González</span>, <span class="refTitle">"The Signed-Agent-Metadata HTTP Header Field for Web Bot Auth"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-vilgalys-webbotauth-signed-agent-metadata-00</span>, <time datetime="2026-11-02" class="refDate">2 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-vilgalys-webbotauth-signed-agent-metadata-00">https://datatracker.ietf.org/doc/html/draft-vilgalys-webbotauth-signed-agent-metadata-00</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="USER-AGENT-HISTORY">[USER-AGENT-HISTORY]</dt>
+      <dd>
+<span class="refTitle">"WebAIM: History of the browser user-agent string"</span>, <span>n.d.</span>, <span>&lt;<a href="https://webaim.org/blog/user-agent-string-history/">https://webaim.org/blog/user-agent-string-history/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="WAG">[WAG]</dt>
       <dd>

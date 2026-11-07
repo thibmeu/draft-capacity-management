@@ -94,6 +94,28 @@ Table of Contents
 
 1.  Introduction
 
+   Agents are increasingly used in business and user workflows,
+   including AI assistants, search indexing, content aggregation, and
+   automated testing.  Their relationship with origins is symbiotic.
+   They need information from origins, and origins need signals to apply
+   rate-limit policies.  These can be binary, like allow or block when
+   an origin cannot serve traffic, or resource-based to allocate
+   capacity among clients.
+
+   Historically, most of these signals have been enshrined into
+   deployments of internet protocols.  An agent needs an IP address to
+   receive a response from an origin.  Its TLS stack and browser
+   behavior provide further signals.  It provides a familiar User-Agent
+   because middleboxes might otherwise filter its traffic (see
+   [USER-AGENT-HISTORY]).
+
+   Recent developments break these patterns.  Agents use proxies
+   ([CONNECT-UDP], [CONNECT-IP], [OHTTP], or plain [HTTP]).  As
+   platforms make requests on behalf of users, the user's TLS stack may
+   no longer be the one visible to the origin.  AI agents, on the user's
+   device or hosted remotely, fetch and render information in place of
+   browsers.  User-Agent strings are still spoofed.
+
    An address, including an [IPv6] address, is not necessarily a user.
    Blocking a shared IP range can affect everyone behind it.  A platform
    signing requests under one [WBA-HTTPSIG] identity creates a similar
@@ -799,6 +821,17 @@ Table of Contents
               <https://datatracker.ietf.org/doc/html/draft-meunier-bcp-
               civil-00>.
 
+   [CONNECT-IP]
+              Pauly, T., Ed., Schinazi, D., Chernyakhovsky, A.,
+              Kühlewind, M., and M. Westerlund, "Proxying IP in HTTP",
+              RFC 9484, DOI 10.17487/RFC9484, October 2023,
+              <https://www.rfc-editor.org/rfc/rfc9484>.
+
+   [CONNECT-UDP]
+              Schinazi, D., "Proxying UDP in HTTP", RFC 9298,
+              DOI 10.17487/RFC9298, August 2022,
+              <https://www.rfc-editor.org/rfc/rfc9298>.
+
    [DIGEST]   Polli, R. and L. Pardue, "Digest Fields", RFC 9530,
               DOI 10.17487/RFC9530, February 2024,
               <https://www.rfc-editor.org/rfc/rfc9530>.
@@ -872,6 +905,10 @@ Table of Contents
               <https://datatracker.ietf.org/doc/html/draft-ietf-oauth-
               identity-assertion-authz-grant-06>.
 
+   [OHTTP]    Thomson, M. and C. A. Wood, "Oblivious HTTP", RFC 9458,
+              DOI 10.17487/RFC9458, January 2024,
+              <https://www.rfc-editor.org/rfc/rfc9458>.
+
    [OIDC]     "OpenID Connect Core 1.0", n.d.,
               <https://openid.net/specs/openid-connect-core-1_0.html>.
 
@@ -905,6 +942,10 @@ Table of Contents
               metadata-00, 2 November 2026,
               <https://datatracker.ietf.org/doc/html/draft-vilgalys-
               webbotauth-signed-agent-metadata-00>.
+
+   [USER-AGENT-HISTORY]
+              "WebAIM: History of the browser user-agent string", n.d.,
+              <https://webaim.org/blog/user-agent-string-history/>.
 
    [WAG]      Carleton, P., Steele, N., Parecki, A., Schwenkschuster,
               A., and B. Campbell, "Workload Authorization Grant", Work
