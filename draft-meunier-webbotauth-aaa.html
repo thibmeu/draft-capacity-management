@@ -4,21 +4,23 @@
 <meta charset="utf-8">
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
-<title>Proportionate Access and Capacity Enforcement</title>
+<title>Anonymous Agent Authentication</title>
 <meta content="Thibault Meunier" name="author">
 <meta content="Christopher A. Wood" name="author">
 <meta content="
        Origins often limit requests by address or by the platform carrying them.
 Clients behind shared infrastructure then share the consequences of one
-another's activity. This document sketches independently allocated budgets
-that let origins bound consumption without requiring stable Client identifiers.
-It describes how MOLE credentials preserve budget continuity across unlinkable
+another's activity. Signed product, project, or session identifiers can
+narrow that shared fate, but also let origins link requests. When the goal
+is only to bound consumption, such identifiers need not be disclosed: this
+document sketches independently allocated, scarce budgets instead. It
+describes how MOLE credentials preserve budget continuity across unlinkable
 presentations, how carrier attribution supports aggregate limits, and where
 composition with resource authorization needs further work. 
     " name="description">
 <meta content="xml2rfc 3.35.0" name="generator">
 <meta content="anonymous rate limiting" name="keyword">
-<meta content="draft-meunier-webbotauth-pace-latest" name="ietf.draft">
+<meta content="draft-meunier-webbotauth-aaa-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.35.0
     Python 3.14.10
@@ -34,7 +36,7 @@ composition with resource authorization needs further work.
     requests 2.33.1
     wcwidth 0.9.4
 -->
-<link href="draft-meunier-webbotauth-pace.xml" rel="alternate" type="application/rfc+xml">
+<link href="draft-meunier-webbotauth-aaa.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
 <style type="text/css">@font-face {
   font-family: 'Lora';
@@ -1047,12 +1049,12 @@ svg {
 <table class="ears">
 <thead><tr>
 <td class="left">Internet-Draft</td>
-<td class="center">PACE</td>
+<td class="center">AAA</td>
 <td class="right">November 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Meunier &amp; Wood</td>
-<td class="center">Expires 10 May 2027</td>
+<td class="center">Expires 11 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1062,15 +1064,15 @@ svg {
 <dt class="label-workgroup">Workgroup:</dt>
 <dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
-<dd class="internet-draft">draft-meunier-webbotauth-pace-latest</dd>
+<dd class="internet-draft">draft-meunier-webbotauth-aaa-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-11-06" class="published">6 November 2026</time>
+<time datetime="2026-11-07" class="published">7 November 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-05-10">10 May 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-11">11 May 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1084,14 +1086,16 @@ svg {
 </dd>
 </dl>
 </div>
-<h1 id="title">Proportionate Access and Capacity Enforcement</h1>
+<h1 id="title">Anonymous Agent Authentication</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
 <p id="section-abstract-1">Origins often limit requests by address or by the platform carrying them.
 Clients behind shared infrastructure then share the consequences of one
-another's activity. This document sketches independently allocated budgets
-that let origins bound consumption without requiring stable Client identifiers.
-It describes how MOLE credentials preserve budget continuity across unlinkable
+another's activity. Signed product, project, or session identifiers can
+narrow that shared fate, but also let origins link requests. When the goal
+is only to bound consumption, such identifiers need not be disclosed: this
+document sketches independently allocated, scarce budgets instead. It
+describes how MOLE credentials preserve budget continuity across unlinkable
 presentations, how carrier attribution supports aggregate limits, and where
 composition with resource authorization needs further work.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
@@ -1101,8 +1105,8 @@ composition with resource authorization needs further work.<a href="#section-abs
       </h2>
 <p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
 <p id="section-note.1-2">
-        The latest revision of this draft can be found at <span><a href="https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-pace.html">https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-pace.html</a></span>.
-        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-meunier-webbotauth-pace/">https://datatracker.ietf.org/doc/draft-meunier-webbotauth-pace/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+        The latest revision of this draft can be found at <span><a href="https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-aaa.html">https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-aaa.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-meunier-webbotauth-aaa/">https://datatracker.ietf.org/doc/draft-meunier-webbotauth-aaa/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
 <p id="section-note.1-3">Source for this draft and an issue tracker can be found at
         <span><a href="https://github.com/thibmeu/draft-brian">https://github.com/thibmeu/draft-brian</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
 </section>
@@ -1125,7 +1129,7 @@ composition with resource authorization needs further work.<a href="#section-abs
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 10 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 11 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1158,15 +1162,12 @@ composition with resource authorization needs further work.<a href="#section-abs
             <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
-                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-motivating-use-cases" class="internal xref">Motivating use cases</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
-                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-related-work" class="internal xref">Related work</a></p>
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-related-work" class="internal xref">Related work</a></p>
 </li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
-            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
             <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-scope-and-principles" class="internal xref">Scope and principles</a></p>
@@ -1194,16 +1195,16 @@ composition with resource authorization needs further work.<a href="#section-abs
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
                 <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-public-access-with-wba-and-" class="internal xref">Public access with WBA and MOLE</a></p>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
-                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-permissioned-access-with-a-" class="internal xref">Permissioned access with a separate budget</a></p>
-</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
             <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-deployment-considerations" class="internal xref">Deployment considerations</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
-                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-budget-scopes" class="internal xref">Budget scopes</a></p>
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-capacity-without-identifier" class="internal xref">Capacity without identifiers</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-capacity-scopes" class="internal xref">Capacity scopes</a></p>
 </li>
             </ul>
 </li>
@@ -1256,66 +1257,99 @@ As platforms make requests on behalf of users, the user's TLS stack may no
 longer be the one visible to the origin. AI agents, on the user's device or
 hosted remotely, fetch and render information in place of browsers. User-Agent
 strings are still spoofed.<a href="#section-1-3" class="pilcrow">¶</a></p>
-<p id="section-1-4">Origins need to apply policy despite these changes. Many approaches rely on
-obtaining a stable identifier. An address, including an <span>[<a href="#IPv6" class="cite xref">IPv6</a>]</span> address, is not
-necessarily a user. Blocking a shared IP range can affect everyone behind it.
-In enterprise settings, an agent can identify as a workload <span>[<a href="#WIMSE-AIMS" class="cite xref">WIMSE-AIMS</a>]</span>.
-Platforms that can tolerate attribution can identify using <span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span>.
-Other approaches involve user authentication or authorization, such as <span>[<a href="#AAUTH" class="cite xref">AAUTH</a>]</span>
-and <span>[<a href="#OAUTH-XAA" class="cite xref">OAUTH-XAA</a>]</span>. <a href="#system" class="auto internal xref">Section 4</a> places these options side by side.<a href="#section-1-4" class="pilcrow">¶</a></p>
-<p id="section-1-5">While identification solves many problems, it should not be necessary just to
-limit an agent's consumption. The problem is to give origins that control
-without requiring users or their agents to disclose a stable identifier. This
-supports the user interests discussed in <span>[<a href="#INTERNET-FOR-END-USER" class="cite xref">INTERNET-FOR-END-USER</a>]</span>.<a href="#section-1-5" class="pilcrow">¶</a></p>
-<div id="motivating-use-cases">
-<section id="section-1.1">
-        <h3 id="name-motivating-use-cases">
-<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-motivating-use-cases" class="section-name selfRef">Motivating use cases</a>
-        </h3>
-<p id="section-1.1-1">In the cases below, traffic passes through platforms. Each user also has a
-relationship with some Anchor, often but not necessarily that platform, which
-can grant scarce Endorsements. Origins could use those to apply rate-limit
-policies without learning who the user is.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-1.1-2">
-<li id="section-1.1-2.1">
-            <p id="section-1.1-2.1.1">AI agent services host remote agents and concentrate their traffic on a
-small set of IP addresses. One user's activity can affect others when an
-origin can only limit the shared address or the platform as a whole.<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
+<p id="section-1-4">Origins need to apply policy despite these changes. An address, including an
+<span>[<a href="#IPv6" class="cite xref">IPv6</a>]</span> address, is not necessarily a user. Blocking a shared IP range can
+affect everyone behind it. A platform signing requests under one
+<span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> identity creates a similar shared fate: when one tenant's
+agent overloads an origin, limiting the platform also limits its other
+tenants. <span>[<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span> describes this problem and proposes
+signed product, project, and session identifiers to let an origin isolate
+traffic below the platform level.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">More granular identifiers are useful when the origin needs to recognize a
+particular product or project, investigate abuse with its platform, or follow
+a task within a session. <span>[<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span> advocates for such
+identifiers. While they are pseudonymous, the receiving origin can link
+requests within the context of such identifiers. This has two immediate
+costs:<a href="#section-1-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-6.1">
+          <p id="section-1-6.1.1">Discriminatory treatment: Explicit identifiers allow for discriminatory
+treatment of traffic based on those identifiers. This could be used for
+the purposes of giving preferential treatment to some traffic over others,
+such as by blocking certain types of traffic depending on their requests.<a href="#section-1-6.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-1.1-2.2">
-            <p id="section-1.1-2.2.1">Network operators carry traffic from device-resident agents behind shared
+        <li class="normal" id="section-1-6.2">
+          <p id="section-1-6.2.1">Privacy: Explicit identifiers allow for linking traffic to that identifier.
+The more granular the identifier, the more precise of a profile this
+linkability offers.<a href="#section-1-6.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-1-7">This presents natural tension between the needs of an origin and the needs
+of an agent. Identifiers are sufficient for enforcing capacity and abuse
+control on the granularity of the identifiers provided, but identifiers can
+lead to harmful outcomes for agents. An origin needs to distinguish abusive
+from acceptable behavior, but does not always need a persistent handle on
+the party behind it.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<p id="section-1-8">If the origin's goal is only to bound each consumption to products, projects,
+or platforms, identifiers are not strictly necessary.
+This document describes Anonymous Agent Authentication (AAA) using MOLE
+(Moderation of unLinkable Endorsements), an architecture for private
+moderation <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>. Separately allocated budgets can keep one Client's
+spending from exhausting another's allocation behind shared infrastructure.
+This requires Anchor policies that constrain issuance and Moderator policies
+that charge and replenish balances; MOLE alone does not ensure one budget
+per agent or enforce a per-agent rate over time. Public access need not be
+conditioned on disclosure of a stable identifier.<a href="#section-1-8" class="pilcrow">¶</a></p>
+<p id="section-1-9">Such a mechanism is useful in a number of cases. Some examples follow:<a href="#section-1-9" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-1-10">
+<li id="section-1-10.1">
+          <p id="section-1-10.1.1">An AI agent service that hosts remote agents and concentrate their traffic
+on a small set of IP addresses. One user's activity can affect others when
+an origin can only limit the shared address or the platform as a whole.<a href="#section-1-10.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-1-10.2">
+          <p id="section-1-10.2.1">Network operators carry traffic from device-resident agents behind shared
 IP ranges. Policies applied to an address range or an entire ASN give these
-users a shared fate.<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
+users a shared fate.<a href="#section-1-10.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-1.1-2.3">
-            <p id="section-1.1-2.3.1">VPN providers and enterprise ZTNA gateways have a noisy neighbour problem.
-They may know their users, but should not have to expose them to each
-origin. An origin able to tell employees apart could single out an
-executive's activity for instance.<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
+        <li id="section-1-10.3">
+          <p id="section-1-10.3.1">VPN providers and enterprise zero trust gateways have a noisy neighbour
+problem. They may know their users, but should not have to expose them to
+each origin. An origin able to tell employees apart could single out an
+executive's activity for instance.<a href="#section-1-10.3.1" class="pilcrow">¶</a></p>
 </li>
-        </ol>
-</section>
-</div>
+      </ol>
 <div id="related-work">
-<section id="section-1.2">
+<section id="section-1.1">
         <h3 id="name-related-work">
-<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-related-work" class="section-name selfRef">Related work</a>
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-related-work" class="section-name selfRef">Related work</a>
         </h3>
-<p id="section-1.2-1"><span>[<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span> shares the anonymous rate-limiting goal and the MOLE construction.
-This document is a companion to it. It focuses on platforms that already have
-a relationship with their users, and on composing with a platform's
-<span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> identity.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
-<p id="section-1.2-2">Poppy <span>[<a href="#POPPY" class="cite xref">POPPY</a>]</span> uses User IDs and sessions, including for anonymous browsing.
+<p id="section-1.1-1"><span>[<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span> addresses shared fate under a platform's Web Bot
+Auth signature with signed, pseudonymous sub-identifiers. It lets an origin
+apply policy to a product, project, or session while the platform can map
+those identifiers back to its customers. Origin-scoped session values
+reduce cross-origin correlation (<span><a href="https://datatracker.ietf.org/doc/html/draft-vilgalys-webbotauth-signed-agent-metadata-00#section-7.2" class="relref">Section 7.2</a> of [<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span>),
+but each identifier still links requests within its own scope and lifetime.
+MOLE serves the case where the origin needs a scarce budget without such a
+handle; it does not provide the same tenant-specific abuse reporting or
+targeted blocking of an identified project.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-2"><span>[<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span> also uses MOLE for anonymous bot access and rate limiting.
+This document focuses on the shared-fate problem beneath a platform's
+<span>[<a href="#WBA-HTTPSIG" class="cite xref">WBA-HTTPSIG</a>]</span> identity: scarce budgets can isolate consumption without
+asking the platform to expose product, project, or session identifiers for
+that purpose. It does not replace signed metadata where the origin needs
+to attribute activity to one of those units.<a href="#section-1.1-2" class="pilcrow">¶</a></p>
+<p id="section-1.1-3">Poppy <span>[<a href="#POPPY" class="cite xref">POPPY</a>]</span> uses User IDs and sessions, including for anonymous browsing.
 <span>[<a href="#AAP" class="cite xref">AAP</a>]</span> uses anonymous admission tokens and recommends a session afterwards,
 though it also allows a fresh token per request. Here, the aim is to maintain a
-per-agent budget without linking its presentations.<a href="#section-1.2-2" class="pilcrow">¶</a></p>
-<p id="section-1.2-3"><span>[<a href="#WIMSE-AIMS" class="cite xref">WIMSE-AIMS</a>]</span> profiles WIMSE and OAuth for agents. It treats an agent as a
+scarce, independently allocated budget without linking its presentations.<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+<p id="section-1.1-4"><span>[<a href="#WIMSE-AIMS" class="cite xref">WIMSE-AIMS</a>]</span> profiles WIMSE and OAuth for agents. It treats an agent as a
 workload with its own identifier and credential, and carries the user, when
 there is one, only as the subject of an OAuth access token, so that the two
 identities are separate and compose on one request. <span>[<a href="#WAG" class="cite xref">WAG</a>]</span> lets a
 platform-hosted workload obtain such a token for itself without per-workload
 registration. This document places both among the options an origin can ask
-for, next to attribution and anonymous capacity.<a href="#section-1.2-3" class="pilcrow">¶</a></p>
+for, next to attribution and anonymous capacity.<a href="#section-1.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1365,9 +1399,7 @@ not establish a unique account, workload, device, or other principal.<a href="#s
 <p id="section-2-4">MOLE(X) denotes a presentation for budget scope X. MOLE(C) is a Client's
 budget, while MOLE(T), MOLE(W), and MOLE(U) denote tenant, workload, and
 account scopes. These labels do not appear as identifiers in presentations.
-WBA(P) denotes a Web Bot Auth signature from intermediary P. A credential
-chain is the sequence of Credentials obtained by updating one initial Credential. The Client experiences continuity through
-that chain without giving the origin a session identifier.<a href="#section-2-4" class="pilcrow">¶</a></p>
+WBA(Y) denotes a Web Bot Auth signature from intermediary Y.<a href="#section-2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="principles">
@@ -1375,30 +1407,29 @@ that chain without giving the origin a session identifier.<a href="#section-2-4"
       <h2 id="name-scope-and-principles">
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-scope-and-principles" class="section-name selfRef">Scope and principles</a>
       </h2>
-<p id="section-3-1">The aim is to bound consumption through independently allocated budgets
-without requiring a stable Client identifier. Exhausting one budget should
-not exhaust an unrelated budget. Enforcement still depends on constrained
-issuance and available capacity. A platform aggregate limit can affect every
+<p id="section-3-1">The aim of AAA is to bound consumption through independently allocated budgets
+without requiring a stable client identifier. Exhausting one budget should
+not exhaust another allocation, provided Anchor issuance and Moderator
+spending policies keep them separate. The privacy objective is to separate
+the relationship used to obtain a budget from the requests that spend it
+<span>[<a href="#PRIVACY-PARTITIONING" class="cite xref">PRIVACY-PARTITIONING</a>]</span>. A platform aggregate limit can still affect every
 Client behind it even when their individual budgets remain usable.<a href="#section-3-1" class="pilcrow">¶</a></p>
 <p id="section-3-2">For public resources, the deployment goal is a baseline level of access
-without a Credential or signature. This baseline remains subject to capacity
+without a credential or signature. This baseline remains subject to capacity
 and request behavior. Scarce Endorsements can support access above it.
-Absence of an active signal does not itself establish abuse <span>[<a href="#CIVIL" class="cite xref">CIVIL</a>]</span>.
-Permissioned resources may require authorization before serving any content.<a href="#section-3-2" class="pilcrow">¶</a></p>
-<p id="section-3-3">Clients choose which evidence to offer. Origins should ask only for evidence
+Absence of an active signal does not itself establish abuse <span>[<a href="#CIVIL" class="cite xref">CIVIL</a>]</span>.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-3">Permissioned resources may require evidence of a right before serving any
+content. A capability can establish that right without identifying its
+holder. Where a resource's policy depends on a particular principal and
+its permissions, authenticating the principal with a stable identifier is
+appropriate. Capacity evidence alone establishes neither identity nor a
+right to perform a permissioned operation.<a href="#section-3-3" class="pilcrow">¶</a></p>
+<p id="section-3-4">Clients choose which evidence to offer. Origins should ask only for evidence
 needed by the requested operation. A verified identity does not establish that
 a request is harmless, and a valid budget does not grant every permission.
-Access to accepted Anchors is uneven, so scarce issuance alone does not ensure
-fair allocation.<a href="#section-3-3" class="pilcrow">¶</a></p>
-<p id="section-3-4">The privacy objective is to separate the relationship used to obtain a budget
-from the requests that spend it <span>[<a href="#PRIVACY-PARTITIONING" class="cite xref">PRIVACY-PARTITIONING</a>]</span>. Presentations should
-reveal only what the origin needs to apply its policy. Network metadata and
-other request fields can still identify or correlate Clients.<a href="#section-3-4" class="pilcrow">¶</a></p>
-<p id="section-3-5">The flows below use the EC-ACT credential type of <span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span>. Other
-MOLE credential types can have different properties. This is a deployment
-sketch using work in progress. The composition gaps are listed in
-<a href="#composition" class="auto internal xref">Section 4.4</a>, and the underlying construction's security analysis remains
-incomplete <span>[<a href="#EC-ACT" class="cite xref">EC-ACT</a>]</span>.<a href="#section-3-5" class="pilcrow">¶</a></p>
+Moreover, client evidence should reveal only what the origin needs to apply
+its policy. Network metadata and other request fields can still identify
+or correlate clients.<a href="#section-3-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="system">
@@ -1408,35 +1439,7 @@ incomplete <span>[<a href="#EC-ACT" class="cite xref">EC-ACT</a>]</span>.<a href
       </h2>
 <p id="section-4-1">An origin decides whether to serve an operation and how much capacity to
 allocate to it. The evidence it accepts can establish attribution, permission,
-or a remaining budget. A request may need more than one.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<p id="section-4-2">An implementer can assess each form of evidence along four parameters:<a href="#section-4-2" class="pilcrow">¶</a></p>
-<table class="center" id="table-1">
-        <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
-<thead>
-          <tr>
-            <th class="text-left" rowspan="1" colspan="1">Parameter</th>
-            <th class="text-left" rowspan="1" colspan="1">Question</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">Principal or budget scope</td>
-            <td class="text-left" rowspan="1" colspan="1">Which party or allocation does the evidence concern?</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">Linkability</td>
-            <td class="text-left" rowspan="1" colspan="1">Can requests be joined per artifact, session, or principal?</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">Property conveyed</td>
-            <td class="text-left" rowspan="1" colspan="1">Does it establish attribution, permission, or capacity?</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">Trust source</td>
-            <td class="text-left" rowspan="1" colspan="1">Which signer, Anchor Set, or authority must the origin accept?</td>
-          </tr>
-        </tbody>
-      </table>
+or capacity. A request may need more than one.<a href="#section-4-1" class="pilcrow">¶</a></p>
 <div id="attribution">
 <section id="section-4.1">
         <h3 id="name-attribution">
@@ -1483,20 +1486,16 @@ authorization protocol with its own challenges and credentials.<a href="#section
         <h3 id="name-capacity">
 <a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-capacity" class="section-name selfRef">Capacity</a>
         </h3>
-<p id="section-4.3-1">An EC-ACT Credential holds a hidden balance c. A presentation proves that it
-covers a requested spend s. The Moderator can return an amount t, bounded by
-s plus the offered top-up a. The replacement Credential holds c - s + t.
+<p id="section-4.3-1">MOLE credentials hold a hidden balance c. A presentation proves that it
+covers a requested spend s. The moderator can return an amount t, bounded by
+s plus the offered top-up a. The replacement credential holds c - s + t.
 The origin learns the public amounts and that the spend was possible, without
-learning the balance or a stable Client identifier <span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span>.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+learning the balance or a stable client identifier <span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span>.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
 <p id="section-4.3-2">For example, a policy can issue B credits, charge one per accepted presentation,
 and return zero with no top-ups. Each issuance then allows at most B fresh
 accepted operation attempts. Further issuances increase that allocation.
 Bounding consumption over time also requires policy for replenishment and
 expiry. Refunding every spend in full leaves successful consumption unbounded.<a href="#section-4.3-2" class="pilcrow">¶</a></p>
-<p id="section-4.3-3">A principal that already authenticates may still need several independent
-budgets. Metering that principal does not replace those allocations. Conversely,
-adding MOLE to requests that already carry a stable identifier does not make
-those requests unlinkable.<a href="#section-4.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="composition">
@@ -1515,9 +1514,8 @@ transport also selects one presentation per request <span>[<a href="#MOLE-HTTP" 
 of several budgets or of a budget beside another authorization scheme remains
 undefined here.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
 <p id="section-4.4-3">WWW-Authenticate can carry several challenges, but that alone does not express
-that all must be satisfied. Signaling cumulative requirements is also open.
-The permissioned flow in <a href="#flow2" class="auto internal xref">Section 5.2</a> marks this boundary rather than specifying
-an encoding.<a href="#section-4.4-3" class="pilcrow">¶</a></p>
+that all must be satisfied. Signaling cumulative requirements is also open;
+this document does not specify the permissioned flow or its encoding.<a href="#section-4.4-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1527,28 +1525,21 @@ an encoding.<a href="#section-4.4-3" class="pilcrow">¶</a></p>
       <h2 id="name-moderating-consumption">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-moderating-consumption" class="section-name selfRef">Moderating consumption</a>
       </h2>
-<p id="section-5-1">The origin configures its accepted Anchor Set, credential contexts, allocation
-and spending policy, and any permission requirements. A Client may send an
-initial request without evidence. The origin verifies what is present and
+<p id="section-5-1">The origin's moderator configures its accepted Anchor Set, credential contexts,
+allocation and spending policy, and any permission requirements. A client may
+send an initial request without evidence. The origin verifies what is present and
 serves the level of access its policy permits. A public response can offer
 more capacity through a MOLE challenge. A permissioned resource can refuse the
 operation and challenge for the missing authorization.<a href="#section-5-1" class="pilcrow">¶</a></p>
-<p id="section-5-2">A MOLE redemption challenge lets a Client obtain a Credential. A presentation
+<p id="section-5-2">A MOLE redemption challenge lets a client obtain a credential. A presentation
 challenge specifies its spending terms. Clients use the exchanges and
 verification rules of <span>[<a href="#MOLE-PROTOCOLS" class="cite xref">MOLE-PROTOCOLS</a>]</span> and <span>[<a href="#MOLE-HTTP" class="cite xref">MOLE-HTTP</a>]</span>, including replay
-checks and request binding. A failed proof supplies no evidence of budget.<a href="#section-5-2" class="pilcrow">¶</a></p>
-<p id="section-5-3">For EC-ACT, the Moderator records the spend result atomically before attempting
-the operation. It chooses a refund or NoUpdate from the evidence available at
-that point. The response carries that recorded result even if the operation
-fails. Choosing a refund from the operation's eventual outcome would require
-additional settlement behavior not defined by this flow.<a href="#section-5-3" class="pilcrow">¶</a></p>
-<p id="section-5-4">A refund replaces the spent Credential. A zero refund leaves c - s credits.
-NoUpdate ends the chain and forfeits its remaining balance. At the HTTP layer,
-an empty Mole-Credential update conveys NoUpdate. A missing update does not.<a href="#section-5-4" class="pilcrow">¶</a></p>
-<p id="section-5-5">After a lost response, the Client can recover the recorded credential result
+checks and request binding. A failed proof supplies no evidence of budget.
+A refund replaces the spent Credential with an updated one.<a href="#section-5-2" class="pilcrow">¶</a></p>
+<p id="section-5-3">After a lost response, the Client can recover the recorded credential result
 within the retention period. Recovery does not repeat the protected operation
 or establish whether it completed. Application recovery remains separate.
-One credential chain permits one presentation in flight at a time.<a href="#section-5-5" class="pilcrow">¶</a></p>
+One credential permits one presentation in flight at a time.<a href="#section-5-3" class="pilcrow">¶</a></p>
 <div id="flow1">
 <section id="section-5.1">
         <h3 id="name-public-access-with-wba-and-">
@@ -1684,130 +1675,6 @@ unwilling to present continues at the public baseline, subject to origin policy.
 A failed presentation does not authorize the budgeted level of access.<a href="#section-5.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="flow2">
-<section id="section-5.2">
-        <h3 id="name-permissioned-access-with-a-">
-<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-permissioned-access-with-a-" class="section-name selfRef">Permissioned access with a separate budget</a>
-        </h3>
-<p id="section-5.2-1">In this example, the same software acts as the OAuth client and, when a
-separate budget is required, the MOLE Client. The roles need not coincide in
-other deployments. It requests an operation requiring an OAuth access token.
-The resource uses protected resource metadata <span>[<a href="#OAUTH-RS-META" class="cite xref">OAUTH-RS-META</a>]</span> to identify its authorization
-server. The grant issuer below is a Workload Identity Provider for WAG, or an
-Identity Provider Authorization Server for ID-JAG. Each requires an existing
-trust arrangement with the resource's authorization server.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
-<span id="name-permissioned-access-with-op"></span><div id="permission-sequence">
-<figure id="figure-2">
-          <div id="section-5.2-2.1">
-            <div class="alignLeft art-svg artwork" id="section-5.2-2.1.1">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="560" width="576" viewBox="0 0 576 560" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
-                <path d="M 8,32 L 8,80" fill="none" stroke="black"></path>
-                <path d="M 64,80 L 64,496" fill="none" stroke="black"></path>
-                <path d="M 120,32 L 120,80" fill="none" stroke="black"></path>
-                <path d="M 144,32 L 144,80" fill="none" stroke="black"></path>
-                <path d="M 200,80 L 200,496" fill="none" stroke="black"></path>
-                <path d="M 256,32 L 256,80" fill="none" stroke="black"></path>
-                <path d="M 288,32 L 288,80" fill="none" stroke="black"></path>
-                <path d="M 352,112 L 352,128" fill="none" stroke="black"></path>
-                <path d="M 352,160 L 352,368" fill="none" stroke="black"></path>
-                <path d="M 352,416 L 352,432" fill="none" stroke="black"></path>
-                <path d="M 352,480 L 352,496" fill="none" stroke="black"></path>
-                <path d="M 416,32 L 416,80" fill="none" stroke="black"></path>
-                <path d="M 440,32 L 440,80" fill="none" stroke="black"></path>
-                <path d="M 504,80 L 504,496" fill="none" stroke="black"></path>
-                <path d="M 568,32 L 568,80" fill="none" stroke="black"></path>
-                <path d="M 8,32 L 120,32" fill="none" stroke="black"></path>
-                <path d="M 144,32 L 256,32" fill="none" stroke="black"></path>
-                <path d="M 288,32 L 416,32" fill="none" stroke="black"></path>
-                <path d="M 440,32 L 568,32" fill="none" stroke="black"></path>
-                <path d="M 8,80 L 120,80" fill="none" stroke="black"></path>
-                <path d="M 144,80 L 256,80" fill="none" stroke="black"></path>
-                <path d="M 288,80 L 416,80" fill="none" stroke="black"></path>
-                <path d="M 440,80 L 568,80" fill="none" stroke="black"></path>
-                <path d="M 200,112 L 496,112" fill="none" stroke="black"></path>
-                <path d="M 208,160 L 504,160" fill="none" stroke="black"></path>
-                <path d="M 72,208 L 200,208" fill="none" stroke="black"></path>
-                <path d="M 64,256 L 192,256" fill="none" stroke="black"></path>
-                <path d="M 200,304 L 344,304" fill="none" stroke="black"></path>
-                <path d="M 208,352 L 352,352" fill="none" stroke="black"></path>
-                <path d="M 200,416 L 496,416" fill="none" stroke="black"></path>
-                <path d="M 208,480 L 504,480" fill="none" stroke="black"></path>
-                <polygon class="arrowhead" points="504,416 492,410.4 492,421.6" fill="black" transform="rotate(0,496,416)"></polygon>
-                <polygon class="arrowhead" points="504,112 492,106.4 492,117.6" fill="black" transform="rotate(0,496,112)"></polygon>
-                <polygon class="arrowhead" points="352,304 340,298.4 340,309.6" fill="black" transform="rotate(0,344,304)"></polygon>
-                <polygon class="arrowhead" points="216,480 204,474.4 204,485.6" fill="black" transform="rotate(180,208,480)"></polygon>
-                <polygon class="arrowhead" points="216,352 204,346.4 204,357.6" fill="black" transform="rotate(180,208,352)"></polygon>
-                <polygon class="arrowhead" points="216,160 204,154.4 204,165.6" fill="black" transform="rotate(180,208,160)"></polygon>
-                <polygon class="arrowhead" points="200,256 188,250.4 188,261.6" fill="black" transform="rotate(0,192,256)"></polygon>
-                <polygon class="arrowhead" points="80,208 68,202.4 68,213.6" fill="black" transform="rotate(180,72,208)"></polygon>
-                <g class="text">
-                  <text x="32" y="52">Grant</text>
-                  <text x="84" y="52">issuer</text>
-                  <text x="196" y="52">Client</text>
-                  <text x="352" y="52">Authorization</text>
-                  <text x="500" y="52">Resource</text>
-                  <text x="348" y="68">server</text>
-                  <text x="320" y="100">operation</text>
-                  <text x="392" y="100">request</text>
-                  <text x="272" y="148">challenge</text>
-                  <text x="320" y="148">+</text>
-                  <text x="364" y="148">resource</text>
-                  <text x="436" y="148">metadata</text>
-                  <text x="104" y="196">request</text>
-                  <text x="160" y="196">grant</text>
-                  <text x="128" y="244">grant</text>
-                  <text x="240" y="292">grant</text>
-                  <text x="300" y="292">exchange</text>
-                  <text x="252" y="340">access</text>
-                  <text x="304" y="340">token</text>
-                  <text x="288" y="388">operation</text>
-                  <text x="336" y="388">+</text>
-                  <text x="372" y="388">access</text>
-                  <text x="424" y="388">token</text>
-                  <text x="240" y="404">proof</text>
-                  <text x="276" y="404">of</text>
-                  <text x="336" y="404">possession,</text>
-                  <text x="396" y="404">if</text>
-                  <text x="444" y="404">required</text>
-                  <text x="268" y="452">verify</text>
-                  <text x="340" y="452">permission</text>
-                  <text x="400" y="452">and</text>
-                  <text x="440" y="452">apply</text>
-                  <text x="268" y="468">capacity</text>
-                  <text x="336" y="468">policy,</text>
-                  <text x="388" y="468">then</text>
-                  <text x="440" y="468">respond</text>
-                  <text x="68" y="532">Optional</text>
-                  <text x="124" y="532">MOLE</text>
-                  <text x="176" y="532">budget:</text>
-                  <text x="228" y="532">flow</text>
-                  <text x="260" y="532">1.</text>
-                  <text x="68" y="548">Combined</text>
-                  <text x="140" y="548">carriage</text>
-                  <text x="208" y="548">remains</text>
-                  <text x="284" y="548">undefined.</text>
-                </g>
-              </svg><a href="#section-5.2-2.1.1" class="pilcrow">¶</a>
-</div>
-</div>
-<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
-<a href="#name-permissioned-access-with-op" class="selfRef">Permissioned access with optional independent budget enforcement</a>
-          </figcaption></figure>
-</div>
-<p id="section-5.2-3">For WAG, the Client exchanges a workload assertion for an access token. For
-ID-JAG, it obtains a grant through the existing federation and exchanges it
-at the resource's authorization server. The resource receives the resulting
-access token, not either grant. A Client with a suitable token skips this
-exchange. Bearer challenges follow <span>[<a href="#BEARER" class="cite xref">BEARER</a>]</span>. DPoP uses its own authentication
-scheme <span>[<a href="#DPOP" class="cite xref">DPOP</a>]</span>. Insufficient scope and authentication strength or freshness
-are distinct failures, handled by <span>[<a href="#BEARER" class="cite xref">BEARER</a>]</span> and <span>[<a href="#STEPUP" class="cite xref">STEPUP</a>]</span>, respectively.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
-<p id="section-5.2-4">The resource can meter an authenticated principal or require a separate budget
-for the Client's activity. Several Clients authorized under the same principal
-can have independent allocations. Requiring both permission and a MOLE budget
-needs the composition work described in <a href="#composition" class="auto internal xref">Section 4.4</a>. A workload signature
-alone does not replace the access token's permissions.<a href="#section-5.2-4" class="pilcrow">¶</a></p>
-</section>
-</div>
 </section>
 </div>
 <div id="examples">
@@ -1815,12 +1682,14 @@ alone does not replace the access token's permissions.<a href="#section-5.2-4" c
       <h2 id="name-deployment-considerations">
 <a href="#section-6" class="section-number selfRef">6. </a><a href="#name-deployment-considerations" class="section-name selfRef">Deployment considerations</a>
       </h2>
-<p id="section-6-1">An endorsement relationship is independent of the traffic path. In
-<a href="#fig-intermediary" class="auto internal xref">Figure 3</a>, the Anchor endorses Client C while
-intermediary P carries its requests. The same provider can operate both roles.
-A tunnel carrying end-to-end TLS cannot add an HTTP signature.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-1">Deployment separates two kinds of capacity control: an intermediary can
+identify itself for an aggregate limit, while an Anchor allocates scarce
+Endorsements for smaller, anonymous budgets. <a href="#fig-intermediary" class="auto internal xref">Figure 2</a> shows the
+Anchor endorsing Client C while intermediary P carries its requests. The
+same provider can operate both roles, but need not. A tunnel carrying
+end-to-end TLS cannot add an HTTP signature.<a href="#section-6-1" class="pilcrow">¶</a></p>
 <span id="name-separate-endorsement-and-fo"></span><div id="fig-intermediary">
-<figure id="figure-3">
+<figure id="figure-2">
         <div id="section-6-2.1">
           <div class="alignLeft art-svg artwork" id="section-6-2.1.1">
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="192" width="512" viewBox="0 0 512 192" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
@@ -1862,31 +1731,109 @@ A tunnel carrying end-to-end TLS cannot add an HTTP signature.<a href="#section-
             </svg><a href="#section-6-2.1.1" class="pilcrow">¶</a>
 </div>
 </div>
-<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
+<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
 <a href="#name-separate-endorsement-and-fo" class="selfRef">Separate endorsement and forwarding relationships</a>
         </figcaption></figure>
 </div>
-<div id="budget-scopes">
+<p id="section-6-3">The origin can attribute the forwarded request to P through WBA(P) and
+charge C's separate budget through MOLE(C), without learning C's identity
+from that presentation. The allocation relationship, rather than P's
+signature, establishes which smaller unit bears the spend. The following
+subsection applies this separation to product, project, and session
+capacity limits.<a href="#section-6-3" class="pilcrow">¶</a></p>
+<div id="capacity-without-identifiers">
 <section id="section-6.1">
-        <h3 id="name-budget-scopes">
-<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-budget-scopes" class="section-name selfRef">Budget scopes</a>
+        <h3 id="name-capacity-without-identifier">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-capacity-without-identifier" class="section-name selfRef">Capacity without identifiers</a>
         </h3>
-<p id="section-6.1-1">A platform P can host tenants T, each with workloads W serving several
+<p id="section-6.1-1">Signed product, project, and session IDs give an origin visible keys with which
+to keep separate counters <span>[<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span>. For capacity alone, the
+Anchor can constrain Endorsements per product, project, or task allocation
+only if it knows and enforces those boundaries. The platform can play this
+role; an independent Anchor needs a way to account for the same allocations,
+or its Endorsements cannot enforce the platform's project and product totals.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-2">Clients redeem those endorsements for independent MOLE credentials and
+spend the credentials on requests. The Moderator checks
+each spend and carries the remaining balance into an unlinkable
+replacement Credential. The presentation itself does not reveal which
+product, project, task, or Client holds a particular budget.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+<p id="section-6.1-3">The platform can still sign WBA(P), so the origin can also limit its traffic in aggregate.
+Credential contexts and spending terms should be shared across many
+endorsements; unique contexts or amounts would distinguish those units and
+shrink their anonymity sets.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.1-4">The allocation boundary can be chosen without adding a corresponding ID to
+requests:<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.1-5.1">
+            <p id="section-6.1-5.1.1">Product: A platform or other suitable Anchor can reserve a finite pool of
+Endorsements for a product and distribute them among its projects or
+Clients. Spending is limited by the budgets derived from that pool. The
+origin does not learn which product a presentation came from, nor can it
+impose a different per-product policy from presentations alone.<a href="#section-6.1-5.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-5.2">
+            <p id="section-6.1-5.2.1">Project: The platform can cap Endorsements for a tenant workspace and
+allocate them among its Clients. Exhausting one Client's independent
+Credential does not exhaust another's. The platform, not the origin,
+accounts for how many endorsements belong to that project. A single
+project-wide balance shared by many concurrent Clients is a different
+requirement, discussed below.<a href="#section-6.1-5.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-5.3">
+            <p id="section-6.1-5.3.1">Session: An Anchor can allocate Endorsements to a task (like an ephemeral
+workload). The Anchor must count task allocations against a scarce parent
+allowance so starting new tasks does not reset the limit. The allocating
+party and Client must keep the resulting Credentials assigned to those
+tasks: a MOLE presentation does not prove which task is using a Credential.
+Alternatively, a Client can spend the same Credential across tasks when
+task-specific budgets are unnecessary. Neither choice lets the origin link
+requests as one task; that requires a session identifier if the origin
+needs it.<a href="#section-6.1-5.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-6.1-6">For example, suppose an Anchor grants at most two Endorsements per project
+per epoch and the Moderator issues each Credential with ten credits. If
+each accepted request spends one credit, with no refund or top-up, and the
+Credentials expire at the epoch boundary, that project's endorsements permit
+at most twenty budgeted requests in the epoch. The origin verifies the
+ten-credit limit on each Credential; the twenty-request total holds only if
+the Anchor actually issues no more than two Endorsements for that project
+and no other accepted Anchor supplies additional ones.<a href="#section-6.1-6" class="pilcrow">¶</a></p>
+<p id="section-6.1-7">The Anchor can also cap the sum of Endorsements across projects belonging
+to one product. The origin enforces each Credential's ten-credit limit
+without seeing the project or product; the project and product totals depend
+on the Anchor's issuance policy, not on an origin-side counter keyed by an ID.
+Additional accepted Anchors or Endorsements increase the available budget
+unless their policies constrain the combined allocation. Public-baseline
+requests and the platform's aggregate limit remain separate from this bound.<a href="#section-6.1-7" class="pilcrow">¶</a></p>
+<p id="section-6.1-8">These budgets replace identifiers only for the capacity decisions their
+issuance and spending policies implement. An origin cannot use an anonymous
+presentation to identify and block a particular project, audit its activity,
+or correlate all requests in a session. If it needs those functions, signed
+metadata can accompany MOLE, making requests linkable at the metadata's scope.<a href="#section-6.1-8" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="capacity-scopes">
+<section id="section-6.2">
+        <h3 id="name-capacity-scopes">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-capacity-scopes" class="section-name selfRef">Capacity scopes</a>
+        </h3>
+<p id="section-6.2-1">A platform P can host tenants T, each with workloads W serving several
 Clients. An account U may authorize several Clients. The noisy-neighbour
 boundary depends on which of these shares a budget. A tenant budget separates
 tenants but leaves workloads within a tenant sharing its allocation. A
 workload budget separates workloads but still groups their Clients. Account
 budgets can isolate those allocations further, while several Clients sharing
-one account budget remain subject to the same limit.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
-<p id="section-6.1-2">In <a href="#fig-stacked" class="auto internal xref">Figure 4</a>, Anchor W endorses a workload and Anchor U endorses account
+one account budget remain subject to the same limit.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.2-2">In <a href="#fig-stacked" class="auto internal xref">Figure 3</a>, Anchor W endorses a workload and Anchor U endorses account
 allocations. The workload and its Clients play separate MOLE roles. The
 request carries their budget proofs alongside the platform's signature.
 The Anchors need not operate the forwarding intermediary. These are intended
-scopes, pending the multiple-presentation carriage in <a href="#composition" class="auto internal xref">Section 4.4</a>.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+scopes, pending the multiple-presentation carriage in <a href="#composition" class="auto internal xref">Section 4.4</a>.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
 <span id="name-workload-and-account-budget"></span><div id="fig-stacked">
-<figure id="figure-4">
-          <div id="section-6.1-3.1">
-            <div class="alignLeft art-svg artwork" id="section-6.1-3.1.1">
+<figure id="figure-3">
+          <div id="section-6.2-3.1">
+            <div class="alignLeft art-svg artwork" id="section-6.2-3.1.1">
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="416" width="520" viewBox="0 0 520 416" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
                 <path d="M 8,32 L 8,64" fill="none" stroke="black"></path>
                 <path d="M 8,112 L 8,272" fill="none" stroke="black"></path>
@@ -1944,36 +1891,36 @@ scopes, pending the multiple-presentation carriage in <a href="#composition" cla
                   <text x="452" y="372">Origin</text>
                   <text x="448" y="388">Moderator</text>
                 </g>
-              </svg><a href="#section-6.1-3.1.1" class="pilcrow">¶</a>
+              </svg><a href="#section-6.2-3.1.1" class="pilcrow">¶</a>
 </div>
 </div>
-<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
+<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
 <a href="#name-workload-and-account-budget" class="selfRef">Workload and account budget scopes in a proposed stacked deployment</a>
           </figcaption></figure>
 </div>
-<p id="section-6.1-4">A principal can also receive several independent budgets, for example one per
+<p id="section-6.2-4">A principal can also receive several independent budgets, for example one per
 Client. Authorization determines what each Client may do, while issuance
 policy constrains their combined allocation. Adding Clients must not yield
 unbounded replacement budgets. Aggregate platform limits still apply when
-individual budgets remain available.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
-<p id="section-6.1-5">Concurrent requests need separate credential chains. Several Credentials
+individual budgets remain available.<a href="#section-6.2-4" class="pilcrow">¶</a></p>
+<p id="section-6.2-5">Concurrent requests need separate credentials. Several Credentials
 provide separate balances, so assigning more Credentials can increase both
 concurrency and total consumption. Shared-budget splitting and simultaneous
-checks of aggregate and individual anonymous budgets remain open.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
-<p id="section-6.1-6">A CDN can operate a Moderator for several origins. All servers accepting the
+checks of aggregate and individual anonymous budgets remain open.<a href="#section-6.2-5" class="pilcrow">¶</a></p>
+<p id="section-6.2-6">A CDN can operate a Moderator for several origins. All servers accepting the
 same credential key and context must share atomic replay state. Independent
 stores need disjoint keys or contexts. Sharing a credential context also
 shares its budget scope and can enlarge the anonymity set, but activity at
-one origin can then reduce the balance available at another.<a href="#section-6.1-6" class="pilcrow">¶</a></p>
-<p id="section-6.1-7">Anchors constrain new allocations, but the Moderator cannot identify the
+one origin can then reduce the balance available at another.<a href="#section-6.2-6" class="pilcrow">¶</a></p>
+<p id="section-6.2-7">Anchors constrain new allocations, but the Moderator cannot identify the
 issuing Anchor from a redemption. <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span> leaves privacy-preserving
 Anchor feedback unresolved. Removing an Anchor requires evidence from outside
 that anonymous redemption, and changing sets to probe Clients can reduce
-privacy. Endorsements from several accepted Anchors can yield several budgets.<a href="#section-6.1-7" class="pilcrow">¶</a></p>
-<p id="section-6.1-8">Deployment also needs bounded verification work and replay storage. Invalid
+privacy. Endorsements from several accepted Anchors can yield several budgets.<a href="#section-6.2-7" class="pilcrow">¶</a></p>
+<p id="section-6.2-8">Deployment also needs bounded verification work and replay storage. Invalid
 proofs can consume verification capacity, and replay markers must remain while
 their Credentials are accepted. Aggregate controls remain necessary for
-availability, even though they can reintroduce shared fate.<a href="#section-6.1-8" class="pilcrow">¶</a></p>
+availability, even though they can reintroduce shared fate.<a href="#section-6.2-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2146,6 +2093,10 @@ a recorded termination only while the result remains available.<a href="#section
 <dt id="PRIVATETOKEN">[PRIVATETOKEN]</dt>
       <dd>
 <span class="refAuthor">Pauly, T.</span>, <span class="refAuthor">Valdez, S.</span>, and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"The Privacy Pass HTTP Authentication Scheme"</span>, <span class="seriesInfo">RFC 9577</span>, <span class="seriesInfo">DOI 10.17487/RFC9577</span>, <time datetime="2024-06" class="refDate">June 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9577">https://www.rfc-editor.org/rfc/rfc9577</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SIGNED-AGENT-METADATA">[SIGNED-AGENT-METADATA]</dt>
+      <dd>
+<span class="refAuthor">Vilgalys, R.</span> and <span class="refAuthor">P. González</span>, <span class="refTitle">"The Signed-Agent-Metadata HTTP Header Field for Web Bot Auth"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-vilgalys-webbotauth-signed-agent-metadata-00</span>, <time datetime="2026-11-02" class="refDate">2 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-vilgalys-webbotauth-signed-agent-metadata-00">https://datatracker.ietf.org/doc/html/draft-vilgalys-webbotauth-signed-agent-metadata-00</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="STEPUP">[STEPUP]</dt>
       <dd>
