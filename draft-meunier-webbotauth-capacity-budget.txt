@@ -8,8 +8,8 @@ Intended status: Informational                                Cloudflare
 Expires: 11 May 2027                                     7 November 2026
 
 
-                     Anonymous Agent Authentication
-                  draft-meunier-webbotauth-aaa-latest
+                       Capacity Budget for Agents
+            draft-meunier-webbotauth-capacity-budget-latest
 
 Abstract
 
@@ -19,10 +19,9 @@ Abstract
    Separately allocated budgets let origins limit consumption beneath a
    shared platform identity.
 
-   This document describes how Clients and origins can use [MOLE-ARCH]
-   to enforce budget policies, how shared infrastructure attribution
-   supports aggregate limits, and where composition with authorization
-   primitives needs further work.
+   The deployment described here combines Client budgets with shared
+   infrastructure attribution for aggregate limits.  Composition with
+   authorization primitives needs further work.
 
 About This Document
 
@@ -30,8 +29,9 @@ About This Document
 
    The latest revision of this draft can be found at
    https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-
-   aaa.html.  Status information for this document may be found at
-   https://datatracker.ietf.org/doc/draft-meunier-webbotauth-aaa/.
+   capacity-budget.html.  Status information for this document may be
+   found at https://datatracker.ietf.org/doc/draft-meunier-webbotauth-
+   capacity-budget/.
 
    Source for this draft and an issue tracker can be found at
    https://github.com/thibmeu/draft-brian.
@@ -103,28 +103,6 @@ Table of Contents
    session identifiers to let an origin isolate traffic below the
    platform level.
 
-   Agents are increasingly used in business and user workflows,
-   including AI assistants, search indexing, content aggregation, and
-   automated testing.  Their relationship with origins is symbiotic.
-   They need information from origins, and origins need signals to apply
-   rate-limit policies.  These can be binary, like allow or block when
-   an origin cannot serve traffic, or resource-based to allocate
-   capacity among clients.
-
-   Historically, most of these signals have been enshrined into
-   deployments of internet protocols.  An agent needs an IP address to
-   receive a response from an origin.  Its TLS stack and browser
-   behavior provide further signals.  It provides a familiar User-Agent
-   because middleboxes might otherwise filter its traffic (see
-   [USER-AGENT-HISTORY]).
-
-   Recent developments break these patterns.  Agents use proxies
-   ([CONNECT-UDP], [CONNECT-IP], [OHTTP], or plain [HTTP]).  As
-   platforms make requests on behalf of users, the user's TLS stack may
-   no longer be the one visible to the origin.  AI agents, on the user's
-   device or hosted remotely, fetch and render information in place of
-   browsers.  User-Agent strings are still spoofed.
-
    More granular identifiers are useful when the origin needs to
    recognize a particular product or project, investigate abuse with its
    platform, or follow a task within a session.  [SIGNED-AGENT-METADATA]
@@ -157,8 +135,8 @@ Table of Contents
    Bounding consumption does not always require more fine-grained
    identifiers.
 
-   This document describes Anonymous Agent Authentication (AAA) using
-   MOLE, an architecture for private moderation [MOLE-ARCH].  Separately
+   This document describes capacity budgets for agents using MOLE, an
+   architecture for private moderation [MOLE-ARCH].  Separately
    allocated budgets let the origin charge one Client's requests without
    consuming another's allocation.  MOLE alone does not ensure one
    budget per agent or enforce a per-agent rate over time.  The draft
@@ -166,10 +144,12 @@ Table of Contents
    Anchor issuance and Moderator spending policies constrain those
    budgets.
 
-   For these capacity decisions, the origin need not receive product,
-   project, or session identifiers.  When used, a platform signature
-   remains visible, along with public spending terms and other request
-   data.  AAA does not prevent discrimination based on that information.
+   Avoiding unnecessary disclosure supports the end-user interests
+   discussed in [INTERNET-FOR-END-USER].  For these capacity decisions,
+   the origin need not receive product, project, or session identifiers.
+   When used, a platform signature remains visible, along with public
+   spending terms and other request data.  This approach does not
+   prevent discrimination based on that information.
 
    Such a mechanism is useful in a number of cases.  Some examples
    follow:
@@ -271,10 +251,10 @@ Table of Contents
    possible extension would require a fresh platform Endorsement before
    accepting an origin-issued Privacy Pass token, using a reverse-flow
    exchange.  Feedback could also occur out of band.  These are possible
-   deployment arrangements, not exchanges specified by AAA.  Their
-   binding to the affected allocation, enforcement, and disclosure to
-   each party remain to be defined.  They need not require a persistent
-   tenant identifier at the origin.
+   deployment arrangements, not exchanges specified here.  Their binding
+   to the affected allocation, enforcement, and disclosure to each party
+   remain to be defined.  They need not require a persistent tenant
+   identifier at the origin.
 
 1.2.  Related work
 
@@ -285,10 +265,10 @@ Table of Contents
    Origin-scoped session values reduce cross-origin correlation
    (Section 7.2 of [SIGNED-AGENT-METADATA]).  However, each identifier
    still links requests within its own scope and lifetime.  As described
-   in Section 1.1, AAA does not specify tenant-specific abuse reporting.
-   An Anchor can constrain project allocations, but the origin cannot
-   recognize and selectively block all of a project's independent
-   Credentials from their presentations alone.
+   in Section 1.1, this document does not specify tenant-specific abuse
+   reporting.  An Anchor can constrain project allocations, but the
+   origin cannot recognize and selectively block all of a project's
+   independent Credentials from their presentations alone.
 
    [WBA-ABA] also uses MOLE for anonymous bot access and rate limiting.
    Its deployment relies on Anchor vetting and origin acceptance of
@@ -296,20 +276,10 @@ Table of Contents
    discusses convergence on accepted policies (Section 4.3 of [WBA-ABA])
    and the risk of cheap registration yielding multiple credentials
    (Section 8.2 of [WBA-ABA]).  These are governance dependencies
-   between Anchors and sites.  AAA shares those dependencies and focuses
-   on allocations beneath a platform's identity, where the platform can
-   use its existing tenant relationships to constrain new budgets.
-
-   Given both AAA and ABA rely on MOLE, should ABA see traction,
-   platforms supporting AAA could use MOLE's issuer-hiding capability to
-   form virtual platforms: groups of platform Anchors accepted under a
-   common policy.  An origin would learn that an Endorsement came from
-   an accepted Anchor without learning which platform issued it.  Moving
-   away from platform-specific identifiers would also require origins to
-   accept requests without a platform-specific signature.  Network
-   metadata and other request fields could still reveal the platform.
-   This is a possible deployment direction, not a mechanism specified by
-   AAA.
+   between Anchors and sites.  This approach shares those dependencies
+   and focuses on allocations beneath a platform's identity, where the
+   platform can use its existing tenant relationships to constrain new
+   budgets.
 
    Poppy [POPPY] uses User IDs and sessions, including for anonymous
    browsing.  [AAP] uses anonymous admission tokens and recommends a
@@ -364,12 +334,12 @@ Table of Contents
 
 3.  Scope and principles
 
-   The aim of AAA is to bound consumption through independently
-   allocated budgets without requiring a stable client identifier.
-   Exhausting one budget should not exhaust another allocation, provided
-   Anchor issuance and Moderator spending policies keep them separate.
-   The privacy objective is to separate the relationship used to obtain
-   a budget from the requests that spend it [PRIVACY-PARTITIONING].  A
+   The aim is to bound consumption through independently allocated
+   budgets without requiring a stable client identifier.  Exhausting one
+   budget should not exhaust another allocation, provided Anchor
+   issuance and Moderator spending policies keep them separate.  The
+   privacy objective is to separate the relationship used to obtain a
+   budget from the requests that spend it [PRIVACY-PARTITIONING].  A
    platform aggregate limit can still affect every Client behind it even
    when their individual budgets remain usable.
 
@@ -470,11 +440,12 @@ Table of Contents
    applying the corresponding profile.
 
    Permission and capacity can also be required together.  However,
-   MOLE, PrivateToken, and OAuth access tokens use the Authorization
-   field, which carries one credentials value Section 11.6.2 of [HTTP].
-   The current MOLE transport also selects one presentation per request
-   [MOLE-HTTP].  Carriage of several budgets or of a budget beside
-   another authorization scheme remains undefined here.
+   MOLE, PrivateToken, and OAuth bearer tokens [BEARER] use the
+   Authorization field, which carries one credentials value
+   Section 11.6.2 of [HTTP].  The current MOLE transport also selects
+   one presentation per request [MOLE-HTTP].  Carriage of several
+   budgets or of a budget beside another authorization scheme remains
+   undefined here.
 
    WWW-Authenticate can carry several challenges, but that alone does
    not express that all must be satisfied.  Signaling cumulative
@@ -828,17 +799,6 @@ Table of Contents
               <https://datatracker.ietf.org/doc/html/draft-meunier-bcp-
               civil-00>.
 
-   [CONNECT-IP]
-              Pauly, T., Ed., Schinazi, D., Chernyakhovsky, A.,
-              Kühlewind, M., and M. Westerlund, "Proxying IP in HTTP",
-              RFC 9484, DOI 10.17487/RFC9484, October 2023,
-              <https://www.rfc-editor.org/rfc/rfc9484>.
-
-   [CONNECT-UDP]
-              Schinazi, D., "Proxying UDP in HTTP", RFC 9298,
-              DOI 10.17487/RFC9298, August 2022,
-              <https://www.rfc-editor.org/rfc/rfc9298>.
-
    [DIGEST]   Polli, R. and L. Pardue, "Digest Fields", RFC 9530,
               DOI 10.17487/RFC9530, February 2024,
               <https://www.rfc-editor.org/rfc/rfc9530>.
@@ -904,12 +864,6 @@ Table of Contents
               RFC 6749, DOI 10.17487/RFC6749, October 2012,
               <https://www.rfc-editor.org/rfc/rfc6749>.
 
-   [OAUTH-RS-META]
-              Jones, M.B., Hunt, P., and A. Parecki, "OAuth 2.0
-              Protected Resource Metadata", RFC 9728,
-              DOI 10.17487/RFC9728, April 2025,
-              <https://www.rfc-editor.org/rfc/rfc9728>.
-
    [OAUTH-XAA]
               Parecki, A., McGuinness, K., and B. Campbell, "Identity
               Assertion JWT Authorization Grant", Work in Progress,
@@ -917,10 +871,6 @@ Table of Contents
               grant-06, 30 October 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-oauth-
               identity-assertion-authz-grant-06>.
-
-   [OHTTP]    Thomson, M. and C. A. Wood, "Oblivious HTTP", RFC 9458,
-              DOI 10.17487/RFC9458, January 2024,
-              <https://www.rfc-editor.org/rfc/rfc9458>.
 
    [OIDC]     "OpenID Connect Core 1.0", n.d.,
               <https://openid.net/specs/openid-connect-core-1_0.html>.
@@ -955,15 +905,6 @@ Table of Contents
               metadata-00, 2 November 2026,
               <https://datatracker.ietf.org/doc/html/draft-vilgalys-
               webbotauth-signed-agent-metadata-00>.
-
-   [STEPUP]   Bertocci, V. and B. Campbell, "OAuth 2.0 Step Up
-              Authentication Challenge Protocol", RFC 9470,
-              DOI 10.17487/RFC9470, September 2023,
-              <https://www.rfc-editor.org/rfc/rfc9470>.
-
-   [USER-AGENT-HISTORY]
-              "WebAIM: History of the browser user-agent string", n.d.,
-              <https://webaim.org/blog/user-agent-string-history/>.
 
    [WAG]      Carleton, P., Steele, N., Parecki, A., Schwenkschuster,
               A., and B. Campbell, "Workload Authorization Grant", Work

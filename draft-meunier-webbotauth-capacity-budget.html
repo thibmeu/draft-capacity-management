@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
-<title>Anonymous Agent Authentication</title>
+<title>Capacity Budget for Agents</title>
 <meta content="Thibault Meunier" name="author">
 <meta content="Christopher A. Wood" name="author">
 <meta content="
@@ -12,13 +12,13 @@
  . It addresses the noisy neighbour problem without requiring a
 stable client identifier at the origin. Separately allocated budgets let
 origins limit consumption beneath a shared platform identity. 
-       This document describes how Clients and origins can use   to enforce
-budget policies, how shared infrastructure attribution supports aggregate
-limits, and where composition with authorization primitives needs further work. 
+       The deployment described here combines Client budgets with shared
+infrastructure attribution for aggregate limits. Composition with
+authorization primitives needs further work. 
     " name="description">
 <meta content="xml2rfc 3.35.0" name="generator">
 <meta content="anonymous rate limiting" name="keyword">
-<meta content="draft-meunier-webbotauth-aaa-latest" name="ietf.draft">
+<meta content="draft-meunier-webbotauth-capacity-budget-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.35.0
     Python 3.14.10
@@ -34,7 +34,7 @@ limits, and where composition with authorization primitives needs further work.
     requests 2.33.1
     wcwidth 0.9.4
 -->
-<link href="draft-meunier-webbotauth-aaa.xml" rel="alternate" type="application/rfc+xml">
+<link href="draft-meunier-webbotauth-capacity-budget.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
 <style type="text/css">@font-face {
   font-family: 'Lora';
@@ -1047,7 +1047,7 @@ svg {
 <table class="ears">
 <thead><tr>
 <td class="left">Internet-Draft</td>
-<td class="center">AAA</td>
+<td class="center">Capacity Budget for Agents</td>
 <td class="right">November 2026</td>
 </tr></thead>
 <tfoot><tr>
@@ -1062,7 +1062,7 @@ svg {
 <dt class="label-workgroup">Workgroup:</dt>
 <dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
-<dd class="internet-draft">draft-meunier-webbotauth-aaa-latest</dd>
+<dd class="internet-draft">draft-meunier-webbotauth-capacity-budget-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
 <time datetime="2026-11-07" class="published">7 November 2026</time>
@@ -1084,16 +1084,16 @@ svg {
 </dd>
 </dl>
 </div>
-<h1 id="title">Anonymous Agent Authentication</h1>
+<h1 id="title">Capacity Budget for Agents</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
 <p id="section-abstract-1">This document describes how to manage budget continuity across requests using
 <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>. It addresses the noisy neighbour problem without requiring a
 stable client identifier at the origin. Separately allocated budgets let
 origins limit consumption beneath a shared platform identity.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2">This document describes how Clients and origins can use <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span> to enforce
-budget policies, how shared infrastructure attribution supports aggregate
-limits, and where composition with authorization primitives needs further work.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">The deployment described here combines Client budgets with shared
+infrastructure attribution for aggregate limits. Composition with
+authorization primitives needs further work.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-about-this-document">
@@ -1101,8 +1101,8 @@ limits, and where composition with authorization primitives needs further work.<
       </h2>
 <p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
 <p id="section-note.1-2">
-        The latest revision of this draft can be found at <span><a href="https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-aaa.html">https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-aaa.html</a></span>.
-        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-meunier-webbotauth-aaa/">https://datatracker.ietf.org/doc/draft-meunier-webbotauth-aaa/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+        The latest revision of this draft can be found at <span><a href="https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-capacity-budget.html">https://thibmeu.github.io/draft-brian/draft-meunier-webbotauth-capacity-budget.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-meunier-webbotauth-capacity-budget/">https://datatracker.ietf.org/doc/draft-meunier-webbotauth-capacity-budget/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
 <p id="section-note.1-3">Source for this draft and an issue tracker can be found at
         <span><a href="https://github.com/thibmeu/draft-brian">https://github.com/thibmeu/draft-brian</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
 </section>
@@ -1246,83 +1246,67 @@ agent overloads an origin, limiting the platform also limits its other
 tenants. <span>[<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span> describes this problem and proposes
 signed product, project, and session identifiers to let an origin isolate
 traffic below the platform level.<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">Agents are increasingly used in business and user workflows, including AI
-assistants, search indexing, content aggregation, and automated testing. Their
-relationship with origins is symbiotic. They need information from origins, and
-origins need signals to apply rate-limit policies. These can be binary, like
-allow or block when an origin cannot serve traffic, or resource-based to
-allocate capacity among clients.<a href="#section-1-2" class="pilcrow">¶</a></p>
-<p id="section-1-3">Historically, most of these signals have been enshrined into deployments of
-internet protocols. An agent needs an IP address to receive a response from an
-origin. Its TLS stack and browser behavior provide further signals. It provides
-a familiar User-Agent because middleboxes might otherwise filter its traffic
-(see <span>[<a href="#USER-AGENT-HISTORY" class="cite xref">USER-AGENT-HISTORY</a>]</span>).<a href="#section-1-3" class="pilcrow">¶</a></p>
-<p id="section-1-4">Recent developments break these patterns. Agents use proxies
-(<span>[<a href="#CONNECT-UDP" class="cite xref">CONNECT-UDP</a>]</span>, <span>[<a href="#CONNECT-IP" class="cite xref">CONNECT-IP</a>]</span>, <span>[<a href="#OHTTP" class="cite xref">OHTTP</a>]</span>, or plain <span>[<a href="#HTTP" class="cite xref">HTTP</a>]</span>).
-As platforms make requests on behalf of users, the user's TLS stack may no
-longer be the one visible to the origin. AI agents, on the user's device or
-hosted remotely, fetch and render information in place of browsers. User-Agent
-strings are still spoofed.<a href="#section-1-4" class="pilcrow">¶</a></p>
-<p id="section-1-5">More granular identifiers are useful when the origin needs to recognize a
+<p id="section-1-2">More granular identifiers are useful when the origin needs to recognize a
 particular product or project, investigate abuse with its platform, or follow
 a task within a session. <span>[<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span> advocates for such
 identifiers. While they are pseudonymous, the receiving origin can link
 requests within the scope and lifetime of those identifiers. This has several
-privacy costs:<a href="#section-1-5" class="pilcrow">¶</a></p>
+privacy costs:<a href="#section-1-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-1-6.1">
-          <p id="section-1-6.1.1">Discriminatory treatment: Explicit identifiers allow for discriminatory
+<li class="normal" id="section-1-3.1">
+          <p id="section-1-3.1.1">Discriminatory treatment: Explicit identifiers allow for discriminatory
 treatment of traffic based on those identifiers. An origin can give
 preferential treatment to some products or projects, or block them
-regardless of their requests' behavior.<a href="#section-1-6.1.1" class="pilcrow">¶</a></p>
+regardless of their requests' behavior.<a href="#section-1-3.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-1-6.2">
-          <p id="section-1-6.2.1">Linkability: Explicit identifiers allow for linking traffic to that identifier.
+        <li class="normal" id="section-1-3.2">
+          <p id="section-1-3.2.1">Linkability: Explicit identifiers allow for linking traffic to that identifier.
 The scope and lifetime of the identifier, together with other request data,
-determine how much activity the origin can associate with it.<a href="#section-1-6.2.1" class="pilcrow">¶</a></p>
+determine how much activity the origin can associate with it.<a href="#section-1-3.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-1-6.3">
-          <p id="section-1-6.3.1">Relationship disclosure: Explicit identifiers reveal information about the
+        <li class="normal" id="section-1-3.3">
+          <p id="section-1-3.3.1">Relationship disclosure: Explicit identifiers reveal information about the
 relationship between an intermediary and its clients, such as which requests
 belong to the same project. Clients may have no clear view of how that
-information will be processed, stored, or shared.<a href="#section-1-6.3.1" class="pilcrow">¶</a></p>
+information will be processed, stored, or shared.<a href="#section-1-3.3.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-7">This presents a natural tension between the needs of an origin and the needs
+<p id="section-1-4">This presents a natural tension between the needs of an origin and the needs
 of a user. Identifiers give an origin a way to apply capacity and abuse
 controls at the granularity provided. This depends on the platform assigning
 them reliably. Agents using those controls bear the cost of attribution. An origin
 has to be able to apply policies to traffic whether it finds it abusive or
 acceptable. Bounding consumption does not always require more fine-grained
-identifiers.<a href="#section-1-7" class="pilcrow">¶</a></p>
-<p id="section-1-8">This document describes Anonymous Agent Authentication (AAA) using MOLE,
+identifiers.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">This document describes capacity budgets for agents using MOLE,
 an architecture for private moderation <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>. Separately allocated
 budgets let the origin charge one Client's requests without consuming
 another's allocation. MOLE alone does not ensure one budget per agent or
 enforce a per-agent rate over time. The draft describes how Clients obtain
 Endorsements and Credentials, and how Anchor issuance and Moderator spending
-policies constrain those budgets.<a href="#section-1-8" class="pilcrow">¶</a></p>
-<p id="section-1-9">For these capacity decisions, the origin need not receive product, project,
-or session identifiers. When used, a platform signature remains visible, along with public spending
-terms and other request data. AAA does not prevent discrimination based
-on that information.<a href="#section-1-9" class="pilcrow">¶</a></p>
-<p id="section-1-10">Such a mechanism is useful in a number of cases. Some examples follow:<a href="#section-1-10" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-1-11">
-<li id="section-1-11.1">
-          <p id="section-1-11.1.1">An AI agent service that hosts remote agents and concentrates their traffic
+policies constrain those budgets.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">Avoiding unnecessary disclosure supports the end-user interests discussed in
+<span>[<a href="#INTERNET-FOR-END-USER" class="cite xref">INTERNET-FOR-END-USER</a>]</span>. For these capacity decisions, the origin need not
+receive product, project, or session identifiers. When used, a platform
+signature remains visible, along with public spending terms and other request
+data. This approach does not prevent discrimination based on that information.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">Such a mechanism is useful in a number of cases. Some examples follow:<a href="#section-1-7" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-1-8">
+<li id="section-1-8.1">
+          <p id="section-1-8.1.1">An AI agent service that hosts remote agents and concentrates their traffic
 on a small set of IP addresses. One user's activity can affect others when
-an origin can only limit the shared address or the platform as a whole.<a href="#section-1-11.1.1" class="pilcrow">¶</a></p>
+an origin can only limit the shared address or the platform as a whole.<a href="#section-1-8.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-1-11.2">
-          <p id="section-1-11.2.1">Network operators carry traffic from device-resident agents behind shared
+        <li id="section-1-8.2">
+          <p id="section-1-8.2.1">Network operators carry traffic from device-resident agents behind shared
 IP ranges. Policies applied to an address range or an entire ASN give these
-users a shared fate.<a href="#section-1-11.2.1" class="pilcrow">¶</a></p>
+users a shared fate.<a href="#section-1-8.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-1-11.3">
-          <p id="section-1-11.3.1">VPN providers and enterprise zero trust gateways have a noisy neighbour
+        <li id="section-1-8.3">
+          <p id="section-1-8.3.1">VPN providers and enterprise zero trust gateways have a noisy neighbour
 problem. They may know their users, but should not have to expose them to
 each origin. An origin able to tell employees apart could single out an
-executive's activity for instance.<a href="#section-1-11.3.1" class="pilcrow">¶</a></p>
+executive's activity for instance.<a href="#section-1-8.3.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 <div id="scenarios">
@@ -1477,7 +1461,7 @@ Missing budget evidence does not itself establish abuse.<a href="#section-1.1-7"
 allocations, they need a feedback arrangement. One possible extension would
 require a fresh platform Endorsement before accepting an origin-issued
 Privacy Pass token, using a reverse-flow exchange. Feedback could also occur out of band. These
-are possible deployment arrangements, not exchanges specified by AAA. Their
+are possible deployment arrangements, not exchanges specified here. Their
 binding to the affected allocation, enforcement, and disclosure to each party
 remain to be defined. They need not require a persistent tenant identifier at
 the origin.<a href="#section-1.1-8" class="pilcrow">¶</a></p>
@@ -1494,9 +1478,9 @@ apply policy to a product, project, or session while the platform can map
 those identifiers back to its customers. Origin-scoped session values
 reduce cross-origin correlation (<span><a href="https://datatracker.ietf.org/doc/html/draft-vilgalys-webbotauth-signed-agent-metadata-00#section-7.2" class="relref">Section 7.2</a> of [<a href="#SIGNED-AGENT-METADATA" class="cite xref">SIGNED-AGENT-METADATA</a>]</span>). However,
 each identifier still links requests within its own scope and lifetime.
-As described in <a href="#scenarios" class="auto internal xref">Section 1.1</a>, AAA does not specify tenant-specific abuse
-reporting.
-An Anchor can constrain project allocations, but the origin cannot recognize
+As described in <a href="#scenarios" class="auto internal xref">Section 1.1</a>, this document does not specify tenant-specific
+abuse reporting. An Anchor can constrain project allocations, but the origin
+cannot recognize
 and selectively block all of a project's independent Credentials from their
 presentations alone.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
 <p id="section-1.2-2"><span>[<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span> also uses MOLE for anonymous bot access and rate limiting.
@@ -1504,28 +1488,20 @@ Its deployment relies on Anchor vetting and origin acceptance of issuance
 policies (Sections <a href="https://datatracker.ietf.org/doc/html/draft-rescorla-anonymous-webbotauth-01#section-3" class="relref">3</a> and <a href="https://datatracker.ietf.org/doc/html/draft-rescorla-anonymous-webbotauth-01#section-4.1" class="relref">4.1</a> of <span>[<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span>). It also discusses convergence on
 accepted policies (<span><a href="https://datatracker.ietf.org/doc/html/draft-rescorla-anonymous-webbotauth-01#section-4.3" class="relref">Section 4.3</a> of [<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span>) and the risk of cheap registration
 yielding multiple credentials (<span><a href="https://datatracker.ietf.org/doc/html/draft-rescorla-anonymous-webbotauth-01#section-8.2" class="relref">Section 8.2</a> of [<a href="#WBA-ABA" class="cite xref">WBA-ABA</a>]</span>). These are governance
-dependencies between Anchors and sites. AAA shares those dependencies and
-focuses on allocations beneath a platform's identity, where the platform can
-use its existing tenant relationships to constrain new budgets.<a href="#section-1.2-2" class="pilcrow">¶</a></p>
-<p id="section-1.2-3">Given both AAA and ABA rely on MOLE, should ABA see traction, platforms
-supporting AAA could use MOLE's issuer-hiding capability to form virtual
-platforms: groups of platform Anchors accepted under a common policy. An origin
-would learn that an Endorsement came from an accepted Anchor without learning
-which platform issued it. Moving away from platform-specific identifiers would
-also require origins to accept requests without a platform-specific signature.
-Network metadata and other request fields could still reveal the platform.
-This is a possible deployment direction, not a mechanism specified by AAA.<a href="#section-1.2-3" class="pilcrow">¶</a></p>
-<p id="section-1.2-4">Poppy <span>[<a href="#POPPY" class="cite xref">POPPY</a>]</span> uses User IDs and sessions, including for anonymous browsing.
+dependencies between Anchors and sites. This approach shares those dependencies
+and focuses on allocations beneath a platform's identity, where the platform
+can use its existing tenant relationships to constrain new budgets.<a href="#section-1.2-2" class="pilcrow">¶</a></p>
+<p id="section-1.2-3">Poppy <span>[<a href="#POPPY" class="cite xref">POPPY</a>]</span> uses User IDs and sessions, including for anonymous browsing.
 <span>[<a href="#AAP" class="cite xref">AAP</a>]</span> uses anonymous admission tokens and recommends a session afterwards,
 though it also allows a fresh token per request. Here, the aim is to maintain a
-scarce, independently allocated budget without linking its presentations.<a href="#section-1.2-4" class="pilcrow">¶</a></p>
-<p id="section-1.2-5"><span>[<a href="#WIMSE-AIMS" class="cite xref">WIMSE-AIMS</a>]</span> profiles WIMSE and OAuth for agents within a defined trust domain.
+scarce, independently allocated budget without linking its presentations.<a href="#section-1.2-3" class="pilcrow">¶</a></p>
+<p id="section-1.2-4"><span>[<a href="#WIMSE-AIMS" class="cite xref">WIMSE-AIMS</a>]</span> profiles WIMSE and OAuth for agents within a defined trust domain.
 It treats an agent as a workload with its own identifier and credential. It
 carries the user, when there is one, only as the subject of an OAuth access token, so that the two
 identities are separate and compose on one request. <span>[<a href="#WAG" class="cite xref">WAG</a>]</span> lets a
 platform-hosted workload obtain such a token for itself without per-workload
 registration. This document places both among the options an origin can ask
-for, next to attribution and anonymous capacity.<a href="#section-1.2-5" class="pilcrow">¶</a></p>
+for, next to attribution and anonymous capacity.<a href="#section-1.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1583,7 +1559,7 @@ WBA(Y) denotes a Web Bot Auth signature from intermediary Y.<a href="#section-2-
       <h2 id="name-scope-and-principles">
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-scope-and-principles" class="section-name selfRef">Scope and principles</a>
       </h2>
-<p id="section-3-1">The aim of AAA is to bound consumption through independently allocated budgets
+<p id="section-3-1">The aim is to bound consumption through independently allocated budgets
 without requiring a stable client identifier. Exhausting one budget should
 not exhaust another allocation, provided Anchor issuance and Moderator
 spending policies keep them separate. The privacy objective is to separate
@@ -1686,8 +1662,8 @@ signature should cover the presentation and the relevant request components,
 as discussed in <a href="#security" class="auto internal xref">Section 7</a>. Multiple signature profiles can use distinct
 labels, with each verifier applying the corresponding profile.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
 <p id="section-4.4-2">Permission and capacity can also be required together. However, MOLE,
-PrivateToken, and OAuth access tokens use the Authorization field, which
-carries one credentials value <span><a href="https://rfc-editor.org/rfc/rfc9110#section-11.6.2" class="relref">Section 11.6.2</a> of [<a href="#HTTP" class="cite xref">HTTP</a>]</span>. The current MOLE
+PrivateToken, and OAuth bearer tokens <span>[<a href="#BEARER" class="cite xref">BEARER</a>]</span> use the Authorization field,
+which carries one credentials value <span><a href="https://rfc-editor.org/rfc/rfc9110#section-11.6.2" class="relref">Section 11.6.2</a> of [<a href="#HTTP" class="cite xref">HTTP</a>]</span>. The current MOLE
 transport also selects one presentation per request <span>[<a href="#MOLE-HTTP" class="cite xref">MOLE-HTTP</a>]</span>. Carriage
 of several budgets or of a budget beside another authorization scheme remains
 undefined here.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
@@ -2181,14 +2157,6 @@ a recorded termination only while the result remains available.<a href="#section
       <dd>
 <span class="refAuthor">Meunier, T.</span> and <span class="refAuthor">K. Kelley</span>, <span class="refTitle">"Principles for Web Traffic Management by Intermediaries"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-meunier-bcp-civil-00</span>, <time datetime="2026-10-29" class="refDate">29 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-meunier-bcp-civil-00">https://datatracker.ietf.org/doc/html/draft-meunier-bcp-civil-00</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="CONNECT-IP">[CONNECT-IP]</dt>
-      <dd>
-<span class="refAuthor">Pauly, T., Ed.</span>, <span class="refAuthor">Schinazi, D.</span>, <span class="refAuthor">Chernyakhovsky, A.</span>, <span class="refAuthor">Kühlewind, M.</span>, and <span class="refAuthor">M. Westerlund</span>, <span class="refTitle">"Proxying IP in HTTP"</span>, <span class="seriesInfo">RFC 9484</span>, <span class="seriesInfo">DOI 10.17487/RFC9484</span>, <time datetime="2023-10" class="refDate">October 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9484">https://www.rfc-editor.org/rfc/rfc9484</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="CONNECT-UDP">[CONNECT-UDP]</dt>
-      <dd>
-<span class="refAuthor">Schinazi, D.</span>, <span class="refTitle">"Proxying UDP in HTTP"</span>, <span class="seriesInfo">RFC 9298</span>, <span class="seriesInfo">DOI 10.17487/RFC9298</span>, <time datetime="2022-08" class="refDate">August 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9298">https://www.rfc-editor.org/rfc/rfc9298</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="DIGEST">[DIGEST]</dt>
       <dd>
 <span class="refAuthor">Polli, R.</span> and <span class="refAuthor">L. Pardue</span>, <span class="refTitle">"Digest Fields"</span>, <span class="seriesInfo">RFC 9530</span>, <span class="seriesInfo">DOI 10.17487/RFC9530</span>, <time datetime="2024-02" class="refDate">February 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9530">https://www.rfc-editor.org/rfc/rfc9530</a>&gt;</span>. </dd>
@@ -2237,17 +2205,9 @@ a recorded termination only while the result remains available.<a href="#section
       <dd>
 <span class="refAuthor">Hardt, D., Ed.</span>, <span class="refTitle">"The OAuth 2.0 Authorization Framework"</span>, <span class="seriesInfo">RFC 6749</span>, <span class="seriesInfo">DOI 10.17487/RFC6749</span>, <time datetime="2012-10" class="refDate">October 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6749">https://www.rfc-editor.org/rfc/rfc6749</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="OAUTH-RS-META">[OAUTH-RS-META]</dt>
-      <dd>
-<span class="refAuthor">Jones, M.B.</span>, <span class="refAuthor">Hunt, P.</span>, and <span class="refAuthor">A. Parecki</span>, <span class="refTitle">"OAuth 2.0 Protected Resource Metadata"</span>, <span class="seriesInfo">RFC 9728</span>, <span class="seriesInfo">DOI 10.17487/RFC9728</span>, <time datetime="2025-04" class="refDate">April 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9728">https://www.rfc-editor.org/rfc/rfc9728</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="OAUTH-XAA">[OAUTH-XAA]</dt>
       <dd>
 <span class="refAuthor">Parecki, A.</span>, <span class="refAuthor">McGuinness, K.</span>, and <span class="refAuthor">B. Campbell</span>, <span class="refTitle">"Identity Assertion JWT Authorization Grant"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-oauth-identity-assertion-authz-grant-06</span>, <time datetime="2026-10-30" class="refDate">30 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-identity-assertion-authz-grant-06">https://datatracker.ietf.org/doc/html/draft-ietf-oauth-identity-assertion-authz-grant-06</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="OHTTP">[OHTTP]</dt>
-      <dd>
-<span class="refAuthor">Thomson, M.</span> and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"Oblivious HTTP"</span>, <span class="seriesInfo">RFC 9458</span>, <span class="seriesInfo">DOI 10.17487/RFC9458</span>, <time datetime="2024-01" class="refDate">January 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9458">https://www.rfc-editor.org/rfc/rfc9458</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="OIDC">[OIDC]</dt>
       <dd>
@@ -2272,14 +2232,6 @@ a recorded termination only while the result remains available.<a href="#section
 <dt id="SIGNED-AGENT-METADATA">[SIGNED-AGENT-METADATA]</dt>
       <dd>
 <span class="refAuthor">Vilgalys, R.</span> and <span class="refAuthor">P. González</span>, <span class="refTitle">"The Signed-Agent-Metadata HTTP Header Field for Web Bot Auth"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-vilgalys-webbotauth-signed-agent-metadata-00</span>, <time datetime="2026-11-02" class="refDate">2 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-vilgalys-webbotauth-signed-agent-metadata-00">https://datatracker.ietf.org/doc/html/draft-vilgalys-webbotauth-signed-agent-metadata-00</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="STEPUP">[STEPUP]</dt>
-      <dd>
-<span class="refAuthor">Bertocci, V.</span> and <span class="refAuthor">B. Campbell</span>, <span class="refTitle">"OAuth 2.0 Step Up Authentication Challenge Protocol"</span>, <span class="seriesInfo">RFC 9470</span>, <span class="seriesInfo">DOI 10.17487/RFC9470</span>, <time datetime="2023-09" class="refDate">September 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9470">https://www.rfc-editor.org/rfc/rfc9470</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="USER-AGENT-HISTORY">[USER-AGENT-HISTORY]</dt>
-      <dd>
-<span class="refTitle">"WebAIM: History of the browser user-agent string"</span>, <span>n.d.</span>, <span>&lt;<a href="https://webaim.org/blog/user-agent-string-history/">https://webaim.org/blog/user-agent-string-history/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="WAG">[WAG]</dt>
       <dd>
