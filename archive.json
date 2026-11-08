@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-05T04:48:55.239086+00:00",
+  "timestamp": "2026-11-08T04:00:04.983577+00:00",
   "repo": "thibmeu/draft-brian",
   "labels": [
     {
@@ -110,6 +110,139 @@
         "oid": "b632ff70bae05def9ec5a97b52720dd9386d149d"
       },
       "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 3,
+      "id": "PR_kwDOVf4rpc8AAAABNSVYmw",
+      "title": "Reorient around attribution and authorization",
+      "url": "https://github.com/thibmeu/draft-brian/pull/3",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "More work to be done still. I think we should add multiple request flows, one describing MOLE+WBA (for limiting basic public resource access) and then another for agents accessing a permissioned API (showing how they use WAG and maybe ID-JAG, depending on use case). Thoughts?",
+      "createdAt": "2026-11-06T10:42:28Z",
+      "updatedAt": "2026-11-06T16:56:50Z",
+      "baseRepository": "thibmeu/draft-brian",
+      "baseRefName": "main",
+      "baseRefOid": "c0c92871d612e09a9d68c24cf43b657f43f52ebf",
+      "headRepository": null,
+      "headRefName": "caw/attribute-and-authorize",
+      "headRefOid": "4ae671d97b7879f1bce251fe56285b915a95383d",
+      "closedAt": "2026-11-06T16:56:49Z",
+      "mergedAt": "2026-11-06T16:56:49Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "4ae671d97b7879f1bce251fe56285b915a95383d"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABWdg3CA",
+          "commit": {
+            "abbreviatedOid": "4ae671d"
+          },
+          "author": "thibmeu",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "overall the two flows seem great. as a general comment, we should move away from the \"human\" topic. i don't think it helps. a principal and it's agent(s) seem much better",
+          "createdAt": "2026-11-06T15:19:40Z",
+          "updatedAt": "2026-11-06T15:27:20Z",
+          "comments": [
+            {
+              "originalPosition": 713,
+              "body": "note that DPOP does not fully address this. an intermediary can still alter the request body. client certificate (which i assume you would use with mTLS) simply stop at intermediaries. It feels that HTTP Message Signature with Content-Digest/Repr-Digest/whatever digest would help here.",
+              "createdAt": "2026-11-06T15:19:40Z",
+              "updatedAt": "2026-11-06T15:27:20Z"
+            },
+            {
+              "originalPosition": 318,
+              "body": "i'm not sure that's true. MOLE may indeed be tied to a human subject (i don't like that term as we are discussing bits and electric impulses), but nothing prevents one principal to have multiple budgets depending on the number of agents for instance. the binding between MOLE-to-OAuth is still relevant. maybe something along the line\n\n`MOLE adds no subject unlinkability on requests already identifying that subject`, which does not mean it's not useful",
+              "createdAt": "2026-11-06T15:23:33Z",
+              "updatedAt": "2026-11-06T15:27:20Z"
+            },
+            {
+              "originalPosition": 605,
+              "body": "for this section, i liked the previous wording as to how the client experienced continuity while the site did not have linkability",
+              "createdAt": "2026-11-06T15:25:09Z",
+              "updatedAt": "2026-11-06T15:27:20Z"
+            },
+            {
+              "originalPosition": 318,
+              "body": "on another note: we'll need to have a clear \"MOLE(U)\"",
+              "createdAt": "2026-11-06T15:26:37Z",
+              "updatedAt": "2026-11-06T15:27:20Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "id": "PR_kwDOVf4rpc8AAAABNWPRFg",
+      "title": "Thibmeu/client budgets",
+      "url": "https://github.com/thibmeu/draft-brian/pull/4",
+      "state": "MERGED",
+      "author": "thibmeu",
+      "authorAssociation": "OWNER",
+      "assignees": [
+        "thibmeu"
+      ],
+      "labels": [],
+      "body": "Based on https://github.com/thibmeu/draft-brian/pull/3 frdom @chris-wood \n\nessentially cuts a lot of content. the draft was too large\n\nIt aims to narrow the claim that we make, so that we don't repeat the references (or even content within the draft)\n\nthere's still the `Authorization` gap with OAuth, but that's up to MOLE to figure out",
+      "createdAt": "2026-11-06T16:00:27Z",
+      "updatedAt": "2026-11-07T15:09:47Z",
+      "baseRepository": "thibmeu/draft-brian",
+      "baseRefName": "main",
+      "baseRefOid": "c0c92871d612e09a9d68c24cf43b657f43f52ebf",
+      "headRepository": "thibmeu/draft-brian",
+      "headRefName": "thibmeu/client-budgets",
+      "headRefOid": "e672201c43c7fce1acb80dd1486f21596812fa8f",
+      "closedAt": "2026-11-06T16:56:48Z",
+      "mergedAt": "2026-11-06T16:56:48Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "24e4d26922d61e805b78892355c0502608a2b3bd"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 5,
+      "id": "PR_kwDOVf4rpc8AAAABNY6KQA",
+      "title": "AAA reframing",
+      "url": "https://github.com/thibmeu/draft-brian/pull/5",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Stab at our reframing discussion. We probably need a comparison to ABA if we want to keep this framing. Feel free to edit / branch on this as needed.",
+      "createdAt": "2026-11-06T19:33:28Z",
+      "updatedAt": "2026-11-07T16:54:43Z",
+      "baseRepository": "thibmeu/draft-brian",
+      "baseRefName": "main",
+      "baseRefOid": "24e4d26922d61e805b78892355c0502608a2b3bd",
+      "headRepository": null,
+      "headRefName": "caw/reframe-aaa",
+      "headRefOid": "5beab8f280fc5bc47ea57ff7651b6583945b7d8f",
+      "closedAt": "2026-11-07T16:46:01Z",
+      "mergedAt": "2026-11-07T16:46:01Z",
+      "mergedBy": "thibmeu",
+      "mergeCommit": {
+        "oid": "c3b07a119906907766ecbe4b5fada04fe74a48c5"
+      },
+      "comments": [
+        {
+          "author": "thibmeu",
+          "authorAssociation": "OWNER",
+          "body": "i'm going to merge and iterate on it, ensuring we address most of the use cases of signed-agent-metadata",
+          "createdAt": "2026-11-07T16:23:41Z",
+          "updatedAt": "2026-11-07T16:23:41Z"
+        }
+      ],
       "reviews": []
     }
   ]
