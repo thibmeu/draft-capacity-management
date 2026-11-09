@@ -1163,7 +1163,18 @@ authorization primitives needs further work.<a href="#section-abstract-2" class=
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
-            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-parties-and-hosting-relatio" class="internal xref">Parties and hosting relationships</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-mole-roles-and-budget-scope" class="internal xref">MOLE roles and budget scopes</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.3">
+                <p id="section-toc.1-1.2.2.3.1"><a href="#section-2.3" class="auto internal xref">2.3</a>.  <a href="#name-endorsement-examples" class="internal xref">Endorsement examples</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
             <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-scope-and-principles" class="internal xref">Scope and principles</a></p>
@@ -1296,10 +1307,12 @@ has to be able to apply policies to traffic whether it finds it abusive or
 acceptable. Bounding consumption does not always require more fine-grained
 identifiers.<a href="#section-1-7" class="pilcrow">¶</a></p>
 <p id="section-1-8">This document describes capacity budgets for agents using MOLE, an architecture
-for private moderation <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>. Separately allocated budgets let the origin
-charge one Client's requests without consuming another's allocation. A given
-tenant is rate limited by the combination of Anchor issuance and Moderator
-spending policies. For example, <a href="#scenarios" class="auto internal xref">Section 6</a> limits each tenant to twenty
+for private moderation <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>. An Anchor allocates budgets to tenants,
+workloads, agents, or user accounts. MOLE Clients obtain and spend those budgets
+(<a href="#parties" class="auto internal xref">Section 2.1</a>). Separately allocated budgets let the origin charge one allocation
+without consuming another. Anchor issuance and Moderator spending policies
+together constrain consumption at the chosen scope.
+For example, <a href="#scenarios" class="auto internal xref">Section 6</a> limits each tenant to twenty
 budgeted operation attempts per epoch without revealing which tenant made a
 request. MOLE itself does not define tenant rate limits; the profile defined in
 this document provides them through these policies.<a href="#section-1-8" class="pilcrow">¶</a></p>
@@ -1373,45 +1386,134 @@ for, next to attribution and anonymous capacity.<a href="#section-1.1-4" class="
       </h2>
 <p id="section-2-1">This document uses the HTTP terminology of <span>[<a href="#HTTP" class="cite xref">HTTP</a>]</span> and the MOLE terminology
 of <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>. The roles can be operated by separate parties or combined.<a href="#section-2-1" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-2-2">
-        <dt id="section-2-2.1"><strong>Client:</strong></dt>
-        <dd style="margin-left: 1.5em" id="section-2-2.2">
-          <p id="section-2-2.2.1">The MOLE participant that obtains an Endorsement, redeems it for a
-Credential, and presents that Credential when requesting a resource.<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
+<div id="parties">
+<section id="section-2.1">
+        <h3 id="name-parties-and-hosting-relatio">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-parties-and-hosting-relatio" class="section-name selfRef">Parties and hosting relationships</a>
+        </h3>
+<span class="break"></span><dl class="dlParallel" id="section-2.1-1">
+          <dt id="section-2.1-1.1"><strong>Platform:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.2">
+            <p id="section-2.1-1.2.1">A service that hosts workloads for tenants.<a href="#section-2.1-1.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.3"><strong>Tenant:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.4">
+            <p id="section-2.1-1.4.1">A customer organization, developer account, or billing workspace that runs
+workloads on a platform, often organized as a project.<a href="#section-2.1-1.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.5"><strong>Workload:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.6">
+            <p id="section-2.1-1.6.1">A deployed application or service, as described in <span>[<a href="#WIMSE-ARCH" class="cite xref">WIMSE-ARCH</a>]</span>.
+A software product or service can comprise several workloads.<a href="#section-2.1-1.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.7"><strong>Agent:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.8">
+            <p id="section-2.1-1.8.1">Software that performs tasks, potentially on behalf of a user.
+A session is a bounded task execution or workflow run, not the agent itself.<a href="#section-2.1-1.8.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.9"><strong>User:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.10">
+            <p id="section-2.1-1.10.1">A person on whose behalf an agent may act.<a href="#section-2.1-1.10.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
-<dt id="section-2-2.3"><strong>Anchor:</strong></dt>
-        <dd style="margin-left: 1.5em" id="section-2-2.4">
-          <p id="section-2-2.4.1">The party that grants Endorsements under a policy the Moderator accepts.
-Its relationship with a Client constrains access to new budgets.<a href="#section-2-2.4.1" class="pilcrow">¶</a></p>
-</dd>
-        <dd class="break"></dd>
-<dt id="section-2-2.5"><strong>Moderator:</strong></dt>
-        <dd style="margin-left: 1.5em" id="section-2-2.6">
-          <p id="section-2-2.6.1">The party that issues Credentials and verifies their presentations. It
-sets the budget policy and may be operated by the origin or on its behalf.<a href="#section-2-2.6.1" class="pilcrow">¶</a></p>
-</dd>
-        <dd class="break"></dd>
-<dt id="section-2-2.7"><strong>Origin:</strong></dt>
-        <dd style="margin-left: 1.5em" id="section-2-2.8">
-          <p id="section-2-2.8.1">The server that controls access to the requested resource.<a href="#section-2-2.8.1" class="pilcrow">¶</a></p>
-</dd>
-        <dd class="break"></dd>
-<dt id="section-2-2.9"><strong>Intermediary:</strong></dt>
-        <dd style="margin-left: 1.5em" id="section-2-2.10">
-          <p id="section-2-2.10.1">A proxy, gateway, or tunnel on the request path. An intermediary that
-terminates HTTP can sign forwarded requests under its own identity.<a href="#section-2-2.10.1" class="pilcrow">¶</a></p>
-</dd>
-      <dd class="break"></dd>
 </dl>
-<p id="section-2-3">A Client may hold several budgets, and an account or workload may receive
+<p id="section-2.1-2">A typical hosted deployment has this hierarchy:<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.1-3">
+<pre>
+Platform
+  Tenant
+    Workload
+      Agent
+</pre><a href="#section-2.1-3" class="pilcrow">¶</a>
+</div>
+<p id="section-2.1-4">A tenant runs workloads that execute agents. Users can use several agents,
+and agents can serve several users or run unattended. Device-resident agents
+need no hosting tenant.<a href="#section-2.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="mole-roles-and-budget-scopes">
+<section id="section-2.2">
+        <h3 id="name-mole-roles-and-budget-scope">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-mole-roles-and-budget-scope" class="section-name selfRef">MOLE roles and budget scopes</a>
+        </h3>
+<span class="break"></span><dl class="dlParallel" id="section-2.2-1">
+          <dt id="section-2.2-1.1"><strong>Client:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.2-1.2">
+            <p id="section-2.2-1.2.1">The MOLE participant that obtains an Endorsement, redeems it for a
+Credential, and presents that Credential when requesting a resource.
+An agent or a shared workload component can implement this protocol role.<a href="#section-2.2-1.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.2-1.3"><strong>Anchor:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.2-1.4">
+            <p id="section-2.2-1.4.1">The party that grants Endorsements under a policy the Moderator accepts.
+Its relationship with a Client constrains access to new budgets.<a href="#section-2.2-1.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.2-1.5"><strong>Moderator:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.2-1.6">
+            <p id="section-2.2-1.6.1">The party that issues Credentials and verifies their presentations. It
+sets the budget policy and may be operated by the origin or on its behalf.<a href="#section-2.2-1.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.2-1.7"><strong>Origin:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.2-1.8">
+            <p id="section-2.2-1.8.1">The server that controls access to the requested resource.<a href="#section-2.2-1.8.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.2-1.9"><strong>Intermediary:</strong></dt>
+          <dd style="margin-left: 1.5em" id="section-2.2-1.10">
+            <p id="section-2.2-1.10.1">A proxy, gateway, or tunnel on the request path. An intermediary that
+terminates HTTP can sign forwarded requests under its own identity.<a href="#section-2.2-1.10.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-2.2-2">A Client may hold several budgets, and an account or workload may receive
 budgets for several Clients. Those allocations depend on Anchor and Moderator
-policy. A workload has the meaning given in <span>[<a href="#WIMSE-ARCH" class="cite xref">WIMSE-ARCH</a>]</span>. A Credential does
-not establish a unique account, workload, device, or other principal.<a href="#section-2-3" class="pilcrow">¶</a></p>
-<p id="section-2-4">MOLE(X) denotes a presentation for budget scope X. MOLE(C) is a Client's
+policy. A Credential does not establish a unique account, workload, device,
+or other principal.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+<p id="section-2.2-3">MOLE(X) denotes a presentation for budget scope X. MOLE(C) is a Client's
 budget, while MOLE(T), MOLE(W), and MOLE(U) denote tenant, workload, and
 account scopes. These labels do not appear as identifiers in presentations.
-WBA(Y) denotes a Web Bot Auth signature from intermediary Y.<a href="#section-2-4" class="pilcrow">¶</a></p>
+WBA(Y) denotes a Web Bot Auth signature from intermediary Y.<a href="#section-2.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="endorsement-examples">
+<section id="section-2.3">
+        <h3 id="name-endorsement-examples">
+<a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-endorsement-examples" class="section-name selfRef">Endorsement examples</a>
+        </h3>
+<p id="section-2.3-1">An accepted Anchor could allocate Endorsements at each scope:<a href="#section-2.3-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.3-2.1">
+            <p id="section-2.3-2.1.1">Platform: A vetting service grants a hosting provider a finite pool.<a href="#section-2.3-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.3-2.2">
+            <p id="section-2.3-2.2.1">Tenant: The platform caps a retailer's workspace allocation under its
+subscription, as in <a href="#scenarios" class="auto internal xref">Section 6</a>.<a href="#section-2.3-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.3-2.3">
+            <p id="section-2.3-2.3.1">Workload: A deployment service authenticates the shopping-assistant workload
+and caps its allocation across replicas and restarts.<a href="#section-2.3-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.3-2.4">
+            <p id="section-2.3-2.4.1">Agent: The workload operator allocates a shopping agent's task budget
+against the workload's allowance. New tasks do not reset that allowance.<a href="#section-2.3-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.3-2.5">
+            <p id="section-2.3-2.5.1">User: An account provider authenticates a customer and caps allocations
+across that account's agents. This limits accounts, not unique people.<a href="#section-2.3-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-2.3-3">Clients redeem these Endorsements for Credentials. The Anchor accounts for the
+allocation scope, which presentations do not reveal. Capacity evidence does
+not grant permission. Combining budget proofs remains undefined (<a href="#composition" class="auto internal xref">Section 4.4</a>).<a href="#section-2.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="principles">
@@ -2004,16 +2106,18 @@ metadata can accompany MOLE, making requests linkable at the metadata's scope.<a
         <h3 id="name-capacity-scopes">
 <a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-capacity-scopes" class="section-name selfRef">Capacity scopes</a>
         </h3>
-<p id="section-7.2-1">A platform P can host tenants T, each with workloads W serving several
-Clients. An account U may authorize several Clients. The noisy-neighbour
+<p id="section-7.2-1">Using the terms in <a href="#parties" class="auto internal xref">Section 2.1</a>, a platform P hosts tenants T with workloads W.
+An account U may authorize several agents. <a href="#endorsement-examples" class="auto internal xref">Section 2.3</a> describes
+allocations at these scopes. The noisy-neighbour
 boundary depends on which of these shares a budget. A tenant budget separates
 tenants but leaves workloads within a tenant sharing its allocation. A
 workload budget separates workloads but still groups their Clients. Account
 budgets can isolate those allocations further, while several Clients sharing
 one account budget remain subject to the same limit.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
-<p id="section-7.2-2">In <a href="#fig-stacked" class="auto internal xref">Figure 4</a>, Anchor W endorses a workload and Anchor U endorses account
-allocations. The workload and its Clients play separate MOLE roles. The
-request carries their budget proofs alongside the platform's signature.
+<p id="section-7.2-2">In <a href="#fig-stacked" class="auto internal xref">Figure 4</a>, Anchor W endorses workload-scoped allocations and Anchor U
+endorses account-scoped allocations. Client components obtain and spend the
+corresponding Credentials. The request carries both budget proofs alongside
+the platform's signature.
 The Anchors need not operate the forwarding intermediary. These are intended
 scopes, pending the multiple-presentation carriage in <a href="#composition" class="auto internal xref">Section 4.4</a>.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
 <span id="name-workload-and-account-budget"></span><div id="fig-stacked">
