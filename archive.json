@@ -1,7 +1,7 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-08T04:00:04.983577+00:00",
-  "repo": "thibmeu/draft-brian",
+  "timestamp": "2026-11-10T05:43:00.862125+00:00",
+  "repo": "thibmeu/draft-capacity-management",
   "labels": [
     {
       "name": "accessibility",
@@ -54,13 +54,32 @@
       "color": "ffffff"
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "number": 6,
+      "id": "I_kwDOVf4rpc8AAAABde1uLQ",
+      "title": "should we move section 6 higher up",
+      "url": "https://github.com/thibmeu/draft-capacity-management/issues/6",
+      "state": "OPEN",
+      "author": "thibmeu",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [
+        "question"
+      ],
+      "body": "Section 6 is an example. I like the concreteness of the policy and the flow. Ofc, i'm biased as i wrote it, but I feel itshould be moved up to make the draft concrete for now\n\n<img width=\"620\" height=\"600\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/6e32183c-3a42-4825-81ea-90f651ec2993\" />\n\n@chris-wood ",
+      "createdAt": "2026-11-08T17:13:47Z",
+      "updatedAt": "2026-11-08T17:13:47Z",
+      "closedAt": null,
+      "comments": []
+    }
+  ],
   "pulls": [
     {
       "number": 1,
       "id": "PR_kwDOVf4rpc8AAAABMdBSuA",
       "title": "Expand and elaborate",
-      "url": "https://github.com/thibmeu/draft-brian/pull/1",
+      "url": "https://github.com/thibmeu/draft-capacity-management/pull/1",
       "state": "MERGED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
@@ -69,7 +88,7 @@
       "body": "This change integrates guiding principles, expands the architectural concepts, gives more deployment shapes, and provides moderation guidance. It expands the musings I put together and, with the help of Claude, provides a more thorough exploration of the deployment topologies. I made an attempt at reframing the core position of the draft too, moving away from rate limiting and towards the balance of attribution and private authentication. ",
       "createdAt": "2026-11-03T02:12:03Z",
       "updatedAt": "2026-11-04T10:52:31Z",
-      "baseRepository": "thibmeu/draft-brian",
+      "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "3dc3510d5d72378df7c064aea44be4845f519a5b",
       "headRepository": null,
@@ -88,7 +107,7 @@
       "number": 2,
       "id": "PR_kwDOVf4rpc8AAAABMyhf7g",
       "title": "docs: rename draft to appa and clarify budget semantics",
-      "url": "https://github.com/thibmeu/draft-brian/pull/2",
+      "url": "https://github.com/thibmeu/draft-capacity-management/pull/2",
       "state": "MERGED",
       "author": "thibmeu",
       "authorAssociation": "OWNER",
@@ -97,10 +116,10 @@
       "body": "@chris-wood ",
       "createdAt": "2026-11-04T11:13:25Z",
       "updatedAt": "2026-11-04T12:40:45Z",
-      "baseRepository": "thibmeu/draft-brian",
+      "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "561acfffcb92068167ed4bc26c91d2c1c850769f",
-      "headRepository": "thibmeu/draft-brian",
+      "headRepository": "thibmeu/draft-capacity-management",
       "headRefName": "thibmeu/appa-review-fixes",
       "headRefOid": "276bb1e44a3d468fffcf8650f535ef3056b8dced",
       "closedAt": "2026-11-04T12:32:01Z",
@@ -116,7 +135,7 @@
       "number": 3,
       "id": "PR_kwDOVf4rpc8AAAABNSVYmw",
       "title": "Reorient around attribution and authorization",
-      "url": "https://github.com/thibmeu/draft-brian/pull/3",
+      "url": "https://github.com/thibmeu/draft-capacity-management/pull/3",
       "state": "MERGED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
@@ -125,7 +144,7 @@
       "body": "More work to be done still. I think we should add multiple request flows, one describing MOLE+WBA (for limiting basic public resource access) and then another for agents accessing a permissioned API (showing how they use WAG and maybe ID-JAG, depending on use case). Thoughts?",
       "createdAt": "2026-11-06T10:42:28Z",
       "updatedAt": "2026-11-06T16:56:50Z",
-      "baseRepository": "thibmeu/draft-brian",
+      "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "c0c92871d612e09a9d68c24cf43b657f43f52ebf",
       "headRepository": null,
@@ -183,7 +202,7 @@
       "number": 4,
       "id": "PR_kwDOVf4rpc8AAAABNWPRFg",
       "title": "Thibmeu/client budgets",
-      "url": "https://github.com/thibmeu/draft-brian/pull/4",
+      "url": "https://github.com/thibmeu/draft-capacity-management/pull/4",
       "state": "MERGED",
       "author": "thibmeu",
       "authorAssociation": "OWNER",
@@ -194,10 +213,10 @@
       "body": "Based on https://github.com/thibmeu/draft-brian/pull/3 frdom @chris-wood \n\nessentially cuts a lot of content. the draft was too large\n\nIt aims to narrow the claim that we make, so that we don't repeat the references (or even content within the draft)\n\nthere's still the `Authorization` gap with OAuth, but that's up to MOLE to figure out",
       "createdAt": "2026-11-06T16:00:27Z",
       "updatedAt": "2026-11-07T15:09:47Z",
-      "baseRepository": "thibmeu/draft-brian",
+      "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "c0c92871d612e09a9d68c24cf43b657f43f52ebf",
-      "headRepository": "thibmeu/draft-brian",
+      "headRepository": "thibmeu/draft-capacity-management",
       "headRefName": "thibmeu/client-budgets",
       "headRefOid": "e672201c43c7fce1acb80dd1486f21596812fa8f",
       "closedAt": "2026-11-06T16:56:48Z",
@@ -213,7 +232,7 @@
       "number": 5,
       "id": "PR_kwDOVf4rpc8AAAABNY6KQA",
       "title": "AAA reframing",
-      "url": "https://github.com/thibmeu/draft-brian/pull/5",
+      "url": "https://github.com/thibmeu/draft-capacity-management/pull/5",
       "state": "MERGED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
@@ -222,7 +241,7 @@
       "body": "Stab at our reframing discussion. We probably need a comparison to ABA if we want to keep this framing. Feel free to edit / branch on this as needed.",
       "createdAt": "2026-11-06T19:33:28Z",
       "updatedAt": "2026-11-07T16:54:43Z",
-      "baseRepository": "thibmeu/draft-brian",
+      "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "24e4d26922d61e805b78892355c0502608a2b3bd",
       "headRepository": null,
@@ -243,6 +262,98 @@
           "updatedAt": "2026-11-07T16:23:41Z"
         }
       ],
+      "reviews": []
+    },
+    {
+      "number": 7,
+      "id": "PR_kwDOVf4rpc8AAAABN3NqiA",
+      "title": "early feedback",
+      "url": "https://github.com/thibmeu/draft-capacity-management/pull/7",
+      "state": "MERGED",
+      "author": "thibmeu",
+      "authorAssociation": "OWNER",
+      "assignees": [
+        "thibmeu"
+      ],
+      "labels": [
+        "enhancement"
+      ],
+      "body": "1. explain that the draft provides a profile to rate limit specific tenant. these can be users, agent, project, whatever the platform exposes\r\n2. make the limitation of WWW-Authenticate and Authorization more concrete\r\n3. better illustrate the \"credit\" and what it corresponds to by mapping it to familiar rate limit primitives\r\n4. have some blockquote for presentation purposes\r\n\r\nThis still does not move the example section up, even though that was mentioned. See #6 . Possibly putting it after terminology in a follow up commit\r\n\r\nDiff: https://author-tools.ietf.org/api/iddiff?url_1=https://thibmeu.github.io/draft-capacity-management/draft-meunier-webbotauth-capacity-management.txt&url_2=https://thibmeu.github.io/draft-capacity-management/early-feedback-mari/draft-meunier-webbotauth-capacity-management.txt",
+      "createdAt": "2026-11-09T14:13:58Z",
+      "updatedAt": "2026-11-09T18:25:08Z",
+      "baseRepository": "thibmeu/draft-capacity-management",
+      "baseRefName": "main",
+      "baseRefOid": "eda0022e41bf843f6be1d2609c2f76a4041a0d44",
+      "headRepository": "thibmeu/draft-capacity-management",
+      "headRefName": "early-feedback-mari",
+      "headRefOid": "d504e36a753eacdb0a5f89f9a50b67359550127f",
+      "closedAt": "2026-11-09T18:25:08Z",
+      "mergedAt": "2026-11-09T18:25:07Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "b613433c1528f66acae43e4a2eac4605a05affdd"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABW1yScA",
+          "commit": {
+            "abbreviatedOid": "ba8ac52"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-09T15:01:05Z",
+          "updatedAt": "2026-11-09T15:13:12Z",
+          "comments": [
+            {
+              "originalPosition": 28,
+              "body": "This paragraph conflates clients, tenants, and agents. We probably should clean this up, and then add some expository text describing the difference between these different roles and how they might separately be endorsed. ",
+              "createdAt": "2026-11-09T15:01:05Z",
+              "updatedAt": "2026-11-09T15:13:12Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABW4haJw",
+          "commit": {
+            "abbreviatedOid": "d504e36"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2026-11-09T18:24:58Z",
+          "updatedAt": "2026-11-09T18:24:58Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "id": "PR_kwDOVf4rpc8AAAABN8cP9w",
+      "title": "Another pass",
+      "url": "https://github.com/thibmeu/draft-capacity-management/pull/8",
+      "state": "OPEN",
+      "author": "chris-wood",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Top to bottom, trying to make the flow better. I moved the signed metadata context comparison to an appendix since it felt out of place in the middle. I also tried to lean into describing a \"framework\" here, and describing it as a _specific thing_ that origins can use for the purposes of moderating traffic. ",
+      "createdAt": "2026-11-09T20:34:58Z",
+      "updatedAt": "2026-11-09T20:35:38Z",
+      "baseRepository": "thibmeu/draft-capacity-management",
+      "baseRefName": "main",
+      "baseRefOid": "b613433c1528f66acae43e4a2eac4605a05affdd",
+      "headRepository": "chris-wood/draft-capacity-management",
+      "headRefName": "caw/pass",
+      "headRefOid": "531595f6e0773b4fe2bf9541047d2f68bce6d848",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
       "reviews": []
     }
   ]
