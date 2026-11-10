@@ -5,7 +5,7 @@
 Network Working Group                                         T. Meunier
 Internet-Draft                                                C. A. Wood
 Intended status: Informational                                Cloudflare
-Expires: 13 May 2027                                     9 November 2026
+Expires: 14 May 2027                                    10 November 2026
 
 
                  PACE: Capability Management for Agents
@@ -16,12 +16,12 @@ Abstract
    This document addresses the noisy neighbour problem without requiring
    a stable client identifier at the origin.  Separately allocated
    budgets let origins limit consumption beneath a shared platform
-   identity.  It describes how to manage budget continuity across
-   requests using [MOLE-ARCH].
-
-   The deployment described here combines Client budgets with shared
-   infrastructure attribution for aggregate limits.  Composition with
-   authorization primitives needs further work.
+   identity.  It describes PACE: a framework for managing budget
+   continuity across requests using a composition of the Web Bot Auth
+   with the Moderation of unLinkable Endorsements (MOLE) architecture
+   [MOLE-ARCH] and protocols [MOLE-PROTOCOLS].  This composition allows
+   for per-client capacity management in a way that allows origins to
+   serve clients above an otherwise constrained public baseline.
 
 About This Document
 
@@ -51,7 +51,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 13 May 2027.
+   This Internet-Draft will expire on 14 May 2027.
 
 Copyright Notice
 
@@ -72,24 +72,28 @@ Table of Contents
    1.  Introduction
      1.1.  Related work
    2.  Conventions and Definitions
+     2.1.  Parties and hosting relationships
+     2.2.  MOLE roles and budget scopes
+     2.3.  Endorsement examples
    3.  Scope and principles
-   4.  Attribution and authorization
+   4.  Attribution, permission, and capacity
      4.1.  Attribution
      4.2.  Permission
      4.3.  Capacity
      4.4.  Composition
    5.  Moderating consumption
-     5.1.  Public access with WBA and MOLE
-   6.  Budget limits and banning an abusive chain
-   7.  Deployment considerations
-     7.1.  Capacity without identifiers
-     7.2.  Capacity scopes
+     5.1.  Public resource
+   6.  Budget limits and abuse
+   7.  Deploying PACE
+     7.1.  Capacity scopes
+     7.2.  Composing scopes
    8.  Security considerations
      8.1.  Request integrity
      8.2.  Correlation and policy
    9.  IANA considerations
    10. Informative References
-   Acknowledgments
+   Appendix A.  Acknowledgments
+   Appendix B.  Capacity without identifiers
    Authors' Addresses
 
 1.  Introduction
@@ -109,12 +113,12 @@ Table of Contents
    because middleboxes might otherwise filter its traffic (see
    [USER-AGENT-HISTORY]).
 
-   Recent developments break these patterns.  Agents use proxies
-   ([CONNECT-UDP], [CONNECT-IP], [OHTTP], or plain [HTTP]).  As
-   platforms make requests on behalf of users, the user's TLS stack may
-   no longer be the one visible to the origin.  AI agents, on the user's
-   device or hosted remotely, fetch and render information in place of
-   browsers.  User-Agent strings are still spoofed.
+   Recent developments break these patterns.  Agents use intermediaries
+   to drive traffic, including running workloads in cloud platforms or
+   by using connection proxies ([CONNECT-UDP], [CONNECT-IP], [OHTTP], or
+   plain [HTTP]).  As workloads shift to platforms making requests on
+   behalf of users, traditional signals used for moderating traffic are
+   no longer viable.
 
    An address, including an [IPv6] address, is not necessarily a user.
    Blocking a shared IP range can affect everyone behind it.  A platform
@@ -157,14 +161,18 @@ Table of Contents
    Bounding consumption does not always require more fine-grained
    identifiers.
 
-   This document describes capacity budgets for agents using MOLE, an
-   architecture for private moderation [MOLE-ARCH].  Separately
-   allocated budgets let the origin charge one Client's requests without
-   consuming another's allocation.  MOLE alone does not ensure one
-   budget per agent or enforce a per-agent rate over time.  The draft
-   describes how Clients obtain Endorsements and Credentials, and how
-   Anchor issuance and Moderator spending policies constrain those
-   budgets.
+   This document describes PACE, a framework for managing capacity for
+   agents with a combination of Web Bot Auth and MOLE, an architecture
+   for private moderation [MOLE-ARCH], in a way that does not reduce to
+   the shared fate, noisy neighbor problem.  In PACE, budgets are
+   allocated to clients through MOLE, where a client can can be a tenant
+   on a platform, a tenant or agent workload, or a user behind any of
+   these, and origins moderate capacity based on those budgets.  Traffic
+   is similarly attributed to platforms through Web Bot Auth signatures.
+   Composing these two technologies balances the needs of all parties:
+   origins can establish policies on a per-platform and then per-client
+   basis within that platform, choosing the granularity of client using
+   their anchor set.
 
    Avoiding unnecessary disclosure supports the end-user interests
    discussed in [INTERNET-FOR-END-USER].  For these capacity decisions,
@@ -237,9 +245,41 @@ Table of Contents
    terminology of [MOLE-ARCH].  The roles can be operated by separate
    parties or combined.
 
+2.1.  Parties and hosting relationships
+
+   *Platform:*  A service that hosts workloads for tenants.
+
+   *Tenant:*  A customer organization, developer account, or billing
+      workspace that runs workloads on a platform, often organized as a
+      project.
+
+   *Workload:*  A deployed application or service, as described in
+      [WIMSE-ARCH].  A software product or service can comprise several
+      workloads.
+
+   *Agent:*  Software that performs tasks, potentially on behalf of a
+      user.  A session is a bounded task execution or workflow run, not
+      the agent itself.
+
+   *User:*  A person on whose behalf an agent may act.
+
+   A typical hosted deployment has this hierarchy:
+
+   Platform
+     Tenant
+       Workload
+         Agent
+
+   A tenant runs workloads that execute agents.  Users can use several
+   agents, and agents can serve several users or run unattended.
+   Device-resident agents need no hosting tenant.
+
+2.2.  MOLE roles and budget scopes
+
    *Client:*  The MOLE participant that obtains an Endorsement, redeems
       it for a Credential, and presents that Credential when requesting
-      a resource.
+      a resource.  An agent or a shared workload component can implement
+      this protocol role.
 
    *Anchor:*  The party that grants Endorsements under a policy the
       Moderator accepts.  Its relationship with a Client constrains
@@ -257,9 +297,8 @@ Table of Contents
 
    A Client may hold several budgets, and an account or workload may
    receive budgets for several Clients.  Those allocations depend on
-   Anchor and Moderator policy.  A workload has the meaning given in
-   [WIMSE-ARCH].  A Credential does not establish a unique account,
-   workload, device, or other principal.
+   Anchor and Moderator policy.  A Credential does not establish a
+   unique account, workload, device, or other principal.
 
    MOLE(X) denotes a presentation for budget scope X.  MOLE(C) is a
    Client's budget, while MOLE(T), MOLE(W), and MOLE(U) denote tenant,
@@ -267,79 +306,101 @@ Table of Contents
    identifiers in presentations.  WBA(Y) denotes a Web Bot Auth
    signature from intermediary Y.
 
+2.3.  Endorsement examples
+
+   An accepted Anchor could allocate Endorsements at each scope:
+
+   *  Platform: A vetting service grants a hosting provider a finite
+      pool.
+
+   *  Tenant: The platform caps a retailer's workspace allocation under
+      its subscription, as in Section 6.
+
+   *  Workload: A deployment service authenticates the shopping-
+      assistant workload and caps its allocation across replicas and
+      restarts.
+
+   *  Agent: The workload operator allocates a shopping agent's task
+      budget against the workload's allowance.  New tasks do not reset
+      that allowance.
+
+   *  User: An account provider authenticates a customer and caps
+      allocations across that account's agents.  This limits accounts,
+      not unique people.
+
+   Clients redeem these Endorsements for Credentials.  The Anchor
+   accounts for the allocation scope, which presentations do not reveal.
+   Capacity evidence does not grant permission.  Combining budget proofs
+   remains undefined (Section 4.4).
+
 3.  Scope and principles
 
-   The aim is to bound consumption through independently allocated
-   budgets without requiring a stable client identifier.  Exhausting one
-   budget should not exhaust another allocation, provided Anchor
-   issuance and Moderator spending policies keep them separate.  The
-   privacy objective is to separate the relationship used to obtain a
-   budget from the requests that spend it [PRIVACY-PARTITIONING].  A
-   platform aggregate limit can still affect every Client behind it even
-   when their individual budgets remain usable.
+   The goal of PACE is to bound consumption on a per-platform and per-
+   client basis through independently allocated and managed budgets.
+   Exhausting one budget should not exhaust another allocation, provided
+   Anchor issuance and Moderator spending policies keep them separate.
 
-   For public resources, the deployment goal is a baseline level of
-   access without a credential or signature.  This baseline remains
-   subject to capacity and request behavior.  Scarce Endorsements can
-   support access above it.  Absence of an active signal does not itself
-   establish abuse [CIVIL].
+   The purpose is to allow origins to offer better public baseline
+   services for its users.  Without per-client enforcement, origins are
+   left with overly restrictive baselines (e.g., block everything)
+   because honest clients cannot prove their capacity.  In other words,
+   the deployment goal is a baseline level of access without a
+   credential, signature, or some other mechanism that demonstrates
+   capacity.  Absence of an active signal does not itself establish
+   abuse [CIVIL].
 
-   Permissioned resources may require evidence of a right before serving
-   any content.  A capability can establish that right without
-   identifying its holder.  Where a resource's policy depends on a
-   particular principal and its permissions, authenticating the
+   Permissioned (non-public) resources may require evidence of a right
+   before serving any content.  A capability can establish that right
+   without identifying its holder.  Where a resource's policy depends on
+   a particular principal and its permissions, authenticating the
    principal with a stable identifier is appropriate.  Capacity evidence
    alone establishes neither identity nor a right to perform a
    permissioned operation.
 
-   Clients choose which evidence to offer.  Origins should ask only for
-   evidence needed by the requested operation.  A verified identity does
-   not establish that a request is harmless, and a valid budget does not
-   grant every permission.  Moreover, client evidence should reveal only
-   what the origin needs to apply its policy.  Network metadata and
-   other request fields can still identify or correlate clients.
+   Clients choose which evidence to offer based on their needs and the
+   needs of the origin.  Origins should ask only for evidence needed by
+   the requested operation.  A verified identity does not establish that
+   a request is harmless, and a valid budget does not grant every
+   permission.  Moreover, client evidence should reveal only what the
+   origin needs to apply its policy.  Network metadata and other request
+   fields can still identify or correlate clients.
 
-4.  Attribution and authorization
+4.  Attribution, permission, and capacity
 
-   An origin decides whether to serve an operation and how much capacity
-   to allocate to it.  The evidence it accepts can establish
-   attribution, permission, or capacity.  A request may need more than
-   one.
+   PACE is centered around moderation through attribution and
+   authorization.  Specifically, an origin decides whether to serve an
+   operation and how much capacity to allocate to it using evidence
+   presented from the client.  This evidence can establish attribution
+   (who is responsible for this traffic?), permission (is the party
+   responsible for this traffic allowed to access the resource?), or
+   capacity (does the party responsible for this traffic have budget for
+   accessing the resource?).  A request may need more than one form of
+   evidence.
 
 4.1.  Attribution
 
-   A verified WBA(P) signature attributes its covered components to a
-   key published by P [WBA-HTTPSIG].  The origin can apply an aggregate
-   limit to P without receiving an identifier for each Client behind it.
-   The signature does not establish permission unless origin policy
-   grants it to that signer.
-
-   A workload can authenticate using a scheme such as [WIMSE-AIMS].  Its
-   credential and signature profile differ from Web Bot Auth, even when
-   both use HTTP Message Signatures [HTTPSIG].  A session identifier
-   allows requests to be correlated within the session.  Either form of
-   attribution can accompany a budget, with the resulting loss of
-   unlinkability within its scope.
-
-   An origin can request a signature with Accept-Signature.  The Client
-   may decline, and the origin may refuse access where its policy
-   requires a signature.  The public baseline in Section 3 is this
-   deployment's goal, not a requirement imposed by Web Bot Auth.
+   Attribution addresses the question of who is responsible for traffic,
+   and there are many layers at which this attribution can occur (see
+   Section 2.1).  For example, a verified WBA(P) signature attributes
+   its covered components to a key published by P [WBA-HTTPSIG].  The
+   origin can apply an aggregate limit to P without receiving an
+   identifier for each Client behind it.  The signature does not
+   establish permission unless origin policy grants it to that signer.
+   A workload can authenticate using a variety of schemes, e.g., with a
+   WIMSE Proof Tokens, HTTP message signatures, or even transport-layer
+   authentication (see [WIMSE-AIMS]).  Users can authentiate using
+   [OIDC] or related techniques.
 
 4.2.  Permission
 
-   Permission depends on the resource's policy.  An origin can accept a
-   capability without identifying its holder, including a Privacy Pass
-   token when the issuer's attestation satisfies that policy
-   [PRIVACYPASS] [PRIVATETOKEN].  A reused capability can still link
-   requests.
-
-   An OAuth access token conveys an authorization grant [OAUTH].  The
-   resource checks the token as its authorization server requires,
-   including its audience, validity, permissions, and any proof of
-   possession.  Identity obtained through [OIDC] or workload
-   authentication can also be an input to access policy.  Authentication
-   alone does not determine the permitted operations.
+   Permission addresses the question of whether the attributed party can
+   access the resource in question.  As such, permission depends on the
+   resource's policy.  For example, an OAuth access token can convey an
+   authorization grant [OAUTH].  The origin can check the token as its
+   authorization server requires, including its audience, validity,
+   permissions, and any proof of possession.  Identity obtained through
+   [OIDC] or workload authentication can also be an input to access
+   policy.
 
    A workload can obtain a token using [WAG], and an existing federation
    can support delegated access through [OAUTH-XAA].  These grants are
@@ -348,16 +409,22 @@ Table of Contents
    [AAUTH] defines a separate signed authorization protocol with its own
    challenges and credentials.
 
+   Notably, authentication alone does not determine the permitted
+   operations.  In fact, an origin can accept a capability without
+   identifying its holder, including a Privacy Pass token when the
+   issuer's attestation satisfies that policy [PRIVACYPASS].
+
 4.3.  Capacity
 
-   The budget flow uses the EC-ACT credential type of [MOLE-PROTOCOLS].
-   Other MOLE credential types can have different properties.  An EC-ACT
-   Credential holds a hidden balance c.  A presentation proves that it
-   covers a requested spend s.  The moderator can return an amount t,
-   bounded by s plus the offered top-up a.  The replacement credential
-   holds c - s + t.  The origin learns the public amounts and that the
-   spend was possible, without learning the balance or a stable client
-   identifier [MOLE-PROTOCOLS].
+   Capacity addresses the question of whether the attributed party has
+   available budget for accessing a resource.  Budget can be allocated
+   and managed using granular identities such as a session ID, user ID,
+   or platform ID.  Budget can also be allocated and managed using MOLE,
+   which permits clients to hold a hidden balance c and then update it
+   through interaction with the origin and its moderator.  (This is
+   referred to as presenting a MOLE credential.)  The origin learns the
+   public amounts and that the spend was possible, without learning the
+   balance or a stable client identifier [MOLE-PROTOCOLS].
 
    For example, a policy can issue B credits, charge one per accepted
    presentation, and return zero with no top-ups.  Each issuance then
@@ -368,32 +435,28 @@ Table of Contents
 
 4.4.  Composition
 
-   A carrier signature and a MOLE presentation can travel on one
-   request.  The signature should cover the presentation and the
-   relevant request components, as discussed in Section 8.  Multiple
-   signature profiles can use distinct labels, with each verifier
-   applying the corresponding profile.
+   Attribution, authorization, and capacity evidence can compose in
+   requests.  For instance, an origin might require that requests carry
+   a platform signature (WBA(P)) and a MOLE presentation corresponding
+   to the user (MOLE(U)) on each request.  An origin might also require
+   both a workload authorization token granting permission to use a
+   resource and a MOLE presentation for the user behind that workload.
+   Origins decide what composition is essential based on their needs.
 
-   Permission and capacity can also be required together.  However,
-   MOLE, PrivateToken, and OAuth bearer tokens [BEARER] use the
-   Authorization field, which carries one credentials value
-   Section 11.6.2 of [HTTP].  The current MOLE transport also selects
-   one presentation per request [MOLE-HTTP].  Carriage of several
-   budgets or of a budget beside another authorization scheme remains
-   undefined here.
-
-   WWW-Authenticate can carry several challenges, but that alone does
-   not express that all must be satisfied.  Signaling cumulative
-   requirements is also open.  This document does not specify the
-   permissioned flow or its encoding.
+   Carriage of a MOLE presentation alongside another authorization
+   scheme or additional budget presentations, and signaling cumulative
+   requirements, remain undefined here (see issue #9
+   (https://github.com/thibmeu/draft-capacity-management/issues/9)).
 
 5.  Moderating consumption
 
-   The origin's moderator configures its accepted Anchor Set, credential
-   contexts, allocation and spending policy, and any permission
-   requirements.  A client may send an initial request without evidence.
-   The origin verifies what is present and serves the level of access
-   its policy permits.  A public response can offer more capacity
+   Given mechanisms for establishing attribution, permission, and
+   capacity, origins can moderate composition accordingly.  The origin's
+   moderator configures its accepted Anchor Set, credential contexts,
+   allocation and spending policy, and any permission requirements.  A
+   client may send an initial request without evidence.  The origin then
+   verifies what is present and serves the level of access its policy
+   permits.  For example, a public response can offer more capacity
    through a MOLE challenge.  A permissioned resource can refuse the
    operation and challenge for the missing authorization.
 
@@ -413,7 +476,7 @@ Table of Contents
    recovery remains separate.  One credential permits one presentation
    in flight at a time.
 
-5.1.  Public access with WBA and MOLE
+5.1.  Public resource
 
    The origin offers a budget above its public baseline.  Client C
    already holds an Endorsement from an accepted Anchor.  Intermediary P
@@ -481,14 +544,15 @@ Table of Contents
    subject to origin policy.  A failed presentation does not authorize
    the budgeted level of access.
 
-6.  Budget limits and banning an abusive chain
+6.  Budget limits and abuse
 
-   A platform hosts agents for two tenants.  Tenant A sends excessive
-   requests while tenant B runs a shopping agent within its allocation.
-   Both tenants' requests carry the same platform signature.  Blocking
-   that signature would interrupt both tenants.  The origin needs to
-   bound A's consumption and stop abusive requests without requiring
-   either tenant to disclose a stable identifier.
+   Consider the following scenario.  A platform hosts agents for two
+   tenants.  Tenant A sends excessive requests while tenant B runs a
+   shopping agent within its allocation.  Both tenants' requests carry
+   the same platform signature.  Blocking that signature would interrupt
+   both tenants.  The origin needs to bound A's consumption and stop
+   abusive requests without requiring either tenant to disclose a stable
+   identifier.
 
    Suppose the platform also acts as an Anchor accepted by the origin.
    It grants at most two Endorsements per tenant per epoch.  Each
@@ -497,6 +561,12 @@ Table of Contents
    accepted operation attempt and returns an updated Credential with the
    remaining balance.  It returns no credits and offers no top-ups.
    Credentials expire at the epoch boundary.
+
+   In this scenario, credits represent capacity granted by the Moderator
+   under its own access policy.  Twenty credits correspond to the
+   capacity allocated to a tenant per epoch.  A system based on
+   fingerprints might instead apply a rate limit per IP address, User-
+   Agent, or TLS fingerprint.
 
    Each tenant's allocation therefore permits at most twenty budgeted
    operation attempts in the epoch.  Starting another task does not
@@ -568,14 +638,16 @@ Table of Contents
    remain to be defined.  They need not require a persistent tenant
    identifier at the origin.
 
-7.  Deployment considerations
+7.  Deploying PACE
 
-   Deployment separates two kinds of capacity control: an intermediary
-   can identify itself for an aggregate limit, while an Anchor allocates
-   scarce Endorsements for smaller, anonymous budgets.  Figure 3 shows
-   the Anchor endorsing Client C while intermediary P carries its
-   requests.  The same provider can operate both roles, but need not.  A
-   tunnel carrying end-to-end TLS cannot add an HTTP signature.
+   A deployment of PACE admits two kinds of capacity control: (1)
+   through an intermediary which identify itself for an aggregate,
+   platform-specific limit, and (2) through smaller, anonymous budgets
+   that are allocated to indivdual clients (tenants, workloads, agents,
+   or users) based on the chosen anchor set.  Figure 3 shows one example
+   where an Anchor endorses Client C while intermediary platform P
+   carries its requests.  The same provider can operate both the role of
+   anchor and intermediary, but need not.
 
    +----------+
    |  Anchor  |
@@ -597,93 +669,23 @@ Table of Contents
    The following subsection applies this separation to product, project,
    and session capacity limits.
 
-7.1.  Capacity without identifiers
+7.1.  Capacity scopes
 
-   Signed product, project, and session IDs give an origin visible keys
-   with which to keep separate counters [SIGNED-AGENT-METADATA].  For
-   capacity alone, the Anchor can constrain Endorsements per product,
-   project, or task allocation only if it knows and enforces those
-   boundaries.  The platform can play this role.  An independent Anchor
-   needs a way to account for the same allocations, or its Endorsements
-   cannot enforce the platform's project and product totals.
+   Using the terms in Section 2.1, a platform P hosts tenants T with
+   workloads W.  An account U may authorize several agents.  Section 2.3
+   describes allocations at these scopes.  The noisy-neighbour boundary
+   depends on which of these shares a budget.  A tenant budget separates
+   tenants but leaves workloads within a tenant sharing its allocation.
+   A workload budget separates workloads but still groups their Clients.
+   Account budgets can isolate those allocations further, while several
+   Clients sharing one account budget remain subject to the same limit.
 
-   Clients redeem those endorsements for independent MOLE credentials
-   and spend the credentials on requests.  The Moderator checks each
-   spend and carries the remaining balance into an unlinkable
-   replacement Credential.  The presentation itself does not reveal
-   which product, project, task, or Client holds a particular budget.
-
-   The platform can still sign WBA(P), so the origin can also limit its
-   traffic in aggregate.  Credential contexts and spending terms should
-   be shared across many endorsements.  Unique contexts or amounts would
-   distinguish those units and shrink their anonymity sets.
-
-   The allocation boundary can be chosen without adding a corresponding
-   ID to requests:
-
-   *  Product: A platform or other suitable Anchor can reserve a finite
-      pool of Endorsements for a product and distribute them among its
-      projects or Clients.  Spending is limited by the budgets derived
-      from that pool.  The origin does not learn which product a
-      presentation came from, nor can it impose a different per-product
-      policy from presentations alone.
-
-   *  Project: The platform can cap Endorsements for a tenant workspace
-      and allocate them among its Clients.  Exhausting one Client's
-      independent Credential does not exhaust another's.  The platform,
-      not the origin, accounts for how many endorsements belong to that
-      project.  A single project-wide balance shared by many concurrent
-      Clients is a different requirement, discussed below.
-
-   *  Session: An Anchor can allocate Endorsements to a task (like an
-      ephemeral workload).  The Anchor must count task allocations
-      against a scarce parent allowance so starting new tasks does not
-      reset the limit.  The allocating party and Client must keep the
-      resulting Credentials assigned to those tasks: a MOLE presentation
-      does not prove which task is using a Credential.  Alternatively, a
-      Client can spend the same Credential across tasks when task-
-      specific budgets are unnecessary.  Neither choice lets the origin
-      link requests as one task.  Such correlation requires an
-      additional mechanism.
-
-   The example in Section 6 bounds a tenant's total allocation while the
-   origin checks each Credential separately.  Applying that policy to a
-   project requires the Anchor to account for all allocations to that
-   project.
-
-   The Anchor can also cap the sum of Endorsements across projects
-   belonging to one product.  The origin enforces each Credential's ten-
-   credit limit without seeing the project or product.  The project and
-   product totals depend on the Anchor's issuance policy, not on an
-   origin-side counter keyed by an ID.  Additional accepted Anchors or
-   Endorsements increase the available budget unless their policies
-   constrain the combined allocation.  Public-baseline requests and the
-   platform's aggregate limit remain separate from this bound.
-
-   These budgets replace identifiers only for the capacity decisions
-   their issuance and spending policies implement.  An origin cannot use
-   an anonymous presentation to identify and block a particular project,
-   audit its activity, or correlate all requests in a session.  If it
-   needs those functions, signed metadata can accompany MOLE, making
-   requests linkable at the metadata's scope.
-
-7.2.  Capacity scopes
-
-   A platform P can host tenants T, each with workloads W serving
-   several Clients.  An account U may authorize several Clients.  The
-   noisy-neighbour boundary depends on which of these shares a budget.
-   A tenant budget separates tenants but leaves workloads within a
-   tenant sharing its allocation.  A workload budget separates workloads
-   but still groups their Clients.  Account budgets can isolate those
-   allocations further, while several Clients sharing one account budget
-   remain subject to the same limit.
-
-   In Figure 4, Anchor W endorses a workload and Anchor U endorses
-   account allocations.  The workload and its Clients play separate MOLE
-   roles.  The request carries their budget proofs alongside the
-   platform's signature.  The Anchors need not operate the forwarding
-   intermediary.  These are intended scopes, pending the multiple-
-   presentation carriage in Section 4.4.
+   In Figure 4, Anchor W endorses workload-scoped allocations and Anchor
+   U endorses account-scoped allocations.  Client components obtain and
+   spend the corresponding Credentials.  The request carries both budget
+   proofs alongside the platform's signature.  The Anchors need not
+   operate the forwarding intermediary.  These are intended scopes,
+   pending the multiple-presentation carriage in Section 4.4.
 
    +---------------------+       +---------------------+
    |      Anchor W       |       |      Anchor U       |
@@ -693,7 +695,7 @@ Table of Contents
    +--------------------------------------------------+
    | Platform P                                       |
    |  +--------------------------------------------+  |
-   |  | Tenant workload with Clients                |  |
+   |  | Tenant workload with Clients               |  |
    |  +----------------------+---------------------+  |
    |                         |                        |
    |                         v                        |
@@ -713,17 +715,21 @@ Table of Contents
          Figure 4: Workload and account budget scopes in a proposed
                              stacked deployment
 
-   A principal can also receive several independent budgets, for example
-   one per Client.  Authorization determines what each Client may do,
-   while issuance policy constrains their combined allocation.  Adding
-   Clients must not yield unbounded replacement budgets.  Aggregate
-   platform limits still apply when individual budgets remain available.
+7.2.  Composing scopes
 
-   Concurrent requests need separate credentials.  Several Credentials
-   provide separate balances, so assigning more Credentials can increase
-   both concurrency and total consumption.  Shared-budget splitting and
-   simultaneous checks of aggregate and individual anonymous budgets
-   remain open.
+   A client can receive several independent budgets, for example one per
+   tenant, workload, agent, or user.  Authorization determines what each
+   client may do, while issuance policy constrains their combined
+   allocation.  Adding Clients must not yield unbounded replacement
+   budgets.  Aggregate platform limits should still apply when
+   individual budgets remain available.
+
+   With MOLE, concurrent requests need separate credentials, since each
+   request effectively "locks" a credential while in use.  Several
+   Credentials provide separate balances, so assigning more Credentials
+   can increase both concurrency and total consumption.  Shared-budget
+   splitting and simultaneous checks of aggregate and individual
+   anonymous budgets remain open.
 
    A CDN can operate a Moderator for several origins.  All servers
    accepting the same credential key and context must share atomic
@@ -984,9 +990,80 @@ Table of Contents
               <https://datatracker.ietf.org/doc/html/draft-ietf-wimse-
               arch-08>.
 
-Acknowledgments
+Appendix A.  Acknowledgments
 
-   TODO acknowledge.
+   The authors would like to thank Bryan Becker, Marwan Fayed, and Mari
+   Galicer for discussions that helped shape this document.
+
+Appendix B.  Capacity without identifiers
+
+   Signed product, project, and session IDs give an origin visible keys
+   with which to keep separate counters [SIGNED-AGENT-METADATA].  For
+   capacity alone, the Anchor can constrain Endorsements per product,
+   project, or task allocation only if it knows and enforces those
+   boundaries.  The platform can play this role.  An independent Anchor
+   needs a way to account for the same allocations, or its Endorsements
+   cannot enforce the platform's project and product totals.
+
+   Clients redeem those endorsements for independent MOLE credentials
+   and spend the credentials on requests.  The Moderator checks each
+   spend and carries the remaining balance into an unlinkable
+   replacement Credential.  The presentation itself does not reveal
+   which product, project, task, or Client holds a particular budget.
+
+   The platform can still sign WBA(P), so the origin can also limit its
+   traffic in aggregate.  Credential contexts and spending terms should
+   be shared across many endorsements.  Unique contexts or amounts would
+   distinguish those units and shrink their anonymity sets.
+
+   The allocation boundary can be chosen without adding a corresponding
+   ID to requests:
+
+   *  Product: A platform or other suitable Anchor can reserve a finite
+      pool of Endorsements for a product and distribute them among its
+      projects or Clients.  Spending is limited by the budgets derived
+      from that pool.  The origin does not learn which product a
+      presentation came from, nor can it impose a different per-product
+      policy from presentations alone.
+
+   *  Project: The platform can cap Endorsements for a tenant workspace
+      and allocate them among its Clients.  Exhausting one Client's
+      independent Credential does not exhaust another's.  The platform,
+      not the origin, accounts for how many endorsements belong to that
+      project.  A single project-wide balance shared by many concurrent
+      Clients is a different requirement, discussed below.
+
+   *  Session: An Anchor can allocate Endorsements to a task (like an
+      ephemeral workload).  The Anchor must count task allocations
+      against a scarce parent allowance so starting new tasks does not
+      reset the limit.  The allocating party and Client must keep the
+      resulting Credentials assigned to those tasks: a MOLE presentation
+      does not prove which task is using a Credential.  Alternatively, a
+      Client can spend the same Credential across tasks when task-
+      specific budgets are unnecessary.  Neither choice lets the origin
+      link requests as one task.  Such correlation requires an
+      additional mechanism.
+
+   The example in Section 6 bounds a tenant's total allocation while the
+   origin checks each Credential separately.  Applying that policy to a
+   project requires the Anchor to account for all allocations to that
+   project.
+
+   The Anchor can also cap the sum of Endorsements across projects
+   belonging to one product.  The origin enforces each Credential's ten-
+   credit limit without seeing the project or product.  The project and
+   product totals depend on the Anchor's issuance policy, not on an
+   origin-side counter keyed by an ID.  Additional accepted Anchors or
+   Endorsements increase the available budget unless their policies
+   constrain the combined allocation.  Public-baseline requests and the
+   platform's aggregate limit remain separate from this bound.
+
+   These budgets replace identifiers only for the capacity decisions
+   their issuance and spending policies implement.  An origin cannot use
+   an anonymous presentation to identify and block a particular project,
+   audit its activity, or correlate all requests in a session.  If it
+   needs those functions, signed metadata can accompany MOLE, making
+   requests linkable at the metadata's scope.
 
 Authors' Addresses
 
