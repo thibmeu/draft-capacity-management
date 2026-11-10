@@ -300,6 +300,96 @@ Clients redeem these Endorsements for Credentials. The Anchor accounts for the
 allocation scope, which presentations do not reveal. Capacity evidence does
 not grant permission. Combining budget proofs remains undefined ({{composition}}).
 
+# Budget limits and abuse {#scenarios}
+
+Consider the following scenario. A platform hosts agents for two tenants. Tenant A sends excessive requests
+while tenant B runs a shopping agent within its allocation. Both tenants'
+requests carry the same platform signature. Blocking that signature would
+interrupt both tenants. The origin needs to bound A's consumption and stop
+abusive requests without requiring either tenant to disclose a stable
+identifier.
+
+Without per-tenant budgets, the origin sees only the shared platform signature
+as attribution evidence. If A exhausts the platform's aggregate allowance, the
+origin also limits B, even though B remains within its intended allocation.
+
+Now suppose the platform also acts as an Anchor accepted by the origin. It grants
+at most two Endorsements per tenant per epoch. Each Endorsement can be redeemed
+once at this Moderator for an EC-ACT Credential with ten credits. The Moderator
+charges one credit per accepted operation attempt and returns an updated
+Credential with the remaining balance. It returns no credits and offers no
+top-ups. Credentials expire at the epoch boundary.
+
+In this scenario, credits represent capacity granted by the Moderator under its
+own access policy. Twenty credits correspond to the capacity allocated to a
+tenant per epoch. A system based on fingerprints might instead apply a rate limit
+per IP address, `User-Agent`, or TLS fingerprint.
+
+Each tenant's allocation therefore permits at most twenty budgeted operation
+attempts in the epoch. Starting another task does not reset the allowance.
+This bound depends on the Anchor enforcing the allocation and on other
+accepted Anchors not supplying additional budgets. The origin verifies each
+spend without learning which tenant's allocation it consumes.
+
+If the origin detects abuse on A's presented request, its Moderator can record
+`NoUpdate` and end that credential chain. The chain is the sequence of
+Credentials obtained by updating one initial Credential. Its remaining credits
+are forfeited. B's independently allocated Credentials remain usable.
+{{fig-budget-ban}} shows this decision. The tenant labels explain the example and
+are not identifiers carried in presentations.
+
+~~~aasvg
++-----------------------------------------------------------+
+|                 Platform acting as Anchor                 |
+|           At most two Endorsements per tenant             |
++-------------+-------------------------------+-------------+
+              |                               |
+              v                               v
++---------------------------+   +---------------------------+
+|         Tenant A          |   |         Tenant B          |
+|    Two 10-credit budgets  |   |    Two 10-credit budgets  |
++-------------+-------------+   +-------------+-------------+
+              |                               |
+       Abusive request                 Allowed request
+       + presentation                  + presentation
+              |                               |
+              v                               v
++-----------------------------------------------------------+
+|                   Origin and Moderator                    |
+|          Both requests carry the platform signature       |
+|          Each presentation spends a separate budget       |
++-------------+-------------------------------+-------------+
+              |                               |
+          NoUpdate                      Update (t=0)
+              |                               |
+              v                               v
++---------------------------+   +---------------------------+
+|   Presented chain ends    |   |      Chain continues      |
+|   Remaining credits lost  |   |      One credit spent     |
++---------------------------+   +---------------------------+
+~~~
+{: #fig-budget-ban title="Ending an abusive chain while an independent budget remains usable"}
+
+This ban applies to the presented chain. It does not revoke A's other
+Credential or prevent A from obtaining a later allocation. A replacement must
+count against the tenant's allowance. Exhaustion also prevents further spending
+from a budget, but an update returning zero credits does not end a chain that
+still has a sufficient balance. Neither a task boundary nor a tenant boundary
+is established by the presentation itself.
+
+The platform's aggregate limit and the origin's available capacity still apply
+to both tenants. Public-baseline requests are outside the illustrated budget.
+Missing budget evidence does not itself establish abuse.
+
+For the origin to ask the platform to investigate a tenant or change its future
+allocations, they need a feedback arrangement. One possible extension would
+require a fresh platform Endorsement before accepting an origin-issued
+Privacy Pass token, using a reverse-flow exchange. Feedback could also occur out of band. These
+are possible deployment arrangements, not exchanges specified here. Their
+binding to the affected allocation, enforcement, and disclosure to each party
+remain to be defined. They need not require a persistent tenant identifier at
+the origin.
+
 # Scope and principles {#principles}
 
 The goal of PACE is to bound consumption on a per-platform and per-client basis
@@ -490,92 +580,6 @@ The Moderator is shown at the origin.
 A direct Client uses the same exchange without WBA(P). A Client unable or
 unwilling to present continues at the public baseline, subject to origin policy.
 A failed presentation does not authorize the budgeted level of access.
-
-# Budget limits and abuse {#scenarios}
-
-Consider the following scenario. A platform hosts agents for two tenants. Tenant A sends excessive requests
-while tenant B runs a shopping agent within its allocation. Both tenants'
-requests carry the same platform signature. Blocking that signature would
-interrupt both tenants. The origin needs to bound A's consumption and stop
-abusive requests without requiring either tenant to disclose a stable
-identifier.
-
-Suppose the platform also acts as an Anchor accepted by the origin. It grants
-at most two Endorsements per tenant per epoch. Each Endorsement can be redeemed
-once at this Moderator for an EC-ACT Credential with ten credits. The Moderator
-charges one credit per accepted operation attempt and returns an updated
-Credential with the remaining balance. It returns no credits and offers no
-top-ups. Credentials expire at the epoch boundary.
-
-In this scenario, credits represent capacity granted by the Moderator under its
-own access policy. Twenty credits correspond to the capacity allocated to a
-tenant per epoch. A system based on fingerprints might instead apply a rate limit
-per IP address, `User-Agent`, or TLS fingerprint.
-
-Each tenant's allocation therefore permits at most twenty budgeted operation
-attempts in the epoch. Starting another task does not reset the allowance.
-This bound depends on the Anchor enforcing the allocation and on other
-accepted Anchors not supplying additional budgets. The origin verifies each
-spend without learning which tenant's allocation it consumes.
-
-If the origin detects abuse on A's presented request, its Moderator can record
-`NoUpdate` and end that credential chain. The chain is the sequence of
-Credentials obtained by updating one initial Credential. Its remaining credits
-are forfeited. B's independently allocated Credentials remain usable.
-{{fig-budget-ban}} shows this decision. The tenant labels explain the example and
-are not identifiers carried in presentations.
-
-~~~aasvg
-+-----------------------------------------------------------+
-|                 Platform acting as Anchor                 |
-|           At most two Endorsements per tenant             |
-+-------------+-------------------------------+-------------+
-              |                               |
-              v                               v
-+---------------------------+   +---------------------------+
-|         Tenant A          |   |         Tenant B          |
-|    Two 10-credit budgets  |   |    Two 10-credit budgets  |
-+-------------+-------------+   +-------------+-------------+
-              |                               |
-       Abusive request                 Allowed request
-       + presentation                  + presentation
-              |                               |
-              v                               v
-+-----------------------------------------------------------+
-|                   Origin and Moderator                    |
-|          Both requests carry the platform signature       |
-|          Each presentation spends a separate budget       |
-+-------------+-------------------------------+-------------+
-              |                               |
-          NoUpdate                      Update (t=0)
-              |                               |
-              v                               v
-+---------------------------+   +---------------------------+
-|   Presented chain ends    |   |      Chain continues      |
-|   Remaining credits lost  |   |      One credit spent     |
-+---------------------------+   +---------------------------+
-~~~
-{: #fig-budget-ban title="Ending an abusive chain while an independent budget remains usable"}
-
-This ban applies to the presented chain. It does not revoke A's other
-Credential or prevent A from obtaining a later allocation. A replacement must
-count against the tenant's allowance. Exhaustion also prevents further spending
-from a budget, but an update returning zero credits does not end a chain that
-still has a sufficient balance. Neither a task boundary nor a tenant boundary
-is established by the presentation itself.
-
-The platform's aggregate limit and the origin's available capacity still apply
-to both tenants. Public-baseline requests are outside the illustrated budget.
-Missing budget evidence does not itself establish abuse.
-
-For the origin to ask the platform to investigate a tenant or change its future
-allocations, they need a feedback arrangement. One possible extension would
-require a fresh platform Endorsement before accepting an origin-issued
-Privacy Pass token, using a reverse-flow exchange. Feedback could also occur out of band. These
-are possible deployment arrangements, not exchanges specified here. Their
-binding to the affected allocation, enforcement, and disclosure to each party
-remain to be defined. They need not require a persistent tenant identifier at
-the origin.
 
 # Deploying PACE {#examples}
 
