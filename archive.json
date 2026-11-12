@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-10T05:43:00.862125+00:00",
+  "timestamp": "2026-11-12T05:28:45.415817+00:00",
   "repo": "thibmeu/draft-capacity-management",
   "labels": [
     {
@@ -60,7 +60,7 @@
       "id": "I_kwDOVf4rpc8AAAABde1uLQ",
       "title": "should we move section 6 higher up",
       "url": "https://github.com/thibmeu/draft-capacity-management/issues/6",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "thibmeu",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -69,7 +69,31 @@
       ],
       "body": "Section 6 is an example. I like the concreteness of the policy and the flow. Ofc, i'm biased as i wrote it, but I feel itshould be moved up to make the draft concrete for now\n\n<img width=\"620\" height=\"600\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/6e32183c-3a42-4825-81ea-90f651ec2993\" />\n\n@chris-wood ",
       "createdAt": "2026-11-08T17:13:47Z",
-      "updatedAt": "2026-11-08T17:13:47Z",
+      "updatedAt": "2026-11-10T14:26:27Z",
+      "closedAt": "2026-11-10T14:26:27Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Moving it up seems useful provided we balance it with a complementary example that shows what happens in the absence of per-tenant budgets. That might require updating the origin layer to say that it only has a platform signature (or no signature at all). ",
+          "createdAt": "2026-11-10T13:40:12Z",
+          "updatedAt": "2026-11-10T13:40:12Z"
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "id": "I_kwDOVf4rpc8AAAABeAhT6g",
+      "title": "Define composition of permission and capacity evidence",
+      "url": "https://github.com/thibmeu/draft-capacity-management/issues/9",
+      "state": "OPEN",
+      "author": "thibmeu",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "An origin may need both an OAuth access token granting permission and a MOLE presentation proving capacity on the same request. The current header-based schemes both use `Authorization`, which carries one credentials value (RFC 9110, Section 11.6.2). Multiple `WWW-Authenticate` challenges offer alternatives; they do not signal that all must be satisfied.\n\nFor example, `WWW-Authenticate: Bearer ..., Mole ...` does not define how a client supplies both credentials or learns that both are required. MOLE's current HTTP transport also selects one presentation per request, leaving stacked workload and user budgets unresolved.\n\nDefine or reference a way to carry these credentials together and signal cumulative requirements, coordinating any transport changes with MOLE. Until then, the draft should describe these combinations as unresolved.\n\nRaised in the review of PR #8: https://github.com/thibmeu/draft-capacity-management/pull/8#discussion_r4525546009\n",
+      "createdAt": "2026-11-10T14:23:18Z",
+      "updatedAt": "2026-11-10T14:23:18Z",
       "closedAt": null,
       "comments": []
     }
@@ -280,7 +304,7 @@
       ],
       "body": "1. explain that the draft provides a profile to rate limit specific tenant. these can be users, agent, project, whatever the platform exposes\r\n2. make the limitation of WWW-Authenticate and Authorization more concrete\r\n3. better illustrate the \"credit\" and what it corresponds to by mapping it to familiar rate limit primitives\r\n4. have some blockquote for presentation purposes\r\n\r\nThis still does not move the example section up, even though that was mentioned. See #6 . Possibly putting it after terminology in a follow up commit\r\n\r\nDiff: https://author-tools.ietf.org/api/iddiff?url_1=https://thibmeu.github.io/draft-capacity-management/draft-meunier-webbotauth-capacity-management.txt&url_2=https://thibmeu.github.io/draft-capacity-management/early-feedback-mari/draft-meunier-webbotauth-capacity-management.txt",
       "createdAt": "2026-11-09T14:13:58Z",
-      "updatedAt": "2026-11-09T18:25:08Z",
+      "updatedAt": "2026-11-10T14:27:37Z",
       "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "eda0022e41bf843f6be1d2609c2f76a4041a0d44",
@@ -335,26 +359,61 @@
       "id": "PR_kwDOVf4rpc8AAAABN8cP9w",
       "title": "Another pass",
       "url": "https://github.com/thibmeu/draft-capacity-management/pull/8",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Top to bottom, trying to make the flow better. I moved the signed metadata context comparison to an appendix since it felt out of place in the middle. I also tried to lean into describing a \"framework\" here, and describing it as a _specific thing_ that origins can use for the purposes of moderating traffic. ",
       "createdAt": "2026-11-09T20:34:58Z",
-      "updatedAt": "2026-11-09T20:35:38Z",
+      "updatedAt": "2026-11-10T14:24:37Z",
       "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "b613433c1528f66acae43e4a2eac4605a05affdd",
       "headRepository": "chris-wood/draft-capacity-management",
       "headRefName": "caw/pass",
-      "headRefOid": "531595f6e0773b4fe2bf9541047d2f68bce6d848",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "7640ecf5881c621facda345935cacec0a74dced7",
+      "closedAt": "2026-11-10T14:24:37Z",
+      "mergedAt": "2026-11-10T14:24:37Z",
+      "mergedBy": "thibmeu",
+      "mergeCommit": {
+        "oid": "a40717fe85ad52ba0ce2f6d4b9b153105894470b"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABXEHwuQ",
+          "commit": {
+            "abbreviatedOid": "531595f"
+          },
+          "author": "thibmeu",
+          "authorAssociation": "OWNER",
+          "state": "APPROVED",
+          "body": "overall moving in the right direction., some comments that seems to be bugs",
+          "createdAt": "2026-11-10T13:41:32Z",
+          "updatedAt": "2026-11-10T13:48:28Z",
+          "comments": [
+            {
+              "originalPosition": 238,
+              "body": "consider converting this into an issue on the draft. the problem is not really super clear otherwise",
+              "createdAt": "2026-11-10T13:41:32Z",
+              "updatedAt": "2026-11-10T13:48:28Z"
+            },
+            {
+              "originalPosition": 267,
+              "body": "```suggestion\nleaves `c - s` credits. Recording `NoUpdate` ends the chain, as illustrated in\n```\n\nreturning zero does not depletes the budget. NoUpdate does",
+              "createdAt": "2026-11-10T13:44:36Z",
+              "updatedAt": "2026-11-10T13:48:28Z"
+            },
+            {
+              "originalPosition": 13,
+              "body": "```suggestion\na composition of the Web Bot Auth with the Moderation of unLinkable Endorsements\n(MOLE) architecture {{MOLE-ARCH}} and protocols {{MOLE-PROTOCOLS}}. This composition allows for\n```\n\nthere is a missing `with`. also refer to the correct documents",
+              "createdAt": "2026-11-10T13:48:02Z",
+              "updatedAt": "2026-11-10T13:48:28Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
