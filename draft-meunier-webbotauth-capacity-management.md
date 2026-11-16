@@ -149,7 +149,7 @@ identifiers.
 This document describes PACE, a framework for managing capacity for agents with
 a combination of Web Bot Auth and MOLE, an architecture for private moderation {{MOLE-ARCH}},
 in a way that does not reduce to the shared fate, noisy neighbor problem.
-In PACE, budgets are allocated to clients through MOLE, where a client can can
+In PACE, budgets are allocated to clients through MOLE, where a client can
 be a tenant on a platform, a tenant or agent workload, or a user behind any of
 these, and origins moderate capacity based on those budgets. Traffic is similarly
 attributed to platforms through Web Bot Auth signatures. Composing these two
@@ -584,8 +584,8 @@ A failed presentation does not authorize the budgeted level of access.
 # Deploying PACE {#examples}
 
 A deployment of PACE admits two kinds of capacity control: (1) through
-an intermediary which identify itself for an aggregate, platform-specific limit,
-and (2) through smaller, anonymous budgets that are allocated to indivdual
+an intermediary that identifies itself for an aggregate, platform-specific limit,
+and (2) through smaller, anonymous budgets that are allocated to individual
 clients (tenants, workloads, agents, or users) based on the chosen anchor
 set. {{fig-intermediary}} shows one example where an Anchor endorses Client C
 while intermediary platform P carries its requests. The same provider can operate
@@ -688,6 +688,40 @@ Deployment also needs bounded verification work and replay storage. Invalid
 proofs can consume verification capacity, and replay markers must remain while
 their Credentials are accepted. Aggregate controls remain necessary for
 availability, even though they can reintroduce shared fate.
+
+## Staged deployment
+
+Moving from existing, WBA-based mechanisms for capacity to a PACE-based
+model for capacity management can work in a staged manner. For instance,
+an origin can begin with WBA(P) as its only platform-level attribution signal
+and apply an aggregate limit to P. This requires neither MOLE issuance nor
+agreement among independent Anchors, but it leaves P's Clients sharing the
+same fate.
+
+As a next step, P can act as the sole Anchor accepted for these
+Clients, with an Anchor Set of size one. P already has a relationship with its
+tenants and can count their Endorsements against scarce allocations. WBA(P)
+still attributes traffic to P for an aggregate limit, whereas MOLE presentations
+from clients running on that platform allow the origin to moderate capacity
+on a per-client basis beneath P’s aggregate limit. WBA is an attribution mechanism,
+not itself an Anchor or an Endorsement. This stage avoids requiring mutually
+untrusting Anchors to coordinate before origins and platforms have experience
+with capacity-based moderation.
+
+This gives an origin a way to offer more than a restrictive public baseline
+without trusting each agent's self-declared identity. It gives a well-behaved
+agent a bounded path to continued access even when another tenant exhausts
+its own budget. The platform can preserve its client relationships without
+publishing tenant identifiers to every origin. These benefits depend on the
+platform enforcing allocation limits across new tasks and Credentials, the
+Moderator charging for consumption, and the origin retaining an aggregate
+limit for traffic outside or above the budgets.
+
+Once moderating on the basis of per-client capacity is the norm, origins
+can move towards increasing their anchor set size. This change is not
+merely technical, since a Moderator combining mutually untrusting Anchors
+in one set pools their credibility. Motivating this change requires some
+mechanism for moderators and origins to measure anchor quality over time.
 
 # Security considerations {#security}
 
