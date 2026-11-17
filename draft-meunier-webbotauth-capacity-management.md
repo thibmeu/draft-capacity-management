@@ -71,6 +71,9 @@ informative:
     target: "https://webaim.org/blog/user-agent-string-history/"
   WBA-ABA: I-D.draft-rescorla-anonymous-webbotauth
   WBA-HTTPSIG: I-D.draft-ietf-webbotauth-httpsig-protocol
+  HTTP-USER-SIGNALS:
+    title: "User Signals in the Forwarded HTTP Header"
+    target: "https://lists.w3.org/Archives/Public/ietf-http-wg/2026OctDec/att-0179/draft-panero-httpbis-forwarded-user-signals-00.txt"
   SIGNED-AGENT-METADATA: I-D.draft-vilgalys-webbotauth-signed-agent-metadata
   WIMSE-AIMS: I-D.draft-ietf-wimse-aims
   WIMSE-ARCH: I-D.draft-ietf-wimse-arch
@@ -436,6 +439,12 @@ For example, a verified WBA(P) signature attributes its covered components to
 a key published by P {{WBA-HTTPSIG}}. The origin can apply an aggregate limit to P
 without receiving an identifier for each Client behind it. The signature does
 not establish permission unless origin policy grants it to that signer.
+For this aggregate use, P can sign for many Clients under the same key rather
+than assign keys or signed metadata to individual Clients, tenants, projects,
+or sessions. Even an aggregate key can disclose more than the origin could
+infer from an IP address or other network-layer signals. A WBA signature is
+therefore not inherently equivalent to network attribution.
+
 A workload can authenticate using a variety of schemes, e.g., with a WIMSE
 Proof Tokens, HTTP message signatures, or even transport-layer authentication
 (see {{WIMSE-AIMS}}). Users can authentiate using {{OIDC}} or related techniques.
@@ -612,6 +621,12 @@ signature, establishes which smaller unit bears the spend. The following
 subsection applies this separation to product, project, and session
 capacity limits.
 
+An intermediary seeking only aggregate capacity control should avoid adding
+metadata that distinguish the Clients behind it. The relevant comparison is
+what the origin can already observe in this deployment, not what an IP
+address might reveal in a different deployment. Additional WBA attribution
+is possible, subject to the disclosure considerations in {{security}}.
+
 ## Capacity scopes
 
 Using the terms in {{parties}}, a platform P hosts tenants T with workloads W.
@@ -754,6 +769,24 @@ other components needed to bind the operation {{HTTPSIG}} {{DIGEST}}.
 Unlinkable Credentials do not hide addresses, cookies, content, or timing.
 A forwarding provider that knows the Client can disclose its requests to the
 origin. This deployment does not prevent that collusion.
+
+WBA can add a stable attribution signal beyond the origin's network view,
+even when a signature covers only an intermediary. A key scoped to a tenant,
+workload, or user can further reveal whose activity a request represents.
+Additional disclosure should be made only with informed consent from the
+party whose activity becomes more attributable. A tenant or operator can
+choose to identify its own unattended workload or platform, but cannot
+thereby consent to disclosure of an end user's activity. Where a user's
+activity becomes more attributable, that user needs to make the choice. An
+origin's `Accept-Signature` challenge, a platform's decision to sign, or an
+agent's ability to supply a signature does not establish the user's consent.
+
+User agents generally cannot determine how much attribution an origin needs
+for purposes such as fraud or risk assessment, or how that information might
+be used for other purposes {{HTTP-USER-SIGNALS}}. They are therefore not
+equipped to decide autonomously that additional disclosure is appropriate.
+An operator's configured disclosure policy can govern its own activity, but
+does not supply consent for other affected parties.
 
 Credential keys, contexts, and public amounts partition the anonymity set.
 They should follow coarse policies shared by many Clients. Per-Client values
