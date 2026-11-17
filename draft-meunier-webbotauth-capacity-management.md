@@ -390,6 +390,41 @@ binding to the affected allocation, enforcement, and disclosure to each party
 remain to be defined. They need not require a persistent tenant identifier at
 the origin.
 
+## Limits of anonymous capacity
+
+PACE fits public resources for which an origin can offer interchangeable
+Clients the same capacity terms without knowing which Client made each request.
+An Anchor limits budgets at the chosen allocation scope, and the Moderator
+charges a public cost for each operation. These controls bound consumption
+only to the extent that issuance, replenishment, and spending policies do.
+They do not provide persistent client identity or a general abuse-moderation
+system. This has a number of important implications.
+
+- Uniform terms within an anonymity set: Clients using the same credential
+  context need a shared allowance. The Moderator can respond to an abusive
+  request by ending its presented chain, but cannot give a checkout-bound
+  shopper a different ongoing burst allowance from a background indexer
+  based on anonymous presentations alone. Separate contexts or anchor sets
+  roles permit different terms, but reveal the class of traffic and reduce
+  the anonymity set. If behavior or intent determines the policy, the origin
+  needs other evidence or controls.
+- No cross-session recognition: The origin can act on a
+  request or end its presented credential chain, but presentations alone do not
+  let it recognize the same Client using a different Credential later. A session
+  identifier can support observation within that session (for delayed updates),
+  but does not establish continuity across sessions. This means that clients
+  which would otherwise be moderated and limited by the moderator can continue
+  if it receives more endorsements.
+- Limited credential concurrency: A stateful Credential permits only one
+  presentation in flight at a time. Parallel workers must serialize access or
+  use separate Credentials. A credential pool improves concurrency but also
+  creates separate balances, and anchors to account for their combined issuance
+  if clients are meant to share one allowance.
+
+In summary, when an origin needs persistent recognition, differentiated policy,
+or accountability, it needs an additional mechanism and must account for the
+resulting disclosure. See {{security}} for more discussion.
+
 # Scope and principles {#principles}
 
 The goal of PACE is to bound consumption on a per-platform and per-client basis
