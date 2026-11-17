@@ -489,9 +489,121 @@ request. An origin might also require both a workload authorization token granti
 permission to use a resource and a MOLE presentation for the user behind that workload.
 Origins decide what composition is essential based on their needs.
 
-Carriage of a MOLE presentation alongside another authorization scheme or
-additional budget presentations, and signaling cumulative requirements, remain
-undefined here (see [issue #9](https://github.com/thibmeu/draft-capacity-management/issues/9)).
+As an example, consider the following scenario with two agents, A and B.
+Agent A asks agent B to fetch a resource at origin O. The A-to-B request
+and B-to-O request are different operations, meaning that evidence that A
+supplied to B is not automatically evidence for the request O receives. The
+party that makes the B-to-O request must satisfy O's challenges under O's policy.
+
+For a public resource, B can send its request through platform P such that P
+adds WBA(P). If O first challenges for MOLE, B obtains or uses its own Credential and
+retries, yielding WBA(P) and MOLE(B). B's decision to serve A, and any capacity
+limit on the A-to-B request, are separate from O's decision about the B-to-O
+request. If B does not have a credential, it could relay the MOLE challenge to
+A, and then A can present MOLE(A), and the resulting request to O has WBA(P)
+and MOLE(A).
+
+~~~aasvg
++----------+   +----------+    +----------+    +----------+
+| Agent A  |   | Agent B  |    | Platform |    | Origin O |
+|          |   |          |    |    P     |    | Moderator|
++----+-----+   +----+-----+    +----+-----+    +----+-----+
+     |  fetch       |               |               |
+     +------------->+               |               |
+     |              | request       |               |
+     |              +-------------->+  + WBA(P)     |
+     |              |               +-------------->+
+     |              |               | MOLE challenge|
+     |              |<--------------+<--------------+
+     |              |               |               |
+     |        Option 1: B spends its Credential     |
+     |              | request       |               |
+     |              | + MOLE(B)     |               |
+     |              +-------------->+  + WBA(P)     |
+     |              |               +-------------->+
+     |              |<--------------+<--------------+
+     |              | response + Update             |
+     |              |               |               |
+     |        Option 2: A spends its Credential     |
+     | challenge    |               |               |
+     +<-------------+               |               |
+     | request      |               |               |
+     | + MOLE(A)    |               |               |
+     +------------->+ request       |               |
+     |              | + MOLE(A)     |               |
+     |              +-------------->+  + WBA(P)     |
+     |              |               +-------------->+
+     |              |<--------------+<--------------+
+     |<-------------+ response + Update             |
+~~~
+{: #fig-two-agents title="Two agents answering an origin's capacity challenge with either budget"}
+
+In the second path, A constructs the presentation for the request O will
+receive, and B relays the result so A can continue its Credential chain.
+The two paths are alternatives after the same challenge. The second requires
+coordination about the final request and response; A's proof for its earlier
+request to B cannot be reused. From O's perspective, a request might therefore
+look like the following.
+
+~~~
+GET /public/data HTTP/1.1
+Host: origin.example
+Authorization: Mole presentation-0001="<presentation-and-update>"
+Signature-Agent: p="https://platform.example/keys"
+Signature-Input: p=("@method" "@authority" "authorization" \
+  "signature-agent";key="p");created=1794800000;expires=1794800300;\
+  keyid="<key-thumbprint>";tag="web-bot-auth"
+Signature: p=:<signature-bytes>:
+~~~
+
+For a permissioned resource, O might instead require additional evidence,
+and O challenges for that evidence. That evidence might be in the form
+of authorization grants, such as {{OAUTH-XAA}} or {{WAG}}, and may accompany
+MOLE or WBA evidence on the same request.
+
+{{fig-permissioned-agents}} illustrates this as a policy-level exchange. O
+asks for an access token, a MOLE presentation, and a WBA signature; WAG is
+one way for B to obtain the access token from an authorization server, not
+itself a credential presented to O. The figure assumes B already has an
+Endorsement from an accepted Anchor. B redeems it with O's Moderator if it
+does not yet have a MOLE Credential. P, rather than B, adds WBA(P) to the
+retried request.
+
+~~~aasvg
++----------+   +-------------+   +----------+   +-------------+
+| Agent B  |   | Authorization|   | Platform |   |  Origin O   |
+|          |   | Server (AS)  |   |    P     |   |  Moderator  |
++----+-----+   +------+------+   +----+-----+   +------+------+
+     |                |               |                |
+     | request        |               |                |
+     +------------------------------->+ request        |
+     |                |               +--------------->+
+     |                |               | requirements:  |
+     |                |               | access token,  |
+     |                |               | MOLE, WBA(P)   |
+     |                |               +<---------------+
+     +<-------------------------------+                |
+     |                |               |                |
+     | WAG grant      |               |                |
+     +--------------->+               |                |
+     +<---------------+ access token  |                |
+     |                |               |                |
+     | redeem Endorsement with Moderator               |
+     +------------------------------------------------>+
+     +<------------------------------------------------+ Credential
+     |                |               |                |
+     | request + token + MOLE(B)      |                |
+     +------------------------------->+ + WBA(P)       |
+     |                |               +--------------->+
+     |                |               | verify token,  |
+     |                |               | MOLE and WBA   |
+     |                |               | response       |
+     |                |               +<---------------+
+     +<-------------------------------+ response + Update
+~~~
+{: #fig-permissioned-agents title="Illustrative acquisition and composition of permission, capacity, and attribution evidence"}
+
+[[OPEN ISSUE: composing multiple authorization protocols on the same request is currently _not_ possible; see https://github.com/Moderation-of-unLinkable-Endorsements/internet-drafts/issues/186]]
 
 # Moderating consumption {#processing-steps}
 
