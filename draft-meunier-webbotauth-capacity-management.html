@@ -1053,7 +1053,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Meunier &amp; Wood</td>
-<td class="center">Expires 14 May 2027</td>
+<td class="center">Expires 21 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1066,12 +1066,12 @@ svg {
 <dd class="internet-draft">draft-meunier-webbotauth-capacity-management-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-11-10" class="published">10 November 2026</time>
+<time datetime="2026-11-17" class="published">17 November 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-05-14">14 May 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-21">21 May 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1127,7 +1127,7 @@ above an otherwise constrained public baseline.<a href="#section-abstract-1" cla
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 14 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 21 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1217,6 +1217,9 @@ above an otherwise constrained public baseline.<a href="#section-abstract-1" cla
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
                 <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-composing-scopes" class="internal xref">Composing scopes</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3">
+                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-staged-deployment" class="internal xref">Staged deployment</a></p>
 </li>
             </ul>
 </li>
@@ -1313,7 +1316,7 @@ identifiers.<a href="#section-1-7" class="pilcrow">¶</a></p>
 <p id="section-1-8">This document describes PACE, a framework for managing capacity for agents with
 a combination of Web Bot Auth and MOLE, an architecture for private moderation <span>[<a href="#MOLE-ARCH" class="cite xref">MOLE-ARCH</a>]</span>,
 in a way that does not reduce to the shared fate, noisy neighbor problem.
-In PACE, budgets are allocated to clients through MOLE, where a client can can
+In PACE, budgets are allocated to clients through MOLE, where a client can
 be a tenant on a platform, a tenant or agent workload, or a user behind any of
 these, and origins moderate capacity based on those budgets. Traffic is similarly
 attributed to platforms through Web Bot Auth signatures. Composing these two
@@ -1973,8 +1976,8 @@ A failed presentation does not authorize the budgeted level of access.<a href="#
 <a href="#section-7" class="section-number selfRef">7. </a><a href="#name-deploying-pace" class="section-name selfRef">Deploying PACE</a>
       </h2>
 <p id="section-7-1">A deployment of PACE admits two kinds of capacity control: (1) through
-an intermediary which identify itself for an aggregate, platform-specific limit,
-and (2) through smaller, anonymous budgets that are allocated to indivdual
+an intermediary that identifies itself for an aggregate, platform-specific limit,
+and (2) through smaller, anonymous budgets that are allocated to individual
 clients (tenants, workloads, agents, or users) based on the chosen anchor
 set. <a href="#fig-intermediary" class="auto internal xref">Figure 3</a> shows one example where an Anchor endorses Client C
 while intermediary platform P carries its requests. The same provider can operate
@@ -2147,6 +2150,41 @@ privacy. Endorsements from several accepted Anchors can yield several budgets.<a
 proofs can consume verification capacity, and replay markers must remain while
 their Credentials are accepted. Aggregate controls remain necessary for
 availability, even though they can reintroduce shared fate.<a href="#section-7.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="staged-deployment">
+<section id="section-7.3">
+        <h3 id="name-staged-deployment">
+<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-staged-deployment" class="section-name selfRef">Staged deployment</a>
+        </h3>
+<p id="section-7.3-1">Moving from existing, WBA-based mechanisms for capacity to a PACE-based
+model for capacity management can work in a staged manner. For instance,
+an origin can begin with WBA(P) as its only platform-level attribution signal
+and apply an aggregate limit to P. This requires neither MOLE issuance nor
+agreement among independent Anchors, but it leaves P's Clients sharing the
+same fate.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.3-2">As a next step, P can act as the sole Anchor accepted for these
+Clients, with an Anchor Set of size one. P already has a relationship with its
+tenants and can count their Endorsements against scarce allocations. WBA(P)
+still attributes traffic to P for an aggregate limit, whereas MOLE presentations
+from clients running on that platform allow the origin to moderate capacity
+on a per-client basis beneath P’s aggregate limit. WBA is an attribution mechanism,
+not itself an Anchor or an Endorsement. This stage avoids requiring mutually
+untrusting Anchors to coordinate before origins and platforms have experience
+with capacity-based moderation.<a href="#section-7.3-2" class="pilcrow">¶</a></p>
+<p id="section-7.3-3">This gives an origin a way to offer more than a restrictive public baseline
+without trusting each agent's self-declared identity. It gives a well-behaved
+agent a bounded path to continued access even when another tenant exhausts
+its own budget. The platform can preserve its client relationships without
+publishing tenant identifiers to every origin. These benefits depend on the
+platform enforcing allocation limits across new tasks and Credentials, the
+Moderator charging for consumption, and the origin retaining an aggregate
+limit for traffic outside or above the budgets.<a href="#section-7.3-3" class="pilcrow">¶</a></p>
+<p id="section-7.3-4">Once moderating on the basis of per-client capacity is the norm, origins
+can move towards increasing their anchor set size. This change is not
+merely technical, since a Moderator combining mutually untrusting Anchors
+in one set pools their credibility. Motivating this change requires some
+mechanism for moderators and origins to measure anchor quality over time.<a href="#section-7.3-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2342,7 +2380,7 @@ a recorded termination only while the result remains available.<a href="#section
 <dd class="break"></dd>
 <dt id="WIMSE-ARCH">[WIMSE-ARCH]</dt>
     <dd>
-<span class="refAuthor">Salowey, J. A.</span>, <span class="refAuthor">Rosomakho, Y.</span>, and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"Workload Identity in a Multi System Environment (WIMSE) Architecture"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-wimse-arch-08</span>, <time datetime="2026-07-06" class="refDate">6 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-wimse-arch-08">https://datatracker.ietf.org/doc/html/draft-ietf-wimse-arch-08</a>&gt;</span>. </dd>
+<span class="refAuthor">Salowey, J. A.</span>, <span class="refAuthor">Rosomakho, Y.</span>, and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"Workload Identity in a Multi System Environment (WIMSE) Architecture"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-wimse-arch-09</span>, <time datetime="2026-11-16" class="refDate">16 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-wimse-arch-09">https://datatracker.ietf.org/doc/html/draft-ietf-wimse-arch-09</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
