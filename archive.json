@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-17T06:11:41.129470+00:00",
+  "timestamp": "2026-11-19T05:38:43.431505+00:00",
   "repo": "thibmeu/draft-capacity-management",
   "labels": [
     {
@@ -427,7 +427,7 @@
       "labels": [],
       "body": "PACE should acknowledge that things like WBA ought not to reveal anything beyond that which is otherwise accessible by IP addresses or other network signals (up to consent).",
       "createdAt": "2026-11-16T22:17:26Z",
-      "updatedAt": "2026-11-16T22:17:26Z",
+      "updatedAt": "2026-11-17T18:31:28Z",
       "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "bd04f6e4e3652de1060a19b91f6f57b38dd969c3",
@@ -438,8 +438,30 @@
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
-      "reviews": []
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I don't think that section really makes much sense. It talks about \"this protocol,\" but there is no protocol here. I'd suggest we move the content from this PR down to that section, since ultimately that's probably a better place for it. I'll do that.",
+          "createdAt": "2026-11-17T18:31:27Z",
+          "updatedAt": "2026-11-17T18:31:27Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABYk24YA",
+          "commit": {
+            "abbreviatedOid": "3c0636c"
+          },
+          "author": "thibmeu",
+          "authorAssociation": "OWNER",
+          "state": "CHANGES_REQUESTED",
+          "body": "i fail to see how this fits in PACE beyond the discussion that is already present on https://www.ietf.org/archive/id/draft-ietf-webbotauth-httpsig-protocol-01.html#name-identification-and-correlat",
+          "createdAt": "2026-11-17T18:23:37Z",
+          "updatedAt": "2026-11-17T18:23:37Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 11,
@@ -453,7 +475,7 @@
       "labels": [],
       "body": "Moderating based on capacity has its limits, and we should state them clearly.",
       "createdAt": "2026-11-16T22:29:06Z",
-      "updatedAt": "2026-11-16T22:29:06Z",
+      "updatedAt": "2026-11-17T19:05:29Z",
       "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "bd04f6e4e3652de1060a19b91f6f57b38dd969c3",
@@ -465,33 +487,116 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABYkQS3Q",
+          "commit": {
+            "abbreviatedOid": "9ebc285"
+          },
+          "author": "thibmeu",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-17T17:44:16Z",
+          "updatedAt": "2026-11-17T18:03:56Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "clients controlled by the same user? (trying to ensure i understand `interchangeable`)",
+              "createdAt": "2026-11-17T17:44:17Z",
+              "updatedAt": "2026-11-17T18:03:56Z"
+            },
+            {
+              "originalPosition": 33,
+              "body": "this seems sensible as example, i feel it's a bit too long too early long. might try to rewrite it so it's a lot more ocncise, without reducing the core point which is that PACE has limits (which i believe is detailed later in the document)",
+              "createdAt": "2026-11-17T18:03:48Z",
+              "updatedAt": "2026-11-17T18:03:56Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABYk8FKg",
+          "commit": {
+            "abbreviatedOid": "9ebc285"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-17T18:29:42Z",
+          "updatedAt": "2026-11-17T18:29:42Z",
+          "comments": [
+            {
+              "originalPosition": 33,
+              "body": "Happy to see alternatives. The goal is to make the limits clear, and I don't think those limits are clearly described elsewhere.",
+              "createdAt": "2026-11-17T18:29:42Z",
+              "updatedAt": "2026-11-17T18:29:42Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABYlZ6iQ",
+          "commit": {
+            "abbreviatedOid": "9ebc285"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-17T19:05:29Z",
+          "updatedAt": "2026-11-17T19:05:29Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Clients that are indistinguishable from each other (i.e., endorsed by an anchor in the anchor set)",
+              "createdAt": "2026-11-17T19:05:29Z",
+              "updatedAt": "2026-11-17T19:05:29Z"
+            }
+          ]
+        }
+      ]
     },
     {
       "number": 12,
       "id": "PR_kwDOVf4rpc8AAAABPq-2eg",
       "title": "Address staged deployment",
       "url": "https://github.com/thibmeu/draft-capacity-management/pull/12",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "chris-wood",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Add some text which specifically addresses how to deploy something like PACE starting from where we are today (mostly WBA-based attribution and policy enforcement).",
       "createdAt": "2026-11-16T22:52:22Z",
-      "updatedAt": "2026-11-16T22:52:22Z",
+      "updatedAt": "2026-11-17T18:07:22Z",
       "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "bd04f6e4e3652de1060a19b91f6f57b38dd969c3",
       "headRepository": "chris-wood/draft-capacity-management",
       "headRefName": "caw/pace-staged-deployment",
       "headRefOid": "abfefb4850301561dd2b13d7d2d7544bf4be04af",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-11-17T18:07:22Z",
+      "mergedAt": "2026-11-17T18:07:22Z",
+      "mergedBy": "thibmeu",
+      "mergeCommit": {
+        "oid": "77953488adb509191d47dee0db6cfaa2c6244ac4"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABYkmoMQ",
+          "commit": {
+            "abbreviatedOid": "abfefb4"
+          },
+          "author": "thibmeu",
+          "authorAssociation": "OWNER",
+          "state": "APPROVED",
+          "body": "good addition!",
+          "createdAt": "2026-11-17T18:07:08Z",
+          "updatedAt": "2026-11-17T18:07:08Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 13,
@@ -505,19 +610,100 @@
       "labels": [],
       "body": "Make composition explicit with some examples and pictures. They could probably be improved, but this is a start!",
       "createdAt": "2026-11-16T23:38:34Z",
-      "updatedAt": "2026-11-16T23:38:34Z",
+      "updatedAt": "2026-11-17T18:34:28Z",
       "baseRepository": "thibmeu/draft-capacity-management",
       "baseRefName": "main",
       "baseRefOid": "bd04f6e4e3652de1060a19b91f6f57b38dd969c3",
       "headRepository": "chris-wood/draft-capacity-management",
       "headRefName": "caw/pace-composition-scenarios",
-      "headRefOid": "e1d30db6137a0a297abfaa93aed706d045cb6395",
+      "headRefOid": "ea40e5bef5268db832d1c462e4843d9937560e53",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
-      "reviews": []
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "body": "The point of this PR was to give specific examples. The draft currently does not do that. It is quite vague, leaving actual details up to the reader. I really think we need to be clear, and examples are the way to do that. Again, I'm not wed to the presentation itself, so long as there are specific, concrete examples showing how this _actually_ would work in practice. ",
+          "createdAt": "2026-11-17T18:34:28Z",
+          "updatedAt": "2026-11-17T18:34:28Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABYkoJgg",
+          "commit": {
+            "abbreviatedOid": "e1d30db"
+          },
+          "author": "thibmeu",
+          "authorAssociation": "OWNER",
+          "state": "CHANGES_REQUESTED",
+          "body": "maybe that's due to my way of writting, but there is a lot of one letter for actors and i think this inders readability where we want something really smooth to illustrate",
+          "createdAt": "2026-11-17T18:08:35Z",
+          "updatedAt": "2026-11-17T18:11:46Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "is this an RFC you are feeding to your editing system? seems like it does not have to be informative\nhttps://www.rfc-editor.org/info/rfc8792/",
+              "createdAt": "2026-11-17T18:08:36Z",
+              "updatedAt": "2026-11-17T18:11:46Z"
+            },
+            {
+              "originalPosition": 129,
+              "body": "noting: we are moving the issue out of pace to mole because that's the protocol that define this authorization header",
+              "createdAt": "2026-11-17T18:10:11Z",
+              "updatedAt": "2026-11-17T18:11:46Z"
+            },
+            {
+              "originalPosition": 29,
+              "body": "this diagram is packed",
+              "createdAt": "2026-11-17T18:10:45Z",
+              "updatedAt": "2026-11-17T18:11:46Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABYk-IsA",
+          "commit": {
+            "abbreviatedOid": "e1d30db"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-17T18:32:07Z",
+          "updatedAt": "2026-11-17T18:32:07Z",
+          "comments": [
+            {
+              "originalPosition": 4,
+              "body": "Good catch -- removing.\n```suggestion\n```",
+              "createdAt": "2026-11-17T18:32:07Z",
+              "updatedAt": "2026-11-17T18:32:07Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOVf4rpc8AAAABYk-8KA",
+          "commit": {
+            "abbreviatedOid": "ea40e5b"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-11-17T18:33:08Z",
+          "updatedAt": "2026-11-17T18:33:08Z",
+          "comments": [
+            {
+              "originalPosition": 29,
+              "body": "Yep, and happy to see simpler versions of it, but I think we need to be concrete. ",
+              "createdAt": "2026-11-17T18:33:08Z",
+              "updatedAt": "2026-11-17T18:33:09Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
